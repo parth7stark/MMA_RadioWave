@@ -15,3 +15,11 @@ This repo focuses on radio wave data. For gravitational wave analysis, please vi
 - Integration of additional messenger types (e.g., neutrinos, gamma rays)
 - Real-time data streaming and event detection
 - Cross-correlation between different datasets for enhanced analysis
+
+## Installation
+
+```
+conda create -n mma_radiowave python=3.10 --y
+conda activate mma_radiowave
+pip install -r requirements.txt
+```
