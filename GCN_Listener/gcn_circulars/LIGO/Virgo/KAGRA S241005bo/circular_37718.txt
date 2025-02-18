@@ -1,0 +1,12 @@
+{
+    "$schema": "https://gcn.nasa.gov/schema/v4.1.0/gcn/circulars.schema.json",
+    "eventId": "LIGO/Virgo/KAGRA S241005bo",
+    "submitter": "Jacopo Tissino at GSSI <jacopok@gmail.com>",
+    "submittedHow": "web",
+    "subject": "LIGO/Virgo/KAGRA S241005bo: Retraction of GW compact binary merger candidate",
+    "circularId": 37718,
+    "format": "text/plain",
+    "bibcode": "2024GCN.37718....1L",
+    "body": "The LIGO Scientific Collaboration, the Virgo Collaboration, and the KAGRA Collaboration report:\n\nThe trigger S241005bo is no longer considered to be a candidate of interest. This candidate was initially identified by one or more early-warning analyses by matching partial signal templates to the data. Analysis of additional data up to the putative merger time, with full signal templates, did not make a significant detection, indicating that the initial candidate was likely due to transient noise.\n",
+    "createdOn": 1728128736701
+}

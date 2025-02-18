@@ -1,0 +1,11 @@
+{
+    "$schema": "https://gcn.nasa.gov/schema/v4.1.0/gcn/circulars.schema.json",
+    "eventId": "LIGO/Virgo/KAGRA S241104a",
+    "submitter": "Pan Guo at KAGRA <panguocas@gmail.com>",
+    "submittedHow": "web",
+    "subject": " LIGO/Virgo/KAGRA S241104a: Retraction of GW compact binary merger candidate",
+    "circularId": 38070,
+    "format": "text/plain",
+    "body": "\nThe LIGO Scientific Collaboration, the Virgo Collaboration, and the KAGRA Collaboration report:\n\nThe trigger S241104a is no longer considered to be a candidate of interest. There were Data Quality issues in L1 with presence of a glitch. The detection pipeline and detector characterization experts recommended a retraction.\n",
+    "createdOn": 1730695514501
+}

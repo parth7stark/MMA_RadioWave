@@ -1,0 +1,10 @@
+{
+    "$schema": "https://gcn.nasa.gov/schema/v4.1.0/gcn/circulars.schema.json",
+    "submitter": "Charlie Hoy at University of Portsmouth <charlie.hoy@port.ac.uk>",
+    "submittedHow": "web",
+    "subject": "LIGO/Virgo/KAGRA S231206cc: Updated Sky localization and Source Classification",
+    "circularId": 35301,
+    "bibcode": "2023GCN.35301....1H",
+    "body": "The LIGO Scientific Collaboration, the Virgo Collaboration, and the KAGRA Collaboration report:\n\nWe have conducted further analysis of the LIGO Hanford Observatory (H1) and LIGO Livingston Observatory (L1) data around the time of the compact binary merger (CBC) candidate S231206cc (GCN Circular 35298). Parameter estimation has been performed using Bilby [1] and a new sky map, Bilby.multiorder.fits, distributed via GCN Notice, is available for retrieval from the GraceDB event page:\n\nhttps://gracedb.ligo.org/superevents/S231206cc\n\nAfter parameter estimation by RapidPE-RIFT [2], the updated classification of the GW signal, in order of descending probability is BBH (100%), NSBH (<1%), Terrestrial (0%), or BNS (0%).\n\nFor the Bilby.multiorder.fits sky map, the 90% credible region is 342 deg2. Marginalized over the whole sky, the a posteriori luminosity distance estimate is 1467 +/- 264 Mpc (a posteriori mean +/- standard deviation).\n\nFor further information about analysis methodology and the contents of this alert, refer to the LIGO/Virgo/KAGRA Public Alerts User Guide https://emfollow.docs.ligo.org/userguide/.\n\n [1] Ashton et al. ApJS 241, 27 (2019) and Morisaki et al. arXiv:2307.13380 (2023)\n [2] Rose et al. arXiv:2201.05263 (2022) and Pankow et al. PRD 92, 023002 (2015)",
+    "createdOn": 1701952822240
+}

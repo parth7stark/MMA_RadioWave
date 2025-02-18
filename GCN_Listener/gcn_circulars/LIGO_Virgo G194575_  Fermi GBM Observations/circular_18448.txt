@@ -1,0 +1,10 @@
+{
+    "$schema": "https://gcn.nasa.gov/schema/v4.1.0/gcn/circulars.schema.json",
+    "submitter": "Valerie Connaughton at NASA/MSFC/USRA  <valerie@nasa.gov>",
+    "subject": "LIGO/Virgo G194575:  Fermi GBM Observations",
+    "circularId": 18448,
+    "bibcode": "2015GCN.18448....1B",
+    "body": "LIGO/Virgo G194575:  Fermi GBM Observations\n\nLindy Blackburn (CfA), Michael S. Briggs (UAH), Eric Burns (UAH), Jordan Camp (NASA/GSFC), \nNelson Christensen (Carleton College), Valerie Connaughton(USRA), Tito Dal Canton (MPG), \nAdam Goldstein (NASA/MSFC), Peter Jenke (UAH), Tyson Littenberg (USRA/UAH), \nJudith Racusin (NASA/GSFC), Peter Shawhan (UMD), Leo Singer (NASA/GSFC), \nJohn Veitch (Birmingham), Binbin Zhang (UAH)\n\nThe region around 13h in Right Ascension, containing most of the probability for the LIGO CBC \ncandidate G194575 reported by Singer et al. GCN 18442, was observed by Fermi GBM during \nthe GW event.  The region around 01h was occulted by the Earth.\n\nA search of the GBM Time-Tagged Event data between 8 keV and 40 MeV from 64 s before to \n82 s after the CBC candidate event revealed no significant emission on search timescales in \nfactors of 2 from 64 ms to 2.048 s.\n\n[GCN OPS NOTE(26oct15):  In the FROM-line the SB was replaced with VC.\nSB manually processed the submission due to problems with VC's entry\nin the vetting list.  The record has now been corrected.]\n\n[GCN OPS NOTE(15jun16):  If you are looking for the P.Evans circ 18448\n(\"GRB 151022A: Swift-XRT refined Analysis\"), please note that the ID\nfor that circular has been changed to \"18448a\".]",
+    "createdOn": 1445563123000,
+    "email": "valerie@nasa.gov"
+}

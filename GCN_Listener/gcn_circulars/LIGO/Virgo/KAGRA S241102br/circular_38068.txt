@@ -1,0 +1,11 @@
+{
+    "$schema": "https://gcn.nasa.gov/schema/v4.1.0/gcn/circulars.schema.json",
+    "eventId": "LIGO/Virgo/KAGRA S241102br",
+    "submitter": "Christophe Adami at LAM <christophe.adami@lam.fr>",
+    "submittedHow": "web",
+    "subject": "LIGO/Virgo/KAGRA S241102br: OHP/T193 optical observations",
+    "circularId": 38068,
+    "format": "text/plain",
+    "body": "C. Adami (LAM), B. Schneider (MIT) report on behalf of a larger collaboration:\n\nWe observed the field of LIGO/Virgo/KAGRA S241102br and in particular the two possible \nOTs pointed by Balanutsa et al. (GCN 38057) using the T193cm telescope at Observatoire \nde Haute-Provence (France) equipped with the MISTRAL spectro-imager. \n\nWe obtained 3x10 min exposures in the r-band for each of the two MASTER sources \n(MASTER OT J230458.26+422347.1 and MASTER OT J225647.76+411630.3) from 2024-11-03 \n19:15 UT to 2024-11-03 20:14 UT.\n\nNo new sources are detected in these two fields at a limiting magnitude of \nr > 22.60 AB for MASTER OT J230458.26+422347.1 and r > 22.10 AB for MASTER OT \nJ225647.76+411630.3.\n\nThe photometric calibration was performed using nearby objects from the PanSTARRS \ncatalog and the magnitudes are not corrected for Galactic extinction.\n\nWe acknowledge the excellent support from Observatoire de Haute-Provence, in \nparticular Stephane Favard. ",
+    "createdOn": 1730670561624
+}

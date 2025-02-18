@@ -1,0 +1,10 @@
+{
+    "$schema": "https://gcn.nasa.gov/schema/v4.1.0/gcn/circulars.schema.json",
+    "submitter": "Aaron Zimmerman at U. of Texas at Austin <aaron.zimmerman@utexas.edu>",
+    "submittedHow": "web",
+    "subject": "LIGO/Virgo/KAGRA S231226av: Updated Sky localization",
+    "circularId": 35429,
+    "bibcode": "2023GCN.35429....1L",
+    "body": "The LIGO Scientific Collaboration, the Virgo Collaboration, and the KAGRA Collaboration report:\n\nWe have conducted further analysis of the LIGO Hanford Observatory (H1) and LIGO Livingston Observatory (L1) data around the time of the compact binary merger (CBC) candidate S231226av (GCN Circular 35428). Parameter estimation has been performed using Bilby [1] and a new sky map, Bilby.multiorder.fits,0, distributed via GCN Notice, is available for retrieval from the GraceDB event page:\n\nhttps://gracedb.ligo.org/superevents/S231226av\n\nFor the Bilby.multiorder.fits,0 sky map, the 90% credible region is 199 deg2. Marginalized over the whole sky, the a posteriori luminosity distance estimate is 1218 +/- 171 Mpc (a posteriori mean +/- standard deviation).\n\nFor further information about analysis methodology and the contents of this alert, refer to the LIGO/Virgo/KAGRA Public Alerts User Guide https://emfollow.docs.ligo.org/userguide/.\n\n [1] Ashton et al. ApJS 241, 27 (2019) and Morisaki et al. arXiv:2307.13380 (2023)\n",
+    "createdOn": 1703607880808
+}

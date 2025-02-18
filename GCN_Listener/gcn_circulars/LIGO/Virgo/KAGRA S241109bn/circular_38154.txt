@@ -1,0 +1,11 @@
+{
+    "$schema": "https://gcn.nasa.gov/schema/v4.2.0/gcn/circulars.schema.json",
+    "eventId": "LIGO/Virgo/KAGRA S241109bn",
+    "submitter": "EP Team at NAOC/CAS <ep_ta@bao.ac.cn>",
+    "submittedHow": "web",
+    "subject": "LIGO/Virgo/KAGRA S241109bn: Upper limits from EP-WXT observations",
+    "circularId": 38154,
+    "format": "text/plain",
+    "body": "X. Mao (NAO, CAS), A. Li (BNU), C. Y. Wang (THU), X. L. Chen, Kaushik Chatterjee (YNU), M. H. Zhang, J. W. Hu, M. Zhang and Y. Liu (NAO, CAS) report on behalf of the Einstein Probe team:\n\nAfter the trigger of the gravitational-wave (GW) event S241109bn (LVK Collaboration, GCN 38142), we examined the data of Wide-field X-ray Telescope (WXT) on board the Einstein Probe (EP). The 90% credible region of the GW event was occulted by the earth until about 20 minutes after the GW trigger time. The field of view of WXT covered 4.4% of the 90% credible region of the event (598 square degrees) with a duration of about 200 s. The 5-sigma upper limit of the observation in 0.5-4 keV is around 9 x 10^(-11) erg/cm^2/s.\n\nTwo target-of-opportunity observations by WXT was carried out about 30 minutes and 2 hours after the trigger, beginning at 2024-11-09 12:28:01 (UTC) and 2024-11-09 14:04:15 (UTC) and lasting for around 2800 s and 2400 s, respectively. 59.2% of the 90% credible region of the event was covered by these two observations, with a total area of 5811 square degrees. No new X-ray source is found in these observations. These two observations set 5-sigma upper limits on the 0.5-4 keV flux in the credible region to be approximately 1.3 x 10^(-11) erg/cm^2/s and 1.4 x 10^(-11) erg/cm^2/s, respectively. For queries on more information about these observations and the upper limits, please contact Xuan Mao at the EP science center (ep_ta@nao.cas.cn).\n\nLaunched on January 9, 2024, EP is a space X-ray observatory to monitor the soft X-ray sky with onboard X-ray follow-up capability (Yuan et al. 2022, Handbook of X-ray and Gamma-ray Astrophysics). EP is an international collaborative mission led by the Chinese Academy of Sciences (CAS) and participated by the European Space Agency (ESA), the Max-Planck Institute for Extraterrestrial Physics (MPE) in Germany and the Centre National d\u2019Etudes Spatiales (CNES) in France.  ",
+    "createdOn": 1731227371823
+}

@@ -1,0 +1,12 @@
+{
+    "$schema": "https://gcn.nasa.gov/schema/v4.1.0/gcn/circulars.schema.json",
+    "eventId": "LIGO/Virgo/KAGRA S241007bw",
+    "submitter": "gregory.ashton@ligo.org",
+    "submittedHow": "web",
+    "subject": "LIGO/Virgo/KAGRA S241007bw: Updated Sky localization",
+    "circularId": 37768,
+    "format": "text/plain",
+    "bibcode": "2024GCN.37768....1L",
+    "body": "The LIGO Scientific Collaboration, the Virgo Collaboration, and the KAGRA Collaboration report:\n\nWe have conducted further offline analysis of the LIGO Hanford Observatory (H1), LIGO Livingston Observatory (L1), and Virgo Observatory (V1) data around the time of the compact binary merger (CBC) candidate S241007bw (GCN Circular 37727). Parameter estimation has been performed using Bilby [1] and a new sky map, Bilby.multiorder.fits,3, distributed via GCN Notice, is available for retrieval from the GraceDB event page:\n\nhttps://gracedb.ligo.org/superevents/S241007bw\n\nFor the Bilby.multiorder.fits,3 sky map, the 90% credible region is 823 deg2. Marginalized over the whole sky, the a posteriori luminosity distance estimate is 3923 +/- 1251 Mpc (a posteriori mean +/- standard deviation).\n\nFor further information about analysis methodology and the contents of this alert, refer to the LIGO/Virgo/KAGRA Public Alerts User Guide https://emfollow.docs.ligo.org/.\n\n [1] Ashton et al. ApJS 241, 27 (2019) doi:10.3847/1538-4365/ab06fc and Morisaki et al. PRD 108, 123040 (2023) doi:10.1103/PhysRevD.108.123040",
+    "createdOn": 1728634008537
+}

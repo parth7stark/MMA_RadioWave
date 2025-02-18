@@ -1,0 +1,11 @@
+{
+    "$schema": "https://gcn.nasa.gov/schema/v4.2.0/gcn/circulars.schema.json",
+    "eventId": "LIGO/Virgo/KAGRA S241109bn",
+    "submitter": "Motoko Serino at Aoyama Gakuin U. <serino@phys.aoyama.ac.jp>",
+    "submittedHow": "web",
+    "subject": "LIGO/Virgo/KAGRA S241109bn: Coverage and upper limits from MAXI/GSC observations",
+    "circularId": 38151,
+    "format": "text/plain",
+    "body": "Y. Kondo, S. Sugita, M. Serino, Y. Kawakubo, H. Hiramatsu, H. Nishikawa (AGU)\nH. Negoro, M. Nakajima, K. Takagi (Nihon U.),\nN. Kawai, T. Mihara, (RIKEN),\nreport on behalf of the MAXI team:\n\nWe examined MAXI/GSC all-sky X-ray images (2-20 keV)\nafter compact binary merger candidate S241109bn at 2024-11-09 11:59:24.899 UTC (GCN 38142, 38149).\n\nAt the trigger time of S241109bn, the high-voltage of MAXI/GSC was on.\nThe instantaneous field of view of GSC at the GW trigger time covered 1% of the 90% credible region\nof the Bilby sky map, in which we found no significant new X-ray source.\n\nThe first one-orbit (92 min) scan observation with GSC after the event covered 68% \nof the 90% credible region of the Bilby skymap from 11:59:24 to 13:31:23 UTC (T0+0 to T0+5519 sec).\n\nNo significant new source was found in the region in the one-orbit scan observation.\nA typical 1-sigma averaged upper limit obtained in one scan observation\nis 20 mCrab at 2-20 keV.\n\nIf you require information about X-ray flux by MAXI/GSC at specific coordinates,\nplease contact the submitter of this circular by email.",
+    "createdOn": 1731208203174
+}

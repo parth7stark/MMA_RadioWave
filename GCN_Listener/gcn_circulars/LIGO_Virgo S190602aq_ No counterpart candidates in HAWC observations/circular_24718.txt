@@ -1,0 +1,10 @@
+{
+    "$schema": "https://gcn.nasa.gov/schema/v4.1.0/gcn/circulars.schema.json",
+    "submitter": "Israel Martinez-Castellanos at UMD/HAWC  <imc@umd.edu>",
+    "subject": "LIGO/Virgo S190602aq: No counterpart candidates in HAWC observations",
+    "circularId": 24718,
+    "bibcode": "2019GCN.24718....1H",
+    "body": "The HAWC Collaboration (https://www.hawc-observatory.org) reports:\n\nThe HAWC Collaboration performed a follow-up of the gravitational wave\ntrigger S190602aq. At the time of the trigger the HAWC\nlocal zenith was oriented towards (RA, Dec) = (63.2 deg, 18.9 deg).\n57% of the GW candidate sky location probability fell within our\nobservable field of view (0-45 deg zenith angle).\n\nWe performed a search for a short timescale emission using 6 sliding\ntime windows (dt = 0.3s, 1s, 3s, 10s, 30s and  100s), shifted forward\nin time by 20% of their width. We searched the 95% probability\ncontainment area in a timescale-dependent time period, from t0-5dt to\nt0+10dt, where t0 is the time of the GW trigger.\n\nNo significant gamma-ray detection above the background was observed.\n\nThe sensitivity of this analysis is greatly dependent on zenith angle,\nranging from 14.4 deg to 45 deg for the area searched in this\nanalysis. The 5sigma detection sensitivity to a 1s (100s) burst in the\n80-800GeV energy range goes from 1.6e-6 erg/cm^2 to 1.1e-4 erg/cm^2\n(8.6e-6 erg/cm^2 to 5.0e-4 erg/cm^2), depending on the zenith\nangle.\n\nHAWC is a TeV gamma ray water Cherenkov array located in the state of\nPuebla, Mexico. It is sensitive to the energy range ~0.1-100TeV, and\nmonitors 2/3 of the sky every day with an instantaneous field-of-view\nof ~2 sr.",
+    "createdOn": 1559500672000,
+    "email": "imc@umd.edu"
+}

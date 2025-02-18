@@ -1,0 +1,11 @@
+{
+    "$schema": "https://gcn.nasa.gov/schema/v4.2.0/gcn/circulars.schema.json",
+    "eventId": "LIGO/Virgo/KAGRA S241109bn",
+    "submitter": "Utkarsh Pathak at IIT Bombay <utkarshpathak.07@gmail.com>",
+    "submittedHow": "web",
+    "subject": "LIGO/Virgo/KAGRA S241109bn: Upper limits from Fermi-GBM Observations",
+    "circularId": 38146,
+    "format": "text/plain",
+    "body": "U. Pathak (IITB) reports on behalf of the Fermi-GBM Team:\n\n\nFor S241109bn (GCN 38142) and using the update bayestar skymap, Fermi-GBM was observing 71.8% of the localization probability at event time.\n\nThere was no Fermi-GBM onboard trigger around the event time of the LIGO/Virgo/KAGRA (LVK) detection of GW trigger S241109bn. An automated, blind search for short gamma-ray bursts below the onboard triggering threshold in Fermi-GBM also identified no counterpart candidates. The GBM targeted search, the most sensitive, coherent search for GRB-like signals, was run from +/-30 s around merger time, and also identified no counterpart candidates.\n\nPart of the LVK localization region is behind the Earth for Fermi, located at an RA=229.0, Dec=-22.5 with a radius of 67.7 degrees. We therefore set upper limits on impulsive gamma-ray emission for the GW localization region visible to Fermi at merger time. Using the representative soft, normal, and hard GRB-like templates described in arXiv:1612.02395, we set the following 3 sigma flux upper limits over 10-1000 keV, weighted by GW localization probability (in units of 10^-7 erg/s/cm^2):\n\nTimescale  Soft   Normal   Hard\n------------------------------------\n0.128 s:   1.2    2.0     4.6\n1.024 s:   0.34   0.59    1.2\n8.192 s:   0.13   0.24    0.53\n\nAssuming the median luminosity distance of 602.6 Mpc from the GW detection, we estimate the following intrinsic luminosity upper limits over the 1 keV-10 MeV energy range (in units of 10^50 erg/s):\n\nTimescale  Soft    Normal   Hard\n------------------------------------\n0.128s:    0.080   0.122    0.466\n1.024s:    0.023   0.036    0.122\n8.192s:    0.009   0.015    0.054",
+    "createdOn": 1731183497958
+}
