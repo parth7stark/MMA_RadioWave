@@ -1,0 +1,40 @@
+client_configs:
+  fitting_configs:
+    use_approach: "1"
+  
+  initial_guess:
+    # Troja 2020
+    "jetType": grb.jet.Gaussian
+    "specType": 0
+    "thetaObs": 0.54
+    "E0": 1e53
+    "thetaCore": 0.088
+    "thetaWing": 0.6
+    "n0": 2e-2
+    "p": 2.139
+    "epsilon_e": 0.01
+    "epsilon_B": 2e-4
+    "xi_N": 1.0
+    "d_L": 1.2344e26
+    "z": 0.00897
+
+  mcmc_configs:
+    nwalkers: 32
+    niters: 10000
+
+  comm_configs:
+    # octopus_configs:
+    compressor_configs:
+      enable_compression: False
+
+server_configs:
+  aggregator_kwargs:
+    num_clients: 2
+  logging_output_dirname: "<absolute path to repo>/examples/output"
+  logging_output_filename: "result"
+  
+  # define server side kafka parameters here like consumer settings (offset policy)
+  comm_configs:
+    octopus_configs:
+      topic: 'MMA_RW_FedFit_Events'
+      group_id: 'mma-RW-FedFit-server'

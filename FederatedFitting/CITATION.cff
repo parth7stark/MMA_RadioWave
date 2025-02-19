@@ -1,0 +1,32 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: >-
+  MMA_GW: Federated Gravitational Wave Detection
+  
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Parth
+    family-names: Patel
+    email: parth.patel@anl.gov
+    affiliation: Argonne National Laboratory
+  - given-names: Zilinghan
+    family-names: Li
+    email: zilinghan.li@anl.gov
+    affiliation: Argonne National Laboratory
+  - given-names: Eliu
+    family-names: Huerta
+    email: elihu@anl.gov
+    affiliation: Argonne National Laboratory
+  - given-names: Victoria
+    family-names: Tiki
+    email: victoria.t.tiki@gmail.com
+    affiliation: University of Illinois at Urbana-Champaign
+  - given-names: Haochen
+    family-names: Pan
+    email: haochenpan@uchicago.edu
+    affiliation: University of Chicago
