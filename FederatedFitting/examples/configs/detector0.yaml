@@ -1,6 +1,6 @@
 client_id: '0'
 fitting_configs:
-  logging_id: "LIGO_Livingston"
+  logging_id: "FedFit_Site0"
   logging_output_dirname: "<absolute path to repo>/examples/output"
   logging_output_filename: "result"
 

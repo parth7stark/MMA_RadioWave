@@ -4,7 +4,6 @@ from mma_fedfit.agent import ClientAgent
 from mma_fedfit.communicator.octopus import OctopusClientCommunicator
 
 from mma_fedfit.generator.inference_utils import *
-from tqdm import tqdm
 import time
 import json
 import pandas as pd

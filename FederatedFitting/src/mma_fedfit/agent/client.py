@@ -6,8 +6,6 @@ from mma_fedfit.config import ClientAgentConfig
 from omegaconf import DictConfig, OmegaConf
 from typing import Union, Dict, OrderedDict, Tuple, Optional
 from mma_fedfit.logger import ClientAgentFileLogger
-from mma_fedfit.model.GW_client_model import ClientModel
-import h5py
 
 
 class ClientAgent:
@@ -102,14 +100,14 @@ class ClientAgent:
         if hasattr(self, "logger"):
             return
         kwargs = {}
-        if not hasattr(self.client_agent_config, "generator_configs"):
+        if not hasattr(self.client_agent_config, "fitting_configs"):
             kwargs["logging_id"] = self.get_id()
             kwargs["file_dir"] = "./output"
             kwargs["file_name"] = "result"
         else:
-            kwargs["logging_id"] = self.client_agent_config.generator_configs.get("logging_id", self.get_id())
-            kwargs["file_dir"] = self.client_agent_config.generator_configs.get("logging_output_dirname", "./output")
-            kwargs["file_name"] = self.client_agent_config.generator_configs.get("logging_output_filename", "result")
+            kwargs["logging_id"] = self.client_agent_config.fitting_configs.get("logging_id", self.get_id())
+            kwargs["file_dir"] = self.client_agent_config.fitting_configs.get("logging_output_dirname", "./output")
+            kwargs["file_name"] = self.client_agent_config.fitting_configs.get("logging_output_filename", "result")
         if hasattr(self.client_agent_config, "experiment_id"):
             kwargs["experiment_id"] = self.client_agent_config.experiment_id
         self.logger = ClientAgentFileLogger(**kwargs)
@@ -117,13 +115,11 @@ class ClientAgent:
 
     def _load_generator(self) -> None:
         """
-        do what load_trainer is doing
-        Load embeddings generator and initialize parameters
+        LocalGenerator for FL clients, which computes/generates the local posterior samples using the given data
         """
 
-        self.generator: GWGenerator = GWGenerator(
-            model=self.model, 
-            generator_configs=self.client_agent_config.generator_configs,
+        self.generator: LocalGenerator = LocalGenerator(
+            fitting_configs=self.client_agent_config.fitting_configs,
             logger=self.logger,
         )
 

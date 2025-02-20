@@ -3,7 +3,7 @@
 
 cff-version: 1.2.0
 title: >-
-  MMA_GW: Federated Gravitational Wave Detection
+  MMA_FedFit: Federated Fitting of Light Curve
   
 message: >-
   If you use this software, please cite it using the

@@ -55,8 +55,7 @@ class ServerAgent:
         Load aggregator and initialize parameters
         """
 
-        self.aggregator: GWAggregator = GWAggregator(
-            self.model,
+        self.aggregator: GlobalAggregator = GlobalAggregator(
             OmegaConf.create(
                 self.server_agent_config.server_configs.aggregator_kwargs if
                 hasattr(self.server_agent_config.server_configs, "aggregator_kwargs") else {}

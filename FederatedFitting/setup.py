@@ -18,15 +18,15 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="mma_gw",
+    name="mma_fedfit",
     version="1.0.0",
     author=AUTHOR,
-    description="An open-source package for federated gravitational wave detection",
+    description="An open-source package for federated fitting of light curve",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/parth7stark/MMA_GravitationalWave",
+    url="https://github.com/parth7stark/MMA_RadioWave/tree/main/FederatedFitting",
     project_urls={
-        "Bug Tracker": "https://github.com/parth7stark/MMA_GravitationalWave/issues",
+        "Bug Tracker": "https://github.com/parth7stark/MMA_RadioWave/tree/main/FederatedFitting/issues",
     },
     classifiers=[
         "Programming Language :: Python :: 3",

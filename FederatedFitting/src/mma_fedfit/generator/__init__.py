@@ -1,1 +1,1 @@
-from .GW_generator import GWGenerator
+from .FedFit_generator import LocalGenerator

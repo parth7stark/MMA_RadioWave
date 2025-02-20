@@ -14,24 +14,24 @@ class LocalGenerator():
     def __init__(
         self,
         model: torch.nn.Module=None,
-        generator_configs: DictConfig = DictConfig({}),
+        fitting_configs: DictConfig = DictConfig({}),
         logger: Optional[Any]=None,
         **kwargs
     ):
         
-        self.generator_configs = generator_configs
+        self.fitting_configs = fitting_configs
         self.logger = logger
         self.__dict__.update(kwargs)
 
-        if not hasattr(self.generator_configs, "device"):
-            self.generator_configs.device = "cpu"
+        if not hasattr(self.fitting_configs, "device"):
+            self.fitting_configs.device = "cpu"
 
-        self.model.to(self.generator_configs.device)
+        self.model.to(self.fitting_configs.device)
 
                                 
 
     def get_parameters(self) -> Dict:
-        if self.generator_configs.use_approach==2:
+        if self.fitting_configs.use_approach==2:
             return
             # return {
             #     'train_embedding': self.train_embedding.detach().clone().cpu(),
@@ -46,14 +46,6 @@ class LocalGenerator():
                 'unique_frequencies': self.freqs
             }
 
-
-    def compute_embeddings(self, inference_data):
-        # 1 batch of windows
-        with torch.no_grad():
-            self.model.eval()
-            # Move the data to appropriate device
-            inference_tensor = inference_data.to(self.generator_configs.device)
-            self.inference_embedding = self.model(inference_tensor)
 
     #-------------------------------------------------
     # GRB light-curve likelihood, prior, probability

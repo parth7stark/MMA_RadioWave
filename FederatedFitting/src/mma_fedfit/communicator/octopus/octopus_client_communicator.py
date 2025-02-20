@@ -2,9 +2,9 @@ import json
 from omegaconf import OmegaConf, DictConfig
 from proxystore.proxy import Proxy, extract
 from typing import Union, Dict, OrderedDict, Tuple, Optional, Any
-from mma_gw.agent import ClientAgent
-from .utils import serialize_tensor_to_base64, deserialize_tensor_from_base64
-from mma_gw.logger import ClientAgentFileLogger
+from mma_fedfit.agent import ClientAgent
+# from .utils import serialize_tensor_to_base64, deserialize_tensor_from_base64
+from mma_fedfit.logger import ClientAgentFileLogger
 
 from diaspora_event_sdk import KafkaProducer, KafkaConsumer
 
@@ -158,37 +158,6 @@ class OctopusClientCommunicator:
         self.logger.info(f"[Site {client_id}] Sent Local log-likelihood")
 
         return
-
-
-    def invoke_post_process(self, GPSStartTime):
-        """
-        Publish PostProcess event to the server for invoking post process pipeline via Octopus
-        :param GPS start time: Starting GPS time for the inference data
-        :return: None for async and if sync communication return Metadata containing the server's acknowledgment status.
-        """
-        
-        detector_id =  self.client_id
-        done_msg = {
-            "EventType": "PostProcess",
-            "detector_id": detector_id,
-            "status" : "DONE",
-            "details": "All Embeddings sent for given time segment -> Invoke post process pipeline",
-            "GPS_start_time": GPSStartTime
-        }
-
-
-        self.producer.send(
-            self.topic,
-            value=done_msg
-        )
-        
-        print(f"[Detector {detector_id}] Publish PostProcess Event: GPS start time={GPSStartTime}", flush=True)
-        self.logger.info(f"[Detector {detector_id}] Publish PostProcess Event: GPS start time={GPSStartTime}")
-
-        self.producer.flush()
-        
-        return
-
     
     def _default_logger(self):
         """Create a default logger for the server if no logger provided."""
