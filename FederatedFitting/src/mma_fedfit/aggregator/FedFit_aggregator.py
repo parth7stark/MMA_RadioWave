@@ -36,7 +36,7 @@ class GlobalAggregator():
     #-------------------------------------------------
     # AGGREGATION FUNCTION: GAUSSIAN CONSENSUS
     #-------------------------------------------------
-    def aggregate_gaussian(chains):
+    def aggregate_gaussian(self, chains):
         """
         Approximate each subposterior as Gaussian and compute the
         product of Gaussians:
@@ -92,7 +92,7 @@ class GlobalAggregator():
 
             # Aggregate the chains from each site.
             chains = [self.aggregated_results[site]["local_chain"] for site in self.aggregated_results]
-            mu_full, Sigma_full = aggregate_gaussian(chains)
+            mu_full, Sigma_full = self.aggregate_gaussian(chains)
             
         print(f"[Server] Global mu, sigma: {mu_full}, {Sigma_full}", flush=True)  #length of signal = length of output tensor
 
@@ -124,7 +124,7 @@ class GlobalAggregator():
         
         all_freqs = set()
         for result in self.aggregated_results.values():
-            all_freqs.update(result["frequencies"])
+            all_freqs.update(result["unique_frequencies"])
         global_freqs = sorted(list(all_freqs))
         
         # Publish the aggregated (global) information on topic 

@@ -38,7 +38,7 @@ setuptools.setup(
     python_requires=">=3.10",
     install_requires=[
         "numpy",  #installing specific version after pip install .
-        "torch",  #installing specific version after pip install .
+        # "torch",  #installing specific version after pip install .
         "omegaconf",
         "diaspora-event-sdk[kafka-python]",
         # "lalsuite", installing using conda (refer apptainer defination file) before pip install . setup.py
@@ -50,8 +50,8 @@ setuptools.setup(
         "zstd",
         "blosc",
         "python-xz",
-        "h5py",
-        "scipy",
+        #"h5py",
+        #"scipy",
         "matplotlib",
 
     ],

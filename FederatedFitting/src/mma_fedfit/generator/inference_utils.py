@@ -30,7 +30,7 @@ band_dict = {
 #-------------------------------------------------
 # Data interpretation function (as before)
 #-------------------------------------------------
-def interpret(band_dict, data):
+def interpret(data):
     # Correct for time units
     if "days" in data.columns:
         data["t"] = data["days"] * 86400
@@ -131,9 +131,8 @@ def interpret(band_dict, data):
     return data
 
 # --- Function to Plot Global Light Curve Locally ---
-def plot_global_light_curve(theta, global_min, global_max, frequencies, output_filename):
+def plot_global_light_curve(data, theta, global_min, global_max, frequencies, output_filename):
     
-
     times = np.geomspace(global_min, global_max, 100)
     fig, ax = plt.subplots()
     E0, thetaObs, thetaCore, n0, epsilon_e, epsilon_B, p = theta
@@ -164,3 +163,58 @@ def plot_global_light_curve(theta, global_min, global_max, frequencies, output_f
     plt.savefig(output_filename)
     plt.close()
     print(f"Global light curve saved to {output_filename}", flush=True)
+
+
+    # times = np.geomspace(global_min, global_max, 100)
+    # fig, ax = plt.subplots()
+    # E0, thetaObs, thetaCore, n0, epsilon_e, epsilon_B, p = theta
+    # Z = {
+    #     "jetType": grb.jet.Gaussian,
+    #     "specType": 0,
+    #     "thetaObs": thetaObs,
+    #     "E0": E0,
+    #     "thetaCore": thetaCore,
+    #     "thetaWing": 0.6,
+    #     "n0": n0,
+    #     "p": p,
+    #     "epsilon_e": epsilon_e,
+    #     "epsilon_B": epsilon_B,
+    #     "xi_N": 1.0,
+    #     "d_L": 1.2344e26,
+    #     "z": 0.00897,
+    # }
+
+    # colors = plt.cm.viridis(np.linspace(0, 1, len(frequencies)))
+    
+    # filters = sorted(data["frequency"].unique())
+
+    # for i in range(len(filters)):
+    #     to_plot = data.loc[data["frequency"] == filters[i]]
+    #     nus = np.full(times.shape, filters[i])
+    #     model = grb.fluxDensity(times, nus, **Z)
+    #     ax.plot(times, model, color=colors[i], linewidth=0.5)
+    #     ax.errorbar(
+    #         to_plot["t"],
+    #         to_plot["flux"],
+    #         yerr=to_plot["err"],
+    #         capsize=0,
+    #         fmt=".",
+    #         label=band_dict[filters[i]],
+    #         color=colors[i],
+    #     )
+    """
+    File "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/src/mma_fedfit/generator/inference_utils.py", line 170, in plot_global_light_curve
+    label=band_dict[filters[i]],
+    KeyError: 670000000.0
+
+    """
+    # ax.set(
+    #     xlabel="Time since detection (s)",
+    #     ylabel="Flux density (mJy)",
+    #     xscale="log",
+    #     yscale="log",
+    # )
+    # ax.legend(frameon=True)
+    # plt.savefig(output_filename)
+    # plt.close()
+    # print(f"Global light curve saved to {output_filename}", flush=True)

@@ -1,2 +1,3 @@
 from .octopus_client_communicator import OctopusClientCommunicator
 from .octopus_server_communicator import OctopusServerCommunicator
+from .utils import serialize_tensor_to_base64, deserialize_tensor_from_base64

@@ -13,7 +13,6 @@ class LocalGenerator():
     """  
     def __init__(
         self,
-        model: torch.nn.Module=None,
         fitting_configs: DictConfig = DictConfig({}),
         logger: Optional[Any]=None,
         **kwargs
@@ -22,12 +21,6 @@ class LocalGenerator():
         self.fitting_configs = fitting_configs
         self.logger = logger
         self.__dict__.update(kwargs)
-
-        if not hasattr(self.fitting_configs, "device"):
-            self.fitting_configs.device = "cpu"
-
-        self.model.to(self.fitting_configs.device)
-
                                 
 
     def get_parameters(self) -> Dict:
@@ -50,7 +43,7 @@ class LocalGenerator():
     #-------------------------------------------------
     # GRB light-curve likelihood, prior, probability
     #-------------------------------------------------
-    def log_likelihood(theta, nu, x, y, yerr):
+    def log_likelihood(self, theta, nu, x, y, yerr):
         E0, thetaObs, thetaCore, n0, epsilon_e, epsilon_B, p = theta
 
         # Model parameters (from Makhathini 2021)
@@ -73,7 +66,7 @@ class LocalGenerator():
         sigma2 = yerr**2
         return -0.5 * np.sum((y - model) ** 2 / sigma2 + np.log10(sigma2))
 
-    def log_prior(theta):
+    def log_prior(self, theta):
         E0, thetaObs, thetaCore, n0, epsilon_e, epsilon_B, p = theta
         if (0 <= thetaObs < np.pi * 0.5 and
             0.01 < thetaCore < np.pi * 0.5 and
@@ -84,11 +77,11 @@ class LocalGenerator():
             return 0.0
         return -np.inf
 
-    def log_probability(theta, nu, x, y, yerr):
-        lp = log_prior(theta)
+    def log_probability(self, theta, nu, x, y, yerr):
+        lp = self.log_prior(theta)
         if not np.isfinite(lp):
             return -np.inf
-        return lp + log_likelihood(theta, nu, x, y, yerr)
+        return lp + self.log_likelihood(theta, nu, x, y, yerr)
     
     #-------------------------------------------------
     # LOCAL MCMC FUNCTION FOR EACH SITE
@@ -100,12 +93,13 @@ class LocalGenerator():
         fnu = np.array(local_data["flux"])
         err = np.array(local_data["err"])
         with Pool() as pool:
-            sampler = emcee.EnsembleSampler(nwalkers, ndim, log_probability, args=(nu, t, fnu, err), pool=pool)
+            sampler = emcee.EnsembleSampler(nwalkers, ndim, self.log_probability, args=(nu, t, fnu, err), pool=pool)
             sampler.run_mcmc(pos, niter, progress=True)
         
         # Discard burn-in and thin the chain
         self.chain = sampler.get_chain(discard=10, thin=2, flat=True)
         
+        print(f"Chain data type: {self.chain.dtype}", flush=True)
         # Compute summary statistics to send (without sending raw data).
         self.min_time = local_data["t"].min()
         self.max_time = local_data["t"].max()

@@ -57,7 +57,7 @@ client_agent.logger.info(f"[Site {client_agent.get_id()}] ready for curve fittin
 
 if client_agent.client_agent_config.fitting_configs.use_approach=="2":
     # Use Global likelihood MCMC approach
-    print("Workflow to be implemented")
+    # print("Workflow to be implemented")
     # Implement Workflow using Octopus [TODO]
 
     # Read the inference dataset (replaced glob, performing inference on only 1 hdf5 file)
@@ -73,17 +73,17 @@ if client_agent.client_agent_config.fitting_configs.use_approach=="2":
     """ 
     Preprocess local data
     """
-    preprocessed_local_data = preprocess(local_data)
+    preprocessed_local_data = interpret(local_data)
 
     # Listen for incoming proposed theta
     for message in client_communicator.consumer:
         data_str = msg.value.decode("utf-8")  # decode to string
-            data = json.loads(data_str)          # parse JSON to dict
+        data = json.loads(data_str)          # parse JSON to dict
 
-            Event_type = data["EventType"]
+        Event_type = data["EventType"]
 
-            if Event_type == "ProposedTheta":
-                client_communicator.handle_proposed_theta_message(data, preprocessed_local_data)
+        if Event_type == "ProposedTheta":
+            client_communicator.handle_proposed_theta_message(data, preprocessed_local_data)
 
 
 else:
@@ -102,7 +102,7 @@ else:
     """ 
     Preprocess local data
     """
-    preprocessed_local_data = preprocess(local_data)
+    preprocessed_local_data = interpret(local_data)
 
     """
     Take initial guess from client_config:
@@ -113,9 +113,9 @@ else:
     start_time = time.time()
     print("Running local MCMC")
 
-    Z = self.client_agent.client_agent_config.fitting_configs.intial_guess
-    nwalkers = self.client_agent.client_agent_config.fitting_configs.mcmc_configs.nwalkers
-    niters = self.client_agent.client_agent_config.fitting_configs.mcmc_configs.niters
+    Z = client_agent.client_agent_config.initial_guess
+    nwalkers = client_agent.client_agent_config.mcmc_configs.nwalkers
+    niters = client_agent.client_agent_config.mcmc_configs.niters
     ndim = 7
 
     # Prepare initial walker positions (in 7 dimensions).
@@ -128,20 +128,20 @@ else:
                 Z["p"] ] 
             + 0.005 * np.random.randn(nwalkers, ndim) )
     
-    client_agent.run_local_mcmc(preprocessed_local_data, pos, niter, nwalkers, ndim)
+    client_agent.run_local_mcmc(preprocessed_local_data, pos, niters, nwalkers, ndim)
         
     local_result = client_agent.get_parameters()
         
-        """
-        local_result is a dictionary of format
-            return {
-                'chain': self.chain,
-                'min_time': self.min_time,
-                'max_time': self.max_time,
-                'unique_frequencies': self.freqs
-            }
+    """
+    local_result is a dictionary of format
+        return {
+            'chain': self.chain,
+            'min_time': self.min_time,
+            'max_time': self.max_time,
+            'unique_frequencies': self.freqs
+        }
 
-       """
+    """
 
 
     client_communicator.send_local_results_Octopus(local_result)
@@ -161,16 +161,16 @@ else:
         Event_type = data["EventType"]
 
         if Event_type == "AggregationDone":     
-             print(f"[Site {client_agent.get_id()}] Plotting global light curve", flush=True)
+            print(f"[Site {client_agent.get_id()}] Plotting global light curve", flush=True)
             client_agent.logger.info(f"[Site {client_agent.get_id()}] Plotting global light curve")
    
             theta_est, global_min_time, global_max_time, unique_frequencies = client_communicator.get_best_estimate(data)
             
             # Plot the global light curve locally using the aggregated info.
-            output_filename = f"global_light_curve_Site_{client_agent.get_id()}.png"
+            output_filename = f"{client_agent.client_agent_config.fitting_configs.logging_output_dirname}/global_light_curve_Site_{client_agent.get_id()}.png"
 
             # Function present in generator utils
-            plot_global_light_curve(theta_est, global_min, global_max, frequencies, output_filename)
+            plot_global_light_curve(preprocessed_local_data, theta_est, global_min_time, global_max_time, unique_frequencies, output_filename)
             break  # We can break from the loop as we only need that single event
         
     # trigger clean up function

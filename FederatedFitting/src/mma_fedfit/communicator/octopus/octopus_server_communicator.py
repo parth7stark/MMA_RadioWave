@@ -5,8 +5,10 @@ from omegaconf import OmegaConf
 from proxystore.proxy import extract
 from mma_fedfit.agent import ServerAgent
 from mma_fedfit.logger import ServerAgentFileLogger
+from .utils import serialize_tensor_to_base64, deserialize_tensor_from_base64
 
 from diaspora_event_sdk import KafkaProducer, KafkaConsumer
+from proxystore.proxy import Proxy, extract
 
 class OctopusServerCommunicator:
     """
@@ -69,19 +71,34 @@ class OctopusServerCommunicator:
 
         site_id = data["site_id"]    # 0 or 1
         status = data["status"]
-        local_chain = data["chain"]
+        chain_b64 = data["chain"]
         min_time = data["min_time"]
         max_time = data["max_time"]
         unique_frequencies = data["unique_frequencies"]
+
         
-        self.server_agent.aggregator.process_local_MCMC_done_message(self.producer, self.topic, site_id, status, local_chain, min_time, max_time, unique_frequencies)
+        # Deserialize and extract tensor
+        local_tensor = deserialize_tensor_from_base64(chain_b64)
+
+        if isinstance(local_tensor, Proxy):
+            local_tensor = extract(local_tensor)
+
+        local_chain_list = local_tensor.tolist()  # Get back list for further processing
+
+        # print(f"[Site {site_id}] chains: {local_chain_list}", flush=True)
+        self.logger.info(f"[Site {site_id}] chains: {local_chain_list}")
 
 
-    def send_proposed_theta(self, theta):
 
+        self.server_agent.aggregator.process_local_MCMC_done_message(self.producer, self.topic, site_id, status, local_chain_list, min_time, max_time, unique_frequencies)
+
+
+    def send_proposed_theta(self, theta, iteration_no):
+
+        print("prposed_theta", flush=True)
         event = {
             "EventType": "ProposedTheta",
-            "iteration_no": iteration_no
+            "iteration_no": iteration_no,
             "theta": theta,
         }
 
@@ -93,6 +110,8 @@ class OctopusServerCommunicator:
 
     def collect_local_likelihoods(self, num_sites):
         
+        print("collect likelihood", flush=True)
+
         log_likelihoods = {}
         # received_sites = 0
 
@@ -114,7 +133,7 @@ class OctopusServerCommunicator:
         #             if received_sites == num_sites:
         #                 break
 
-        for message in consumer:
+        for msg in self.consumer:
             data_str = msg.value.decode("utf-8")  # decode to string
             data = json.loads(data_str)          # parse JSON to dict
 

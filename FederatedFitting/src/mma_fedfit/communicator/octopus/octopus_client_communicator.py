@@ -3,10 +3,11 @@ from omegaconf import OmegaConf, DictConfig
 from proxystore.proxy import Proxy, extract
 from typing import Union, Dict, OrderedDict, Tuple, Optional, Any
 from mma_fedfit.agent import ClientAgent
-# from .utils import serialize_tensor_to_base64, deserialize_tensor_from_base64
 from mma_fedfit.logger import ClientAgentFileLogger
-
+import numpy as np
+from .utils import serialize_tensor_to_base64, deserialize_tensor_from_base64
 from diaspora_event_sdk import KafkaProducer, KafkaConsumer
+import torch
 
 
 class OctopusClientCommunicator:
@@ -81,16 +82,36 @@ class OctopusClientCommunicator:
         else:
             client_id = str(self.client_id)
         
+        # Keep local_chains as list
+        local_chains = local_results["chain"].tolist() if isinstance(local_results["chain"], np.ndarray) else local_results["chain"]
+        
+        
+        # Convert to tensor only for transfer
+        if self.client_agent.use_proxystore:
+            local_tensor = torch.tensor(local_chains)  # Convert list to tensor
+            proxied_tensor = self.client_agent.proxystore.proxy(local_tensor)
+            chains_b64 = serialize_tensor_to_base64(proxied_tensor)
+        else:
+            local_tensor = torch.tensor(local_chains)
+            chains_b64 = serialize_tensor_to_base64(local_tensor)
+
+
+        # print(f"[Site {client_id}] chains: {send_chains}", flush=True)
+        self.logger.info(f"[Site {client_id}] chains: {chains_b64}")
 
         # Build the JSON payload
+        # Convert NumPy arrays to lists to avoid serialization issues
         data = {
             "EventType": "LocalMCMCDone",
             "site_id": client_id,
-            'chain': local_results["chain"],
-            'min_time': local_results["min_time"],
-            'max_time': local_results["max_time"],
-            'unique_frequencies': local_results["unique_frequencies"]
+            "status": "DONE",
+            'chain': chains_b64,
+            # 'chain': local_results["chain"].tolist() if isinstance(local_results["chain"], np.ndarray) else local_results["chain"],
+            'min_time': float(local_results["min_time"]) if isinstance(local_results["min_time"], np.generic) else local_results["min_time"],
+            'max_time': float(local_results["max_time"]) if isinstance(local_results["max_time"], np.generic) else local_results["max_time"],
+            'unique_frequencies': local_results["unique_frequencies"].tolist() if isinstance(local_results["unique_frequencies"], np.ndarray) else local_results["unique_frequencies"]
         }
+
     
         self.producer.send(
             self.topic,
@@ -117,8 +138,13 @@ class OctopusClientCommunicator:
         
         ndim = 7
         for i in range(ndim):
-            print(f'{params[i]} = {theta_est[i]:.2f}', flush=True)
-            self.logger.info(f'{params[i]} = {theta_est[i]:.2f}')
+            if i in [0, 3, 4, 5]:  # Reverse the transformation for log-space parameters
+                log_value = np.log10(theta_est[i])  # Convert back to log-space
+                print(f'{params[i]} = {log_value:.2f}', flush=True)
+                self.logger.info(f'{params[i]} = {log_value:.2f}')
+            else:
+                print(f'{params[i]} = {theta_est[i]:.2f}', flush=True)
+                self.logger.info(f'{params[i]} = {theta_est[i]:.2f}')
 
         return theta_est, global_min_time, global_max_time, unique_frequencies
 
