@@ -5,7 +5,7 @@ from datetime import datetime
 
 class ServerAgentFileLogger:
     """
-    ServerAgentFileLogger is a class that logs FL server-side messages to the console and to a file.
+    ServerAgentFileLogger is a class that logs GCN listner module messages to the console and to a file.
     :param file_dir: The directory to save the log file.
     :param file_name: The name of the log file.
     :param experiment_id: An optional string to identify the experiment. 

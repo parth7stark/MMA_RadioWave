@@ -1,6 +1,13 @@
 gcn_listener_configs:
-  logging_output_dirname: "<absolute path to repo>/examples/output"
-  logging_output_filename: "result"
+
+  simulate_events: "yes"
+  simulation_datadir: "/simulation/"
+  # Have separate logging file for GCN listener and Merger event listener
+  merger_logging_output_dirname: "<absolute path to repo>/examples/output"
+  merger_logging_output_filename: "result"
+
+  gcn_logging_output_dirname: "<absolute path to repo>/examples/output"
+  gcn_logging_output_filename: "result"
   
   # define Octopus kafka parameters here like consumer settings (offset policy)
   # GCN listens to potential merger events topic and post it to another topic radiowave topic
@@ -17,7 +24,7 @@ gcn_listener_configs:
       gcn_client_id: '3f4l3qp0r2no2o4vnik7eg7ut0'
       gcn_client_secret: '136doan9ouhbo0sl30r9h6s0d56ucrik58lcv9egl3c9e0i2s1o'
       kafka_brokers: 'gcn.nasa.gov'
-      kafka_gcn_topic: ['gcn.classic.voevent.LVC_COUNTERPART', gcn.circulars', 'igwn.gwalert']
+      kafka_gcn_topic: ['gcn.classic.voevent.LVC_COUNTERPART', 'gcn.circulars', 'igwn.gwalert']
 
   parser_configs:
     # GCN and event filtering
@@ -26,4 +33,8 @@ gcn_listener_configs:
   # Directory for saving files of interest (using superevent or grace_id)
   # Storage configuration
   storage:
-    base_path: "/data/BNS_event_gcn"
+    gcn_alerts_storage_path: "/data/BNS_event_gcn"
+    # Path of file which maintain a list of active events
+    events_of_interest_filepath: "/data/EventsOfInterest.json"
+    # Path of file which maintain a list of potential merger event from GW module
+    gw_potential_merger_filepath: "/data/GWPotentialMergers.json"

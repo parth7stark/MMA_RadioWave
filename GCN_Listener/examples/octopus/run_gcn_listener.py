@@ -1,182 +1,126 @@
 import argparse
 from omegaconf import OmegaConf
-from mma_fedfit.agent import ServerAgent
-from mma_fedfit.communicator.octopus import OctopusServerCommunicator
-import json
-import traceback
-import time
-import numpy as np
-import emcee
+from mma_gcn.agent import GCNAgent
+from mma_gcn.communicator.octopus import OctopusGCNCommunicator
+from gcn_kafka import Consumer as GCNConsumer
+import os
+from glob import glob
 
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument(
     "--config", 
     type=str, 
-    default="examples/configs/server.yaml",
+    default="examples/configs/gcn_listener_config.yaml",
     help="Path to the configuration file."
 )
 
 args = argparser.parse_args()
 
 # Load config from YAML (via OmegaConf)
-server_agent_config = OmegaConf.load(args.config)
+gcn_agent_config = OmegaConf.load(args.config)
 
-# Initialize server-side modules
-server_agent = ServerAgent(server_agent_config=server_agent_config)
+# Initialize gcn-side modules
+gcn_agent = GCNAgent(gcn_agent_config=gcn_agent_config)
 
-# Create server-side communicator
-communicator = OctopusServerCommunicator(
-    server_agent,
-    logger=server_agent.logger,
+# Create Octopus communicator for publishing events to Radio topic - 
+octopuscommunicator = OctopusGCNCommunicator(
+    gcn_agent,
+    logger=gcn_agent.logger,
 )
 
-if server_agent_config.client_configs.fitting_configs.use_approach == "1":
+# Create communicator for GCN Kafka
+# For testing, we can have earliest but change to latest for deployment and add group id to read form last read message
 
-    # Consensus MCMC workflow
-    # Publish "ServerStarted" event with config so that clients can pick it up
-    communicator.publish_server_started_event()
+gcnconsumer = GCNConsumer(
+    config={'auto.offset.reset': 'earliest'},  # Start from earliest message
+    client_id=gcn_agent_config.gcn_listener_configs.comm_configs.gcn_kafka_configs.gcn_client_id,
+    client_secret=gcn_agent_config.gcn_listener_configs.comm_configs.gcn_kafka_configs.gcn_client_secret,
+    domain=gcn_agent_config.gcn_listener_configs.comm_configs.gcn_kafka_configs.kafka_broker
+)
+
+gcn_topics = gcn_agent_config.gcn_listener_configs.comm_configs.gcn_kafka_configs.kafka_gcn_topic
+gcnconsumer.subscribe(gcn_topics)
 
 
-    print("[Server] Listening for messages...", flush=True)
-    server_agent.logger.info("[Server] Listening for messages...")
+octopuscommunicator.publish_GCN_listener_started_event()
 
-    for msg in communicator.consumer:
+print("[GCN Listener] Started listening for LVK notices and circulars...", flush=True)
+gcn_agent.logger.info("[GCN Listener] Started listening for LVK notices and circulars...")
+
+# refer igwn, gcn and jupyter-notebook sample code
+if gcn_agent_config.gcn_listener_configs.simulate_events == "no":
+    for msg in gcnconsumer:
         topic = msg.topic
-        try:
-            data_str = msg.value.decode("utf-8")  # decode to string
-            data = json.loads(data_str)          # parse JSON to dict
-
-            Event_type = data["EventType"]
-
-            if Event_type == "LocalMCMCDone":
-                communicator.handle_local_MCMC_done_message(data)
-
-            elif Event_type == "AggregationDone":
-                # not triggering anything on server side
-                continue
-
-            elif Event_type == "SiteReady":  
-                # Site connected and ready for fitting the curve
-                # not triggering anything on server side, just publishing event to octopus fabric
-                # Keep on listening other events
-                continue 
-
-                # Later we will keep track of connected Sites and check if anyone got disconnected
-
-            elif Event_type == "ServerStarted":
-                # Continue listening other events
-                continue
-
-            else:
-                print(f"[Server] Unknown Event Type in topic ({topic}): {Event_type}", flush=True)
-                server_agent.logger.info(f"[Server] Unknown Event Type in topic ({topic}): {Event_type}")
-
-        except json.JSONDecodeError as e:
-            # Handle invalid JSON messages
-            print(f"[Server] JSONDecodeError for message from topic ({topic}): {e}", flush=True)
-            server_agent.logger.error(f"[Server] JSONDecodeError for message from topic ({topic}): {e}")
         
-        except Exception as e:
-            # Catch-all for other unexpected exceptions
-            """Octopus down or got a message which doesn't have 'EventType' key"""
-            
-            # Log the traceback
-            tb = traceback.format_exc()
-
-            print(f"[Server] Unexpected error while processing message from topic ({topic}): {e}", flush=True)
-            print(f"[Server] Raw message: {msg}", flush=True)
-            print(f"[Server] Traceback: {tb}", flush=True)
-
-            server_agent.logger.error(f"[Server] Unexpected error while processing message from topic ({topic}): {e}")
-            server_agent.logger.error(f"[Server] Raw message: {msg}")
-            server_agent.logger.error(f"[Server] Traceback: {tb}")
-else:
-
-    # Sum of log likelihood approach workflow
-    print("Running sum of log likelihood approach", flush=True )
-    server_agent.logger.info("Running sum of log likelihood approach")
-    
-    # Publish "ServerStarted" event with config so that clients can pick it up
-    communicator.publish_server_started_event()
-
-    s = 0
-
-    def log_prior(theta):
-        E0, thetaObs, thetaCore, n0, epsilon_e, epsilon_B, p = theta
-        if (0 <= thetaObs < np.pi * 0.5 and
-            0.01 < thetaCore < np.pi * 0.5 and
-            2 < p < 3 and
-            0 < epsilon_e <= 1 and
-            0 < epsilon_B <= 1 and
-            0 < n0):
-            return 0.0
-        return -np.inf
+        # try:
+        data_str = msg.value.decode("utf-8")  # decode the notice/circular content to string
         
-    # Global log-probability function (aggregates local log-likelihoods)
-    def global_log_probability(theta, num_sites):
-        
-        lp = log_prior(theta)
-        if not np.isfinite(lp):
-            return -np.inf
-
-        # Send MCMC tasks to sites
-        communicator.send_proposed_theta(theta, s)
-
-        # Collect local log-likelihoods
-        log_likelihoods = communicator.collect_local_likelihoods(num_sites)
-
-        s = s + 1
-        return lp + sum(log_likelihoods.values())
-    
-
-    start_time = time.time()
-    print("Running global MCMC")
-    server_agent.logger.info("Running global MCMC")
-
-
-    Z = server_agent_config.client_configs.initial_guess
-    nwalkers = server_agent_config.client_configs.mcmc_configs.nwalkers
-    niters = server_agent_config.client_configs.mcmc_configs.niters
-    ndim = 7
-
-    # Prepare initial walker positions (in 7 dimensions).
-    pos = ( [ np.log10(Z["E0"]),
-                Z["thetaObs"],
-                Z["thetaCore"],
-                np.log10(Z["n0"]),
-                np.log10(Z["epsilon_e"]),
-                np.log10(Z["epsilon_B"]),
-                Z["p"] ] 
-            + 0.005 * np.random.randn(nwalkers, ndim) )
-            
-
-    # Run MCMC
-    num_sites = server_agent_config.server_configs.aggregator_kwargs.num_clients
-    sampler = emcee.EnsembleSampler(nwalkers, ndim, lambda theta: global_log_probability(theta, num_sites))
-    sampler.run_mcmc(pos, niters, progress=True)
-
-    print("[Server] Final aggregated MCMC completed!")
-    server_agent.logger.info("[Server] Final aggregated MCMC completed!")
-
-
-    flat_samples = sampler.get_chain(discard=100, thin=2, flat=True)
-
-    theta_est = []
-    params = ['log(E0)','thetaObs','thetaCore','log(n0)',
-                'log(epsilon_e)','log(epsilon_B)','p']
-    for i in range(ndim):
-        mcmc = np.percentile(flat_samples[:, i], [16, 50, 84])
-        if i in [0, 3, 4, 5]:
-            theta_est.append(10 ** mcmc[1])
+        if topic == "gcn.classic.voevent.LVC_COUNTERPART":
+            octopuscommunicator.handle_lvk_counterpart_notice(data_str)
+        elif topic == "gcn.circulars" :
+            octopuscommunicator.handle_json_circulars(data_str)
+        elif topic == "igwn.gwalert":
+            octopuscommunicator.handle_json_lvk_notices(data_str)
         else:
-            theta_est.append(mcmc[1])
-        q = np.diff(mcmc)
-        print(f'{params[i]} = {mcmc[1]:.2f} +{q[1]:.2f} -{q[0]:.2f}')
+            print(f"[GCN Listener] Message from unknown topic encountered ({topic})", flush=True)
+            gcn_agent.logger.error(f"[GCN Listener] Message from unknown topic encountered ({topic})")
+else:
+    """
+    Simulate GCN listener by reading notices/circulars from files.
+    """
+    event_dir = gcn_agent_config.gcn_listener_configs.simulation_datadir
+    event_files = sorted(glob(os.path.join(event_dir, "*.*")))
+    print(f"[Simulator] Found {len(event_files)} GCN event files to process.")
     
-    # -------------------------------------------------
-    # Plot 1: Final aggregated light curve with points differentiated by site.
-    # -------------------------------------------------
-    # Combine all site data (with site labels)
-    # data_all = pd.concat([data_site1, data_site2, data_site3])
-    # plot_final_lc_by_site(data_all, theta_est, args.final_plot)
+    for filepath in event_files:
+        topic = None
+        ext = os.path.splitext(filepath)[1].lower()
+        
+        # Infer topic from filename or extension
+        if "counterpart" in filepath:
+            topic = "gcn.classic.voevent.LVC_COUNTERPART"
+        elif "circular" in filepath:
+            topic = "gcn.circulars"
+        elif "initial" in filepath or "update" in filepath or "retraction" in filepath:
+            topic = "igwn.gwalert"
+        else:
+            gcn_agent.logger.warning(f"[Simulator] Unknown file format or naming: {filepath}")
+            continue
+
+        with open(filepath, 'r') as f:
+            data_str = f.read()
+
+        print(f"[Simulator] Processing file: {filepath}, Topic: {topic}")
+        gcn_agent.logger.info(f"[Simulator] Processing GCN event from file: {filepath}")
+
+        if topic == "gcn.classic.voevent.LVC_COUNTERPART":
+            octopuscommunicator.handle_lvk_counterpart_notice(data_str)
+        elif topic == "gcn.circulars":
+            octopuscommunicator.handle_json_circulars(data_str)
+        elif topic == "igwn.gwalert":
+            octopuscommunicator.handle_json_lvk_notices(data_str)
+        else:
+            print(f"[Simulator] Unknown topic encountered ({topic})")
+            gcn_agent.logger.error(f"[Simulator] Unknown topic encountered ({topic})")    
+ 
+
+    # except json.JSONDecodeError as e:
+    #     # Handle invalid JSON messages
+    #     print(f"[Server] JSONDecodeError for message from topic ({topic}): {e}", flush=True)
+    #     server_agent.logger.error(f"[Server] JSONDecodeError for message from topic ({topic}): {e}")
+    
+    # except Exception as e:
+    #     # Catch-all for other unexpected exceptions
+    #     """Octopus down or got a message which doesn't have 'EventType' key"""
+        
+    #     # Log the traceback
+    #     tb = traceback.format_exc()
+
+    #     print(f"[Server] Unexpected error while processing message from topic ({topic}): {e}", flush=True)
+    #     print(f"[Server] Raw message: {msg}", flush=True)
+    #     print(f"[Server] Traceback: {tb}", flush=True)
+
+    #     server_agent.logger.error(f"[Server] Unexpected error while processing message from topic ({topic}): {e}")
+    #     server_agent.logger.error(f"[Server] Raw message: {msg}")
+    #     server_agent.logger.error(f"[Server] Traceback: {tb}")

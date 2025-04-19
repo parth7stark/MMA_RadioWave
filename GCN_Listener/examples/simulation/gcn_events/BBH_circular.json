@@ -1,0 +1,10 @@
+{
+    "subject": "LIGO/Virgo/KAGRA GW150815: Updated Sky localization",
+    "eventId": "LIGO/Virgo/KAGRA GW150815",
+    "submittedHow": "web",
+    "createdOn": 1743450646734,
+    "circularId": 39986,
+    "submitter": "Michael J. Williams at University of Portsmouth <michael.williams@ligo.org>",
+    "format": "text/plain",
+    "body": "The LIGO Scientific Collaboration, the Virgo Collaboration, and the KAGRA Collaboration report:\n\nWe have conducted further analysis of the LIGO Hanford Observatory (H1), LIGO Livingston Observatory (L1), and Virgo Observatory (V1) data around the time of the compact binary merger (CBC) candidate GW150815 (GCN Circular 39953). Parameter estimation has been performed using Bilby [1] and a new sky map, Bilby.multiorder.fits,0, distributed via GCN Notice, is available for retrieval from the GraceDB event page:\n\nhttps://gracedb.ligo.org/superevents/GW150815\n\nFor the Bilby.multiorder.fits,0 sky map, the 90% credible region is well fit by an ellipse with an area of 18 deg2 described by the following DS9 region (right ascension, declination, semi-major axis, semi-minor axis, position angle of the semi-minor axis):\n   icrs; ellipse(02h07m, +31d03m, 3.98d, 1.46d, 114.57d)\nMarginalized over the whole sky, the a posteriori luminosity distance estimate is 657 +/- 91 Mpc (a posteriori mean +/- standard deviation).\n\nFor further information about analysis methodology and the contents of this alert, refer to the LIGO/Virgo/KAGRA Public Alerts User Guide https://emfollow.docs.ligo.org/.\n\n [1] Ashton et al. ApJS 241, 27 (2019) doi:10.3847/1538-4365/ab06fc and Morisaki et al. PRD 108, 123040 (2023) doi:10.1103/PhysRevD.108.123040"
+}

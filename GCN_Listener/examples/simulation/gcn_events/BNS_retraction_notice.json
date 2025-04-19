@@ -1,0 +1,10 @@
+{
+    "alert_type": "RETRACTION",
+    "time_created": "2025-04-19T12:50:25Z",
+    "superevent_id": "GW170817",
+    "urls": {
+        "gracedb": "https://example.org/superevents/MS181101ab/view/"
+    },
+    "event": null,
+    "external_coinc": null
+}

@@ -1,2 +1,2 @@
-from .client import ClientAgent
-from .server import ServerAgent
+from .GCN_listener import GCNAgent
+from .PotentialMerger_listener import MergerListenerAgent

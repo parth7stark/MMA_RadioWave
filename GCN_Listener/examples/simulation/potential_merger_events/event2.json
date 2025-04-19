@@ -1,0 +1,9 @@
+{
+    "EventType": "PotentialMerger",
+    "detection_details": [
+        {
+            "GPS_time": 1382828495.0,
+            "UTC_time": "2025-04-15 12:00:00"
+        }
+    ]
+}
