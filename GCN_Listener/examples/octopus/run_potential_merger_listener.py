@@ -1,9 +1,8 @@
 import argparse
 from omegaconf import OmegaConf
-from mma_gcn.agent import PotentialMergerAgent
+from mma_gcn.agent import MergerListenerAgent
 from mma_gcn.communicator.octopus import OctopusPMCommunicator
 import json
-import traceback
 import time
 import os
 from glob import glob
@@ -22,13 +21,15 @@ args = argparser.parse_args()
 merger_agent_config = OmegaConf.load(args.config)
 
 # Initialize gcn-side modules
-merger_agent = PotentialMergerAgent(merger_agent_config=merger_agent_config)
+merger_agent = MergerListenerAgent(merger_agent_config=merger_agent_config)
 
 # Create Octopus communicator
 octopuscommunicator = OctopusPMCommunicator(
     merger_agent,
     logger=merger_agent.logger,
 )
+
+octopuscommunicator.on_Merger_Listener_started()
 
 # Listen for potential merger events on Octopus
 print("[Potential Merger Listener] Listening for potential merger events from GW module...", flush=True)
@@ -57,7 +58,7 @@ else:
     """
     Simulate potential merger listener by reading events from files.
     """
-    event_dir = merger_agent_config.gcn_listener_configs.simulation_datadir
+    event_dir = merger_agent_config.gcn_listener_configs.simulation_datadir + "/potential_merger_events/"
     event_files = sorted(glob(os.path.join(event_dir, "*.json")))
     print(f"[Simulator] Found {len(event_files)} merger event files to process.")
     

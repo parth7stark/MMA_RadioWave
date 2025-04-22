@@ -1,5 +1,5 @@
 {
-    "alert_type": "INITIAL",
+    "alert_type": "UPDATE",
     "time_created": "2025-04-19T12:02:25Z",
     "superevent_id": "GW170817",
     "urls": {

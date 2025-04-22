@@ -42,8 +42,8 @@ class OctopusGCNCommunicator:
         self.producer.send(self.topic, value=event)
         self.producer.flush()
         
-        print("[Server] Published GCN Listener started event.", flush=True)
-        self.logger.info("[Server] Published GCN Listener started event.")
+        print("[GCN Listener] Published GCN Listener started event.", flush=True)
+        self.logger.info("[GCN Listener] Published GCN Listener started event.")
 
     def handle_lvk_counterpart_notice(self, data_str):
         """
@@ -51,7 +51,7 @@ class OctopusGCNCommunicator:
         """
 
         alertofinterest, superevent_id, file_path  = self.gcn_agent.parser.CounterpartNoticeParser(data_str)
-        if alertofinterest == "yes":
+        if alertofinterest == "Yes":
             # Publish appropriate message on octopus 
             message = {
             "EventType": "CounterpartDetected",
@@ -63,7 +63,7 @@ class OctopusGCNCommunicator:
             self.producer.send(self.topic, value=message)
             self.producer.flush()
             
-            print("[GCN Listener] Published CounterpartDetected event.", flush=True)
+            # print("[GCN Listener] Published CounterpartDetected event.", flush=True)
             self.logger.info("[GCN Listener] Published CounterpartDetected event.")
 
     def handle_json_lvk_notices(self, data_str):
@@ -91,7 +91,6 @@ class OctopusGCNCommunicator:
 
         # If superevent id is None then ignore that alert. Alert not of interest       
         if alertofinterest == "Yes":
-            self._send_bns_detection_message(superevent_id, data, file_path)
             message = {
             "EventType": "SupereventReceivedCircular",
             "superevent_id": superevent_id,

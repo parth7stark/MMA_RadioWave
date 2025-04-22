@@ -1,0 +1,11 @@
+[2025-04-20 12:24:55,724 INFO server]: Logging to /lus/eagle/projects/RAPINS/parth/MMA_RadioWave/GCN_Listener/examples/output/PMresult_Server_2025-04-20-12:24:55.txt
+[2025-04-20 12:24:56,581 INFO server]: Published Merger Listener started event.
+[2025-04-20 12:24:56,582 INFO server]: [Potential Merger Listener] Listening for potential merger events from GW module...
+[2025-04-20 12:24:56,590 INFO server]: [Simulator] Processing file: /lus/eagle/projects/RAPINS/parth/MMA_RadioWave/GCN_Listener/examples/simulation//potential_merger_events/event1.json
+[2025-04-20 12:24:56,590 INFO server]: [Merger Listener] Received PotentialMerger event
+[2025-04-20 12:24:56,599 INFO server]: Stored 1 detection details
+[2025-04-20 12:24:56,600 INFO server]: GPS Time: 1382828495.0 -> UTC Time: 2025-04-19 12:00:00
+[2025-04-20 12:24:57,113 INFO server]: [Simulator] Processing file: /lus/eagle/projects/RAPINS/parth/MMA_RadioWave/GCN_Listener/examples/simulation//potential_merger_events/event2.json
+[2025-04-20 12:24:57,113 INFO server]: [Merger Listener] Received PotentialMerger event
+[2025-04-20 12:24:57,122 INFO server]: Stored 1 detection details
+[2025-04-20 12:24:57,122 INFO server]: GPS Time: 1382828495.0 -> UTC Time: 2025-04-15 12:00:00

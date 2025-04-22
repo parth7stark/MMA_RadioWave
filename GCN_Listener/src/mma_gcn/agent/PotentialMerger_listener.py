@@ -16,17 +16,17 @@ class MergerListenerAgent:
         merger_agent_config: ServerAgentConfig = ServerAgentConfig()
     ) -> None:
 
-        self.server_agent_config = merger_agent_config       
+        self.merger_agent_config = merger_agent_config       
         self._create_logger()
         self._load_storage()  # Initialize parameters used by parser
 
 
     def _create_logger(self) -> None:
         kwargs = {}
-        if hasattr(self.server_agent_config.gcn_listener_configs, "merger_logging_output_dirname"):
-            kwargs["file_dir"] = self.server_agent_config.gcn_listener_configs.merger_logging_output_dirname
-        if hasattr(self.server_agent_config.gcn_listener_configs, "merger_logging_output_filename"):
-            kwargs["file_name"] = self.server_agent_config.gcn_listener_configs.merger_logging_output_filename
+        if hasattr(self.merger_agent_config.gcn_listener_configs, "merger_logging_output_dirname"):
+            kwargs["file_dir"] = self.merger_agent_config.gcn_listener_configs.merger_logging_output_dirname
+        if hasattr(self.merger_agent_config.gcn_listener_configs, "merger_logging_output_filename"):
+            kwargs["file_name"] = self.merger_agent_config.gcn_listener_configs.merger_logging_output_filename
         self.logger = ServerAgentFileLogger(**kwargs)
 
 
@@ -36,7 +36,7 @@ class MergerListenerAgent:
         """
 
         self.storage: EventStorage = EventStorage(
-            self.server_agent_config,
+            self.merger_agent_config,
             self.logger,
         )
         

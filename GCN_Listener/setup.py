@@ -18,15 +18,15 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="mma_fedfit",
+    name="mma_gcn",
     version="1.0.0",
     author=AUTHOR,
-    description="An open-source package for federated fitting of light curve",
+    description="An open-source package for listening to GCN alerts and processing them",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/parth7stark/MMA_RadioWave/tree/main/FederatedFitting",
+    url="https://github.com/parth7stark/MMA_RadioWave/tree/main/GCN_Listener",
     project_urls={
-        "Bug Tracker": "https://github.com/parth7stark/MMA_RadioWave/tree/main/FederatedFitting/issues",
+        "Bug Tracker": "https://github.com/parth7stark/MMA_RadioWave/tree/main/GCN_Listener/issues",
     },
     classifiers=[
         "Programming Language :: Python :: 3",
@@ -37,22 +37,16 @@ setuptools.setup(
     packages=setuptools.find_packages(where="src"),
     python_requires=">=3.10",
     install_requires=[
-        "numpy",  #installing specific version after pip install .
+        # "numpy",  #installing specific version after pip install .
         # "torch",  #installing specific version after pip install .
         "omegaconf",
         "diaspora-event-sdk[kafka-python]",
         # "lalsuite", installing using conda (refer apptainer defination file) before pip install . setup.py
-        "boto3",
-        "botocore",
-        "proxystore[all]",
-        "lz4",
-        "zfpy",
-        "zstd",
-        "blosc",
-        "python-xz",
         #"h5py",
         #"scipy",
         "matplotlib",
+        "voevent-parse",
+        "gcn-kafka",
 
     ],
     extras_require={

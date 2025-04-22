@@ -18,7 +18,7 @@ class GCNAgent:
         gcn_agent_config: ServerAgentConfig = ServerAgentConfig()
     ) -> None:
 
-        self.server_agent_config = gcn_agent_config
+        self.gcn_agent_config = gcn_agent_config
         self._create_logger()
         self._load_storage()
         self._load_parser()  # Initialize parameters used by parser
@@ -26,10 +26,10 @@ class GCNAgent:
 
     def _create_logger(self) -> None:
         kwargs = {}
-        if hasattr(self.server_agent_config.gcn_listener_configs, "gcn_logging_output_dirname"):
-            kwargs["file_dir"] = self.server_agent_config.gcn_listener_configs.gcn_logging_output_dirname
-        if hasattr(self.server_agent_config.gcn_listener_configs, "gcn_logging_output_filename"):
-            kwargs["file_name"] = self.server_agent_config.gcn_listener_configs.gcn_logging_output_filename
+        if hasattr(self.gcn_agent_config.gcn_listener_configs, "gcn_logging_output_dirname"):
+            kwargs["file_dir"] = self.gcn_agent_config.gcn_listener_configs.gcn_logging_output_dirname
+        if hasattr(self.gcn_agent_config.gcn_listener_configs, "gcn_logging_output_filename"):
+            kwargs["file_name"] = self.gcn_agent_config.gcn_listener_configs.gcn_logging_output_filename
         self.logger = ServerAgentFileLogger(**kwargs)
 
 
@@ -39,7 +39,7 @@ class GCNAgent:
         """
 
         self.parser: GCNParser = GCNParser(
-            self.server_agent_config,
+            self.gcn_agent_config,
             self.storage,
             self.logger,
         )
@@ -50,7 +50,7 @@ class GCNAgent:
         """
 
         self.storage: EventStorage = EventStorage(
-            self.server_agent_config,
+            self.gcn_agent_config,
             self.logger,
         )
     

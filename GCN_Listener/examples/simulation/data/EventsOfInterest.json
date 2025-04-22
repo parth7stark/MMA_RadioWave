@@ -1,0 +1,12 @@
+[
+  {
+    "bns_probability": 0.95,
+    "event_time": "2025-04-19T12:02:46.654Z",
+    "matching_merger": {
+      "GPS_time": 1382828495.0,
+      "UTC_time": "2025-04-19 12:00:00"
+    },
+    "event_id": "GW170817",
+    "created_at": "2025-04-20T15:35:47.872582"
+  }
+]

@@ -36,16 +36,17 @@ gcnconsumer = GCNConsumer(
     config={'auto.offset.reset': 'earliest'},  # Start from earliest message
     client_id=gcn_agent_config.gcn_listener_configs.comm_configs.gcn_kafka_configs.gcn_client_id,
     client_secret=gcn_agent_config.gcn_listener_configs.comm_configs.gcn_kafka_configs.gcn_client_secret,
-    domain=gcn_agent_config.gcn_listener_configs.comm_configs.gcn_kafka_configs.kafka_broker
+    domain=gcn_agent_config.gcn_listener_configs.comm_configs.gcn_kafka_configs.kafka_brokers
 )
 
 gcn_topics = gcn_agent_config.gcn_listener_configs.comm_configs.gcn_kafka_configs.kafka_gcn_topic
+gcn_topics = [str(topic) for topic in gcn_topics]
 gcnconsumer.subscribe(gcn_topics)
 
 
 octopuscommunicator.publish_GCN_listener_started_event()
 
-print("[GCN Listener] Started listening for LVK notices and circulars...", flush=True)
+# print("[GCN Listener] Started listening for LVK notices and circulars...", flush=True)
 gcn_agent.logger.info("[GCN Listener] Started listening for LVK notices and circulars...")
 
 # refer igwn, gcn and jupyter-notebook sample code
@@ -63,13 +64,18 @@ if gcn_agent_config.gcn_listener_configs.simulate_events == "no":
         elif topic == "igwn.gwalert":
             octopuscommunicator.handle_json_lvk_notices(data_str)
         else:
-            print(f"[GCN Listener] Message from unknown topic encountered ({topic})", flush=True)
+            # print(f"[GCN Listener] Message from unknown topic encountered ({topic})", flush=True)
             gcn_agent.logger.error(f"[GCN Listener] Message from unknown topic encountered ({topic})")
+    """
+    Handle this error later
+    1745152458.860|FAIL|rdkafka#consumer-1| [thrd:sasl_ssl://kafka.gcn.nasa.gov:9092/bootstrap]: sasl_ssl://kafka.gcn.nasa.gov:9092/bootstrap: Failed to connect to broker at [2600:1f10:4f61:4a01:f387:e61a:1166:6d03]:9092: Network is unreachable (after 84ms in state CONNECT)
+
+    """
 else:
     """
     Simulate GCN listener by reading notices/circulars from files.
     """
-    event_dir = gcn_agent_config.gcn_listener_configs.simulation_datadir
+    event_dir = gcn_agent_config.gcn_listener_configs.simulation_datadir + "/gcn_events/"
     event_files = sorted(glob(os.path.join(event_dir, "*.*")))
     print(f"[Simulator] Found {len(event_files)} GCN event files to process.")
     
@@ -91,7 +97,7 @@ else:
         with open(filepath, 'r') as f:
             data_str = f.read()
 
-        print(f"[Simulator] Processing file: {filepath}, Topic: {topic}")
+        # print(f"[Simulator] Processing file: {filepath}, Topic: {topic}")
         gcn_agent.logger.info(f"[Simulator] Processing GCN event from file: {filepath}")
 
         if topic == "gcn.classic.voevent.LVC_COUNTERPART":
@@ -101,7 +107,7 @@ else:
         elif topic == "igwn.gwalert":
             octopuscommunicator.handle_json_lvk_notices(data_str)
         else:
-            print(f"[Simulator] Unknown topic encountered ({topic})")
+            # print(f"[Simulator] Unknown topic encountered ({topic})")
             gcn_agent.logger.error(f"[Simulator] Unknown topic encountered ({topic})")    
  
 

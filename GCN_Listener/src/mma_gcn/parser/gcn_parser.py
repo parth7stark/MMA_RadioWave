@@ -3,6 +3,7 @@ import voeventparse
 import json
 import time
 from datetime import datetime
+import pprint
 
 class GCNParser():
     """
@@ -36,8 +37,15 @@ class GCNParser():
         Returns:
             Path to saved file if processed, None if not observation event
         """
+        pp = pprint.PrettyPrinter()
+        if isinstance(xml_str, str):
+            xml_bytes = xml_str.encode('utf-8')
+        else:
+            xml_bytes = xml_str  # already bytes
 
-        v = voeventparse.loads(xml_str)
+        v = voeventparse.loads(xml_bytes)
+
+        # v = voeventparse.loads(xml_str)
     
         # Check if observation event
         if v.attrib['role'] != 'observation':
@@ -47,15 +55,24 @@ class GCNParser():
         alertofinterest = "Yes"
 
         # Extract GraceID from parameters
-        params = voeventparse.get_grouped_params(v)
-        graceid = params[None]['GraceID']['value']  # None group = top-level params
+        # params = voeventparse.get_grouped_params(v)
+        # graceid = params[None]['GraceID']['value']  # None group = top-level params
         
+        toplevel_params = voeventparse.get_toplevel_params(v)
+
+        # print("Toplevel Params:")
+        # pp.pprint(toplevel_params.items())
+
+        # === Extract GraceID ===
+        # print("Trigger ID:", toplevel_params['TrigID']['value'])
+        graceid = toplevel_params['GraceID']['value']
+
         self.logger.info(f"Processing counterpart notice for {graceid}")
         
         # Create output directory
         # Save notice to event directory
         event_dir = self.storage.get_event_directory(graceid)
-        timestamp = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
+        timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
         counterpartfile = os.path.join(event_dir, f"{graceid}_Counterpart_{timestamp}.xml")
         
         with open(counterpartfile, 'w') as f:
@@ -85,7 +102,9 @@ class GCNParser():
         record = json.loads(data_str)
 
         # Check if superevent event. Ignore mock and test event (MS or TS)
-        if record['superevent_id'][0] != 'S':
+        # if record['superevent_id'][0] != 'S':
+        if record['superevent_id'][0] == 'MS' or record['superevent_id'][0] == 'TS':
+
             alertofinterest = "No"
             return alertofinterest, None, None, None
 
@@ -140,9 +159,10 @@ class GCNParser():
             self.logger.info(f"BNS candidate detected: {superevent_id}")
             
             # Find matching potential merger
+            time_tolerance = self.gcn_config.gcn_listener_configs.parser_configs.time_tolerance_minutes
             matching_merger = self.storage.find_matching_merger(
                 event_time, 
-                tolerance_minutes=self.time_tolerance
+                tolerance_minutes=time_tolerance
             )
             
             if matching_merger:
@@ -150,7 +170,7 @@ class GCNParser():
                 
                 # Create event directory and save notice
                 event_dir = self.storage.get_event_directory(superevent_id)
-                timestamp = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
+                timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
                 notice_file = os.path.join(event_dir, f"{superevent_id}_initial_notice_{timestamp}.json")
                 
                 with open(notice_file, 'w') as f:
@@ -195,7 +215,7 @@ class GCNParser():
             
             # Save notice to event directory
             event_dir = self.storage.get_event_directory(superevent_id)
-            timestamp = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
+            timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
             notice_file = os.path.join(event_dir, f"{superevent_id}_{notice_type}_notice_{timestamp}.json")
             
             with open(notice_file, 'w') as f:
@@ -231,7 +251,7 @@ class GCNParser():
             # Save the circular
             # Save notice to event directory
             event_dir = self.storage.get_event_directory(bns_event_id)
-            timestamp = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
+            timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
             circular_path = os.path.join(event_dir, f"{bns_event_id}_circular_{circular_id}_{timestamp}.json")
             
 
@@ -249,6 +269,7 @@ class GCNParser():
             # self.send_to_octopus("New Radio circular added", 
             #                     metadata={"file_path": file_path, "event_id": bns_event_id})
             return "Yes", bns_event_id, circular, circular_path
+        return "No", None, None, None
     
     def find_bns_event_in_circular(self, subject, event_id, body):
         """

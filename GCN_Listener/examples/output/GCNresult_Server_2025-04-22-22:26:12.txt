@@ -1,0 +1,29 @@
+[2025-04-22 22:26:12,646 INFO server]: Logging to /lus/eagle/projects/RAPINS/parth/MMA_RadioWave/GCN_Listener/examples/output/GCNresult_Server_2025-04-22-22:26:12.txt
+[2025-04-22 22:26:13,899 INFO server]: [Server] Published GCN Listener started event.
+[2025-04-22 22:26:13,900 INFO server]: [GCN Listener] Started listening for LVK notices and circulars...
+[2025-04-22 22:26:13,905 INFO server]: [Simulator] Processing GCN event from file: /lus/eagle/projects/RAPINS/parth/MMA_RadioWave/GCN_Listener/examples/simulation//gcn_events/BBH_circular.json
+[2025-04-22 22:26:13,905 INFO server]: Processing circular 39986: LIGO/Virgo/KAGRA GW150815: Updated Sky localization
+[2025-04-22 22:26:13,945 INFO server]: [Simulator] Processing GCN event from file: /lus/eagle/projects/RAPINS/parth/MMA_RadioWave/GCN_Listener/examples/simulation//gcn_events/BBH_initial_notice.json
+[2025-04-22 22:26:13,946 INFO server]: Processing initial notice for GW150815, BNS prob: 0.03
+[2025-04-22 22:26:13,946 INFO server]: Not a BNS candidate (prob=0.03): GW150815
+[2025-04-22 22:26:13,959 INFO server]: [Simulator] Processing GCN event from file: /lus/eagle/projects/RAPINS/parth/MMA_RadioWave/GCN_Listener/examples/simulation//gcn_events/BNS_circular.json
+[2025-04-22 22:26:13,960 INFO server]: Processing circular 39986: LIGO/Virgo/KAGRA GW170817: Updated Sky localization
+[2025-04-22 22:26:13,962 INFO server]: Circular is related to BNS event GW170817
+[2025-04-22 22:26:13,970 INFO server]: Saved circular to /lus/eagle/projects/RAPINS/parth/MMA_RadioWave/GCN_Listener/examples/simulation/data/BNS_event_gcn/GW170817/GW170817_circular_39986_20250422222613.json
+[2025-04-22 22:26:13,993 INFO server]: [GCN Listener] Published SupereventReceivedCircular event.
+[2025-04-22 22:26:13,995 INFO server]: [Simulator] Processing GCN event from file: /lus/eagle/projects/RAPINS/parth/MMA_RadioWave/GCN_Listener/examples/simulation//gcn_events/BNS_counterpart_notice.xml
+[2025-04-22 22:26:13,997 INFO server]: Processing counterpart notice for S250328
+[2025-04-22 22:26:14,026 INFO server]: [GCN Listener] Published CounterpartDetected event.
+[2025-04-22 22:26:14,048 INFO server]: [Simulator] Processing GCN event from file: /lus/eagle/projects/RAPINS/parth/MMA_RadioWave/GCN_Listener/examples/simulation//gcn_events/BNS_initial_notice.json
+[2025-04-22 22:26:14,048 INFO server]: Processing initial notice for GW170817, BNS prob: 0.95
+[2025-04-22 22:26:14,049 INFO server]: BNS candidate detected: GW170817
+[2025-04-22 22:26:14,055 INFO server]: Found matching merger event for GW170817
+[2025-04-22 22:26:14,093 INFO server]: [GCN Listener] Published NewBNSSuperevent event.
+[2025-04-22 22:26:14,112 INFO server]: [Simulator] Processing GCN event from file: /lus/eagle/projects/RAPINS/parth/MMA_RadioWave/GCN_Listener/examples/simulation//gcn_events/BNS_retraction_notice.json
+[2025-04-22 22:26:14,113 INFO server]: Processing RETRACTION notice for GW170817
+[2025-04-22 22:26:14,115 INFO server]: Routing RETRACTION notice for event of interest: GW170817
+[2025-04-22 22:26:14,143 INFO server]: [GCN Listener] Published SupereventReceivedUpdate event.
+[2025-04-22 22:26:14,146 INFO server]: [Simulator] Processing GCN event from file: /lus/eagle/projects/RAPINS/parth/MMA_RadioWave/GCN_Listener/examples/simulation//gcn_events/BNS_update_notice.json
+[2025-04-22 22:26:14,147 INFO server]: Processing UPDATE notice for GW170817
+[2025-04-22 22:26:14,149 INFO server]: Routing UPDATE notice for event of interest: GW170817
+[2025-04-22 22:26:14,178 INFO server]: [GCN Listener] Published SupereventReceivedUpdate event.

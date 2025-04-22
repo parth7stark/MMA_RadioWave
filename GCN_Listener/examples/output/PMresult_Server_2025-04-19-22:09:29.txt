@@ -1,0 +1,4 @@
+[2025-04-19 22:09:29,118 INFO server]: Logging to /lus/eagle/projects/RAPINS/parth/MMA_RadioWave/GCN_Listener/examples/output/PMresult_Server_2025-04-19-22:09:29.txt
+[2025-04-19 22:09:29,151 INFO server]: [Potential Merger Listener] Listening for potential merger events from GW module...
+[2025-04-19 22:09:29,174 INFO server]: [Simulator] Processing file: /lus/eagle/projects/RAPINS/parth/MMA_RadioWave/GCN_Listener/examples/simulation//potential_merger_events/event1.json
+[2025-04-19 22:09:29,175 INFO server]: Received PotentialMerger event

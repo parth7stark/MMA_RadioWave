@@ -1,0 +1,88 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<voe:VOEvent
+      ivorn="ivo://nasa.gsfc.gcn/LVC#Counterpart_GW_Event_2025-03-28T05:40:27.00_250328-156"
+      role="observation" version="2.0"
+      xmlns:voe="http://www.ivoa.net/xml/VOEvent/v2.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.ivoa.net/xml/VOEvent/v2.0  http://www.ivoa.net/xml/VOEvent/VOEvent-v2.0.xsd" >
+  <Who>
+    <AuthorIVORN>ivo://nasa.gsfc.tan/gcn</AuthorIVORN>
+    <Author>
+      <shortName>LVC (via VO-GCN/TAN)</shortName>
+      <contactName>Phil_Evans</contactName>
+      <contactName>LIGO/Virgo EM Follow-up</contactName>
+      <contactEmail>lv-em@gw-astronomy.org</contactEmail>
+    </Author>
+    <Date>2025-03-29T01:32:29</Date>
+    <Description>This VOEvent notice was created with GCN/TAN VOE version: 15.08 17jun22</Description>
+  </Who>
+  <What>
+    <Param name="Packet_Type"  value="154" >
+                                 <Description>The Notice Type number is assigned/used within GCN, eg type=154 is an LVC_COUNTERPART notice</Description>
+                                 </Param>
+    <Param name="Pkt_Ser_Num"  value="2" >
+                                 <Description>The Packet Serial Number is assigned/used within GCN to count the number distributed since the GCN program was last started</Description>
+                                 </Param>
+    <Param name="GraceID"      dataType="string" value="S250328" >
+                                 <Description>Identifier in GraceDB</Description>
+                                 </Param>
+    <Param name="ID_Letter"    dataType="string" value="S" />
+    <Param name="TrigID"       value="250328" ucd="meta.id" />
+    <Param name="Event_TJD"    value="20762" unit="days" ucd="time" />
+    <Param name="Event_SOD"    value="20427.00" unit="sec" ucd="time" />
+    <Param name="Intensity"     value="4.20e-10" unit="erg/cm2/sec" ucd="???" />
+    <Param name="Inten_Uncert"  value="1.00e-10" unit="erg/cm2/sec" ucd="???" />
+    <Param name="Submitter"     value="Phil_Evans" />
+    <Param name="Telescope"     value="Swift-XRT" />
+    <Param name="Trigger_ID"    value="0x819586" />
+    <Param name="Misc_flags"    value="0xf700026a" />
+    <Group name="Trigger_ID" >
+    </Group>
+    <Group name="Misc_flags" >
+      <Param name="Rank"          value="2" />
+      <Param name="Warn_Flag"     value="1" />
+      <Param name="Type"          value="3" />
+      <Param name="Source_Sernum" value="4" />
+      <Param name="Flt_Generated" value="false" />
+      <Param name="Gnd_Generated" value="true" />
+    </Group>
+    <Description>The potential counterpart detections to LIGO/Virgo events made by follow-up observers.</Description>
+  </What>
+  <WhereWhen>
+    <ObsDataLocation>
+      <ObservatoryLocation id="GEOLUN" />
+      <ObservationLocation>
+        <AstroCoordSystem id="UTC-FK5-GEO" />
+        <AstroCoords coord_system_id="UTC-FK5-GEO">
+          <Time unit="s">
+            <TimeInstant>
+              <ISOTime>2025-03-28T05:40:27.00</ISOTime>
+            </TimeInstant>
+          </Time>
+          <Position2D unit="deg">
+            <Name1>RA</Name1>
+            <Name2>Dec</Name2>
+            <Value2>
+              <C1>144.5721</C1>
+              <C2>11.2585</C2>
+            </Value2>
+            <Error2Radius>0.0018</Error2Radius>
+          </Position2D>
+        </AstroCoords>
+      </ObservationLocation>
+    </ObsDataLocation>
+  <Description>The RA,Dec coordinates are of the type: source_object.</Description>
+  </WhereWhen>
+  <How>
+    <Description>EM Follow-up of a LVC Trigger</Description>
+    <Reference uri="http://gcn.gsfc.nasa.gov/gcn/lvc.html" type="url" />
+    <Reference uri="http://gcn.gsfc.nasa.gov/gcn/lvc_events.html" type="url" />
+  </How>
+  <Why importance="1.0">
+    <Inference probability="0.1">
+      <Concept>process.variation;em</Concept>
+    </Inference>
+  </Why>
+  <Description>
+  </Description>
+</voe:VOEvent>

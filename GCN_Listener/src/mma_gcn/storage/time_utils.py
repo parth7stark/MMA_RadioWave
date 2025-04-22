@@ -16,7 +16,9 @@ def parse_utc_time(time_str):
         "%Y-%m-%d %H:%M:%S",
         "%Y-%m-%dT%H:%M:%S",
         "%Y-%m-%dT%H:%M:%S.%f",
-        "%Y-%m-%d %H:%M:%S.%f"
+        "%Y-%m-%d %H:%M:%S.%f",
+        "%Y-%m-%dT%H:%M:%S.%fZ",  # <-- Added to handle the Z
+        "%Y-%m-%dT%H:%M:%SZ"      # Also allow seconds-only Z
     ]
     
     for fmt in formats:
