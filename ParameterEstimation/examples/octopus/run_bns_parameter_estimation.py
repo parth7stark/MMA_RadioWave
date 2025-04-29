@@ -15,10 +15,10 @@ argparser.add_argument(
 args = argparser.parse_args()
 
 # Load config from YAML (via OmegaConf)
-estimator_agent_config = OmegaConf.load(args.config)
+estimator_config = OmegaConf.load(args.config)
 
 # Initialize estimator-side modules
-estimator_agent = ParamEstimatorAgent(estimator_agent_config=estimator_agent_config)
+estimator_agent = ParamEstimatorAgent(estimator_config=estimator_config)
 
 # Create Octopus communicator for publishing events to Radio topic - 
 octopuscommunicator = OctopusEstimatorCommunicator(
@@ -26,7 +26,8 @@ octopuscommunicator = OctopusEstimatorCommunicator(
     logger=estimator_agent.logger,
 )
 
-octopuscommunicator.publish_estimator_started_event()
+# Commenting as Octopus doesn't work on Polaris compute node
+# octopuscommunicator.publish_estimator_started_event()
 
 # print("[GCN Listener] Started listening for LVK notices and circulars...", flush=True)
 estimator_agent.logger.info("[Parameter Estimator] Started Parameter Estimation Process...")
@@ -53,7 +54,7 @@ estimator_agent.logger.info("\n Please verify that these paths match those speci
 
 
 # Step 2: Run Dingo‐BNS using ini file
-ini_filepath =  estimator_agent_config.bns_parameter_estimation_configs.dingo_configs.ini_filepath
+ini_filepath =  estimator_config.bns_parameter_estimation_configs.dingo_configs.ini_filepath
 estimator_agent.run_dingo_pipe(ini_filepath)
 
 # analyzer = AnalyzeResults(result_path)
@@ -62,18 +63,18 @@ estimator_agent.run_dingo_pipe(ini_filepath)
 # a) Print summary stats
 summary = estimator_agent.analyzer.compute_summary_statistics()
 for k, (med, low, high) in summary.items():
-    print(f"{k}: {med:.3f} [{low:.3f}, {high:.3f}]")
+    print(f"{k}: {med:.3f} [{low:.3f}, {high:.3f}, 90%CI]")
 
 # b) Full corner plot
 # Full corner plot with all parameters
-result_dir =  estimator_agent_config.bns_parameter_estimation_configs.dingo_configs.result_dir
-estimator_agent.analyzer.plot_corner(output_path=result_dir + "/corner_plot_all_paramaters.png")
+result_dir =  estimator_config.bns_parameter_estimation_configs.dingo_configs.result_dir
+estimator_agent.analyzer.plot_corner(output_path=result_dir + "/corner_plot_all_parameters.png", style="dingo")
 
 # Corner plot with a selected subset
 param_list = ['chirp_mass', 'mass_ratio', 'a_1', 'a_2', 'theta_jn', 'luminosity_distance']
 estimator_agent.analyzer.plot_corner(
     param_names=param_list,
-    output_path=result_dir + "/corner_plot_subset_paramters.png"    
+    output_path=result_dir + "/corner_plot_subset_parameters.png"    
 )
 
 # c) plot corner plot between Distance vs angle

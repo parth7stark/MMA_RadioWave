@@ -35,11 +35,22 @@ class AnalyzeResults():
 
     def compute_summary_statistics(self):
         # For now hardcode the result path in ini file
-        result_path = self.estimator_config.bns_parameter_estimation_configs.dingo_configs.result_dir
-        self.result = Result(file_name=result_path)
+        samples_filepath = self.estimator_config.bns_parameter_estimation_configs.dingo_configs.samples_filepath
+        self.result = Result(file_name=samples_filepath)
         self.samples = pd.DataFrame(self.result.samples)
 
         df = self.samples
+        print("Columns/parameters:", df.columns)
+
+        """
+        COlumns/parameters: Index(['delta_chirp_mass', 'mass_ratio', 'a_1', 'a_2', 'tilt_1', 'tilt_2',
+        'phi_12', 'phi_jl', 'theta_jn', 'luminosity_distance', 'geocent_time',
+        'psi', 'lambda_1', 'lambda_2', 'log_prob', 'delta_log_prob_target',
+        'chirp_mass_proxy', 'ra', 'dec', 'chirp_mass', '_log_likelihood',
+        'phase', 'log_likelihood', 'log_prior', 'weights'],
+            dtype='object')
+
+        """
 
         # Inclination angle
         theta_m, theta_l, theta_h = self._get_median_ci(df['theta_jn'])
@@ -74,7 +85,7 @@ class AnalyzeResults():
         m2 = m1 * q
         return m1, m2
 
-    def plot_corner(self, param_names=None, output_path="corner_plot_all.png"):
+    def plot_corner(self, param_names=None, output_path="corner_plot_all.png", style="custom", use_weights=True):
         """
         Plot a corner plot using the full sample set.
 
@@ -82,29 +93,62 @@ class AnalyzeResults():
             param_names (list[str], optional): List of parameter names to include in the plot.
                                             If None, all columns in the samples DataFrame are used.
             output_path (str): File path to save the plot.
-            true_values (list[float], optional): Ground truth values for overlay.
+            style (str): 'custom' (your default style) or 'dingo' (Dingo BNS style).
+             use_weights (bool): If True and 'weights' column exists, use importance sampling weights in the corner plot.
         """
+        df = self.samples.copy()
         if param_names is None:
-            param_names = list(self.samples.columns)
+            # param_names = list(self.samples.columns)
+           # Filter: exclude constant columns and columns with NaN or Inf
+            param_names = [
+            col for col in df.columns
+            if df[col].nunique() > 1 and np.isfinite(df[col]).all()
+        ]
+        self.logger.info(f"Excluding constant or invalid columns. Using: {param_names}")
 
-        sample_subset = self.samples[param_names]
+       
+        sample_subset = df[param_names]
+
+        # Check and extract weights
+        weights = None
+        if use_weights and "weights" in df.columns:
+            weights = df["weights"].to_numpy()
+            self.logger.info("Using importance sampling weights in plot.")
+
+        # ----- Set corner plot parameters based on style -----
+        if style == "dingo":
+            corner_params = {
+                "smooth": 1.0,
+                "smooth1d": 1.0,
+                "plot_datapoints": False,
+                "plot_density": False,
+                "plot_contours": True,
+                "levels": [0.5, 0.9],
+                "bins": 30,
+                "no_fill_contours": True,
+            }
+        else:  # Default to 'custom' (your style)
+            corner_params = {
+                "smooth": 1.0,
+                "smooth1d": 1.0,
+                "plot_datapoints": True,
+                "fill_contours": True,
+                "plot_density": True,
+                "levels": (0.5, 0.9),
+                "show_titles": True,
+                "title_fmt": ".2f",
+                "title_kwargs": {"fontsize": 12},
+                "label_kwargs": {"fontsize": 14},
+                "figsize": (4, 4)
+            }
 
         fig = corner.corner(
             sample_subset,
             labels=param_names,
-            show_titles=True,
-            title_fmt=".2f",
-            quantiles=[0.05, 0.5, 0.95],
-            title_kwargs={"fontsize": 12},
-            label_kwargs={"fontsize": 14},
-            plot_datapoints=True,
-            fill_contours=True,
-            levels=(0.5, 0.9),
-            smooth=1.0,
-            smooth1d=1.0,
-            figsize=(4, 4)
+            weights=weights,
+            **corner_params
         )
-
         fig.savefig(output_path)
         print(f" Saved corner plot: {output_path}")
+        # self.logger.info(f"Saved corner plot ({style} style): {output_path}")
         plt.close()
