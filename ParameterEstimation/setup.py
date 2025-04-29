@@ -18,15 +18,15 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="mma_gcn",
+    name="mma_param_estimation",
     version="1.0.0",
     author=AUTHOR,
-    description="An open-source package for listening to GCN alerts and processing them",
+    description="An open-source package for estimating parameters from BNS signals using Dingo-BNS",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/parth7stark/MMA_RadioWave/tree/main/GCN_Listener",
+    url="https://github.com/parth7stark/MMA_RadioWave/tree/main/ParameterEstimation",
     project_urls={
-        "Bug Tracker": "https://github.com/parth7stark/MMA_RadioWave/tree/main/GCN_Listener/issues",
+        "Bug Tracker": "https://github.com/parth7stark/MMA_RadioWave/tree/main/ParameterEstimation/issues",
     },
     classifiers=[
         "Programming Language :: Python :: 3",
@@ -45,9 +45,6 @@ setuptools.setup(
         #"h5py",
         #"scipy",
         "matplotlib",
-        "voevent-parse",
-        "gcn-kafka",
-
     ],
     extras_require={
         "examples": [

@@ -1,1 +1,4 @@
 omegaconf==2.3.0
+# Dingo from GitHub (specific branch)
+git+https://github.com/dingo-gw/dingo.git@bns_add_dingo_pipe_max#egg=dingo-gw
+
