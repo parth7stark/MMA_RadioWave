@@ -1,0 +1,17 @@
+universe = vanilla
+executable = /home/parthpatel17/.conda/envs/mma_dingo/bin/dingo_pipe_importance_sampling
+request_memory = 8.0GB
+request_disk = 5GB
+request_cpus = 8
+initialdir = /lus/eagle/projects/RAPINS/parth/MMA_RadioWave/ParameterEstimation/examples/octopus
+notification = Never
+requirements = 
+checkpoint_exit_code = 77
+log = outdir/log_data_analysis/GW170817_data0_1187008882-42_importance_sampling.log
+output = outdir/log_data_analysis/GW170817_data0_1187008882-42_importance_sampling.out
+error = outdir/log_data_analysis/GW170817_data0_1187008882-42_importance_sampling.err
+accounting_group = dingo
+priority = 0
+environment = "HDF5_USE_FILE_LOCKING=FAlSE OMP_NUM_THREADS=1 OMP_PROC_BIND=false GWDATAFIND_SERVER=https://datafind.ligo.org"
+arguments = $(ARGS)
+queue
