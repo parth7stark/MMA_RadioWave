@@ -1,11 +1,9 @@
-import json
 import logging
 from typing import Optional
 from omegaconf import OmegaConf
-from mma_gcn.agent import ParamEstimatorAgent
-from mma_gcn.logger import ServerAgentFileLogger
+from mma_param_estimation.agent import ParamEstimatorAgent
+from mma_param_estimation.logger import ServerAgentFileLogger
 from diaspora_event_sdk import KafkaProducer, KafkaConsumer
-import json
 
 class OctopusEstimatorCommunicator:
     """
@@ -23,15 +21,15 @@ class OctopusEstimatorCommunicator:
         self.logger = logger if logger is not None else self._default_logger()
         
         # MMA topic: topic where Estimator publishes posterior samples for overllaped analysis
-        self.radio_topic = self.estimator_agent.estimator_agent_config.gcn_listener_configs.comm_configs.octopus_configs.radio_topic.topic
-        self.mma_topic = self.estimator_agent.estimator_agent_config.gcn_listener_configs.comm_configs.octopus_configs.mma_topic.topic
+        self.radio_topic = self.estimator_agent.estimator_config.bns_parameter_estimation_configs.comm_configs.octopus_configs.radio_topic.topic
+        self.mma_topic = self.estimator_agent.estimator_config.bns_parameter_estimation_configs.comm_configs.octopus_configs.mma_topic.topic
 
 
         # Kafka producer for control messages and sending Embeddings
         self.producer = KafkaProducer()
 
 
-        estimator_group_id = self.estimator_agent.estimator_agent_config.gcn_listener_configs.comm_configs.octopus_configs.radio_topic.group_id
+        estimator_group_id = self.estimator_agent.estimator_config.bns_parameter_estimation_configs.comm_configs.octopus_configs.radio_topic.group_id
         self.consumer = KafkaConsumer(
             self.radio_topic,
             enable_auto_commit=True,

@@ -1,7 +1,7 @@
-from mmma_param_estimation.config import ServerAgentConfig
-from mmma_param_estimation.logger import ServerAgentFileLogger
-from mmma_param_estimation.downloader import DataDownloader
-from mmma_param_estimation.results import AnalyzeResults
+from mma_param_estimation.config import ServerAgentConfig
+from mma_param_estimation.logger import ServerAgentFileLogger
+from mma_param_estimation.downloader import DataDownloader
+from mma_param_estimation.results import AnalyzeResults
 from omegaconf import OmegaConf, DictConfig
 
 import subprocess
@@ -25,16 +25,16 @@ class ParamEstimatorAgent:
         self._load_downloader()
         self._load_result_analyzer()
         
-    def run_dingo_pipe(ini_file: Path):
+    def run_dingo_pipe(self, ini_file: Path):
         print(f" Running Dingo-BNS inference using config: {ini_file}")
         subprocess.run(["dingo_pipe", str(ini_file)], check=True)
 
     def _create_logger(self) -> None:
         kwargs = {}
-        if hasattr(self.estimator_config.gcn_listener_configs, "gcn_logging_output_dirname"):
-            kwargs["file_dir"] = self.estimator_config.gcn_listener_configs.gcn_logging_output_dirname
-        if hasattr(self.estimator_config.gcn_listener_configs, "gcn_logging_output_filename"):
-            kwargs["file_name"] = self.estimator_config.gcn_listener_configs.gcn_logging_output_filename
+        if hasattr(self.estimator_config.bns_parameter_estimation_configs, "logging_output_dirname"):
+            kwargs["file_dir"] = self.estimator_config.bns_parameter_estimation_configs.logging_output_dirname
+        if hasattr(self.estimator_config.bns_parameter_estimation_configs, "logging_output_filename"):
+            kwargs["file_name"] = self.estimator_config.bns_parameter_estimation_configs.logging_output_filename
         self.logger = ServerAgentFileLogger(**kwargs)
 
 
@@ -48,9 +48,9 @@ class ParamEstimatorAgent:
             self.logger,
         )
         
-    def _load_storage(self) -> None:
+    def _load_result_analyzer(self) -> None:
         """
-        Load storage object and initialize parameters
+        Load result analyzer object and initialize parameters
         """
 
         self.analyzer: AnalyzeResults = AnalyzeResults(

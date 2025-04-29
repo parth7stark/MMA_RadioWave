@@ -27,9 +27,15 @@ class DataDownloader():
         os.makedirs(self.download_dir, exist_ok=True)
 
     def download_file(self, url: str, filename: str):
-        """Download file with progress bar."""
-        response = requests.get(url, stream=True)
+        """Download file with progress bar, skip if already present."""
+        
         full_path = os.path.join(self.download_dir, filename)
+
+        if os.path.exists(full_path):
+            self.logger.info(f"Skipping download, file already exists: {full_path}")
+            return full_path
+
+        response = requests.get(url, stream=True)
 
         with open(full_path, "wb") as f:
             pbar = tqdm(
