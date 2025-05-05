@@ -53,6 +53,12 @@ setuptools.setup(
         #"h5py",
         #"scipy",
         "matplotlib",
+        "afterglowpy",
+        "emcee",
+        "pandas",
+        "corner",
+        "astropy",
+        "tqdm",
 
     ],
     extras_require={
