@@ -4,8 +4,8 @@ from omegaconf import DictConfig, OmegaConf
 @dataclass
 class ServerAgentConfig:
     client_configs: DictConfig = OmegaConf.create({
-        "train_configs": OmegaConf.create({}),
-        "model_configs": OmegaConf.create({}),
+        "fitting_configs": OmegaConf.create({}),
+        "comm_configs": OmegaConf.create({}),
     })
     server_configs: DictConfig = OmegaConf.create({})
 

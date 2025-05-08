@@ -139,21 +139,38 @@ else:
     print("Running local MCMC")
 
     # Prepare MCMC parameters
-    z_known = client_agent.client_agent_config.mcmc_configs.Z_known
-    ndim = 8 if z_known else 9
-    nwalkers = client_agent.client_agent_config.mcmc_configs.nwalkers
-    niters = client_agent.client_agent_config.mcmc_configs.niters
+    def ensure_float_list(lst):
+        """
+        Convert a list or tuple of values to a list of floats.
+        If any value is not convertible, it raises a ValueError.
+        """
+        if not isinstance(lst, (list, tuple)):
+            raise TypeError("Input must be a list or tuple.")
+        
+        try:
+            return [float(x) for x in lst]
+        except ValueError as e:
+            raise ValueError(f"Failed to convert one or more elements to float in {lst}") from e
 
-    loge0_range = client_agent.client_agent_config.mcmc_configs.logE0_range
-    thetaobs_range = client_agent.client_agent_config.mcmc_configs.thetaObs_range
-    thetacore_range = client_agent.client_agent_config.mcmc_configs.thetaCore_range
-    logn0_range = client_agent.client_agent_config.mcmc_configs.logn0_range
-    logepsilon_e_range = client_agent.client_agent_config.mcmc_configs.logEpsilon_e_range
-    logepsilon_b_range = client_agent.client_agent_config.mcmc_configs.logEpsilon_B_range
-    p_range = client_agent.client_agent_config.mcmc_configs.P_range
-    thetawing_range = client_agent.client_agent_config.mcmc_configs.thetaWing_range
-    z_range = client_agent.client_agent_config.mcmc_configs.Z_range
+    # For boolean values
+    z_known = bool(client_agent.client_agent_config.mcmc_configs.Z_known)
+
+    ndim = 8 if z_known else 9
+    nwalkers = int(client_agent.client_agent_config.mcmc_configs.nwalkers)
+    niters = int(client_agent.client_agent_config.mcmc_configs.niters)
     
+    # Safe extraction of configuration values
+    logn0_range = ensure_float_list(client_agent.client_agent_config.mcmc_configs.logn0_range)
+    logepsilon_e_range = ensure_float_list(client_agent.client_agent_config.mcmc_configs.logEpsilon_e_range)
+    logepsilon_b_range = ensure_float_list(client_agent.client_agent_config.mcmc_configs.logEpsilon_B_range)
+    p_range = ensure_float_list(client_agent.client_agent_config.mcmc_configs.P_range)
+    thetawing_range = ensure_float_list(client_agent.client_agent_config.mcmc_configs.thetaWing_range)
+    z_range = ensure_float_list(client_agent.client_agent_config.mcmc_configs.Z_range)
+    thetaobs_range = ensure_float_list(client_agent.client_agent_config.mcmc_configs.thetaObs_range)
+    thetacore_range = ensure_float_list(client_agent.client_agent_config.mcmc_configs.thetaCore_range)
+    loge0_range = ensure_float_list(client_agent.client_agent_config.mcmc_configs.logE0_range)
+
+
     # Define parameter bounds
     if z_known:
         lower_bounds = np.array([
@@ -203,7 +220,7 @@ else:
         ])
     
 
-    np.random.seed(client_agent.client_agent_config.mcmc_configs.random_seed)
+    np.random.seed(int(client_agent.client_agent_config.mcmc_configs.random_seed))
 
     # Prepare initial walker positions (in 7 dimensions).
     # pos = ( [ np.log10(Z["E0"]),

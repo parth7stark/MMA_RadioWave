@@ -121,7 +121,7 @@ class ClientAgent:
         """
 
         self.generator: LocalGenerator = LocalGenerator(
-            fitting_configs=self.client_agent_config.fitting_configs,
+            client_agent_config=self.client_agent_config,
             logger=self.logger,
         )
 

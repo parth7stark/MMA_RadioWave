@@ -1,12 +1,12 @@
 client_id: '0'
 fitting_configs:
   logging_id: "FedFit_Site0"
-  logging_output_dirname: "<absolute path to repo>/examples/output"
+  logging_output_dirname: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/output"
   logging_output_filename: "result"
 
-  dataset_path: "<absolute path to downloaded data directory>/Inference_dataset/GW200129_065458_1264314069.hdf5"
+  dataset_path: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/fitting_dataset/GW170817_data/Makhatini2021Data_site1.csv"
   # Path to save local results
-  save_folder: "<absolute path to repo>/examples/results/with_ini_polaris_consenses_2ndrun/"
+  save_folder: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/results/consenses_site1/"
   run_name: example
   plot_names: GW170817
   
@@ -24,4 +24,4 @@ comm_configs:
         
       connector_type: "FileConnector"
       connector_configs:
-      store_dir: "/scratch/bcbw/parthpatel7173/proxystore"
+        store_dir: "/scratch/bcbw/parthpatel7173/proxystore"

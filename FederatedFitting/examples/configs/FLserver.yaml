@@ -20,8 +20,8 @@ client_configs:
 
   mcmc_configs:
     nwalkers: 32
-    niters: 2000
-    burnin: 200
+    niters: 101
+    burnin: 10
 
     random_seed: 42
     #If Z is known, set Z_known = True and give its value. It will not be included in the smapling proceedure.
@@ -54,28 +54,28 @@ client_configs:
     logEpsilon_B_range: [-5,-.5]
 
     #whether to include the upper limits on the LC plot (they are never included in the fit)
-    include_upper_limits_on_lc: "True"
+    include_upper_limits_on_lc: True
 
     #exclude data for which the time, RA, and Dec are not included?
-    exclude_time_flag: "False"
-    exclude_ra_dec_flag: "False"
-    exclude_name_flag: "False"
+    exclude_time_flag: False
+    exclude_ra_dec_flag: False
+    exclude_name_flag: False
 
     #exclude data which reports a different target than the one named?
-    exclude_wrong_name: "False"
+    exclude_wrong_name: False
     name_of_source: "SSS17a"
     GPS_time_of_GW: 123456789
     ra: 13h09m48.085s
     dec: -23d22m53s
 
     #whether or not we exclude data outside of the radius
-    exclude_outside_ra_dec_uncertainty: "False"
+    exclude_outside_ra_dec_uncertainty: False
 
     #the radius outside of which we reject
     arcseconds_uncertainty: 10
 
     #whether or not to include the truth valueson the corner plots
-    display_truths_on_corner: "True"
+    display_truths_on_corner: True
     true_values: [53, .54, 0.088, -1.699, -2, -3.699, 2.139, 0.6, 0.00897]
 
 
@@ -88,7 +88,7 @@ server_configs:
   aggregator_kwargs:
     num_clients: 2
     # directory to store results after consensus/aggregation/sum of log-likelihood
-    save_folder: "<absolute path to repo>/examples/results/with_ini_polaris_consenses_2ndrun/"
+    save_folder: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/results/consenses_server/"
     run_name: "example"
     plot_names: "GW170817"
     
@@ -96,16 +96,16 @@ server_configs:
     # display_truths_on_corner: "True"
     # true_values: [53, .54, 0.088, -1.699, -2, -3.699, 2.139, 0.6, 0.00897]
 
-  logging_output_dirname: "<absolute path to repo>/examples/output"
+  logging_output_dirname: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/output"
   logging_output_filename: "result"
 
   # define server side kafka parameters here like consumer settings (offset policy)
   # Fedfit module listens to overlap analysis messages from MMA module as well topic and post it to another topic fedfit topic to interact with clients/sites
   comm_configs:
     octopus_configs:
-      mma_topic:
-        topic: 'MMA_Module_Events'
-        group_id: 'mma-RW-FedFit-server'
-      fedfit_topic:
-        topic: 'MMA_RW_FedFit_Events'
-        group_id: 'mma-RW-FedFit-server'
+      # mma_topic:
+      #   topic: 'MMA_Module_Events'
+      #   group_id: 'mma-RW-FedFit-server'
+      # fedfit_topic:
+      topic: 'MMA_RW_FedFit_Events'
+      group_id: 'mma-RW-FedFit-server'

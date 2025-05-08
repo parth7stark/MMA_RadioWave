@@ -57,8 +57,8 @@ class LocalGenerator():
     # GRB light-curve likelihood, prior, probability
     #-------------------------------------------------
     def log_likelihood(self, theta, nu, x, y, yerr):
-        z_known = self.client_agent_config.mcmc_configs.Z_known
-        z_fixed = self.client_agent_config.mcmc_configs.Z_fixed
+        z_known = bool(self.client_agent_config.mcmc_configs.Z_known)
+        z_fixed = int(self.client_agent_config.mcmc_configs.Z_fixed)
 
         if z_known == True:
             logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing = theta
@@ -125,23 +125,37 @@ class LocalGenerator():
             sigma2 = yerr**2
             return -0.5 * np.sum((y - model) ** 2 / sigma2 + np.log10(sigma2))
 
+    
+    def ensure_float_list(self, lst):
+        """
+        Convert a list or tuple of values to a list of floats.
+        If any value is not convertible, it raises a ValueError.
+        """
+        if not isinstance(lst, (list, tuple)):
+            raise TypeError("Input must be a list or tuple.")
+        
+        try:
+            return [float(x) for x in lst]
+        except ValueError as e:
+            raise ValueError(f"Failed to convert one or more elements to float in {lst}") from e
+        
     def log_prior(self, theta):
-        z_known = self.client_agent_config.mcmc_configs.Z_known
+        z_known = bool(self.client_agent_config.mcmc_configs.Z_known)
 
         if z_known:
             logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing = theta
         else:
             logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing, z = theta
 
-        loge0_range = self.client_agent_config.mcmc_configs.logE0_range
-        thetaobs_range = self.client_agent_config.mcmc_configs.thetaObs_range
-        thetacore_range = self.client_agent_config.mcmc_configs.thetaCore_range
-        logn0_range = self.client_agent_config.mcmc_configs.logn0_range
-        logepsilon_e_range = self.client_agent_config.mcmc_configs.logEpsilon_e_range
-        logepsilon_b_range = self.client_agent_config.mcmc_configs.logEpsilon_B_range
-        p_range = self.client_agent_config.mcmc_configs.P_range
-        thetawing_range = self.client_agent_config.mcmc_configs.thetaWing_range
-        z_range = self.client_agent_config.mcmc_configs.Z_range
+        loge0_range = self.ensure_float_list(self.client_agent_config.mcmc_configs.logE0_range)
+        thetaobs_range = self.ensure_float_list(self.client_agent_config.mcmc_configs.thetaObs_range)
+        thetacore_range = self.ensure_float_list(self.client_agent_config.mcmc_configs.thetaCore_range)
+        logn0_range = self.ensure_float_list(self.client_agent_config.mcmc_configs.logn0_range)
+        logepsilon_e_range = self.ensure_float_list(self.client_agent_config.mcmc_configs.logEpsilon_e_range)
+        logepsilon_b_range = self.ensure_float_list(self.client_agent_config.mcmc_configs.logEpsilon_B_range)
+        p_range = self.ensure_float_list(self.client_agent_config.mcmc_configs.P_range)
+        thetawing_range = self.ensure_float_list(self.client_agent_config.mcmc_configs.thetaWing_range)
+        z_range = self.ensure_float_list(self.client_agent_config.mcmc_configs.Z_range)
         
         if z_known:
             if (
@@ -206,7 +220,7 @@ class LocalGenerator():
         os.makedirs(site_folder, exist_ok=True)
 
         # Get flat samples after burn-in
-        burnin = self.client_agent_config.mcmc_configs.burnin
+        burnin = int(self.client_agent_config.mcmc_configs.burnin)
         run_name = self.client_agent_config.fitting_configs.run_name
 
         flat_samples = sampler.get_chain(discard=burnin, flat=True)
@@ -224,7 +238,7 @@ class LocalGenerator():
         # cov = np.cov(flat_samples, rowvar=False)
         
         # Create plots for local site
-        z_known = self.client_agent_config.mcmc_configs.Z_known
+        z_known = bool(self.client_agent_config.mcmc_configs.Z_known)
 
         if z_known:
             params = ['log(E0)','thetaObs','thetaCore','log(n0)','log(eps_e)','log(eps_B)','p', 'thetaWing']
