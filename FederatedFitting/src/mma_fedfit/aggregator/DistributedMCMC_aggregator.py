@@ -1,0 +1,376 @@
+import torch
+from omegaconf import DictConfig
+from typing import Any, Union, List, Dict, Optional
+import numpy as np
+import os
+import matplotlib.pyplot as plt
+import corner
+from multiprocessing import Pool
+import math
+import pickle
+import matplotlib.colors as mcolors
+import gc
+
+from emcee import moves as mvs
+import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
+import shutil
+# import afterglowpy as grb
+import emcee
+
+class DistributedMCMCAggregator():
+    """
+    DistributedMCMCAggregator:
+        Aggregator for federated fitting, which takes in local log-likelihood from each site,
+        concatenates them using distinuted MCMC method. The aggregator then uses the global posterior to estimate the best parameters.
+        Best parameters are sended back to the clients
+        for them to plot the light curve locally.
+    """
+    def __init__(
+        self,
+        server_agent_config: DictConfig = DictConfig({}),
+        logger: Any | None = None,
+    ):
+
+        self.logger = logger
+        self.server_agent_config = server_agent_config
+
+        self.ongoing_iteration = 0
+
+        # Our local aggregator: store partial local until we have all the sites
+        # aggregator[site_id] = {local_chain: [...], local_time_range: [...], local_filters: [...]}
+
+        self.aggregated_results={}
+
+        # Track which clients have finished
+        self.completed_clients = set()
+
+        num_clients = self.server_agent_config.server_configs.aggregator_kwargs.num_clients  # Change this value as needed
+        self.expected_clients = {str(i) for i in range(num_clients)}
+        
+
+    #-------------------------------------------------
+    # AGGREGATION FUNCTION: GAUSSIAN CONSENSUS
+    #-------------------------------------------------
+    def log_prior(self, theta):
+        z_known = self.server_agent_config.client_configs.mcmc_configs.Z_known
+
+        if z_known:
+            logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing = theta
+        else:
+            logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing, z = theta
+
+        loge0_range = self.server_agent_config.client_configs.mcmc_configs.logE0_range
+        thetaobs_range = self.server_agent_config.client_configs.mcmc_configs.thetaObs_range
+        thetacore_range = self.server_agent_config.client_configs.mcmc_configs.thetaCore_range
+        logn0_range = self.server_agent_config.client_configs.mcmc_configs.logn0_range
+        logepsilon_e_range = self.server_agent_config.client_configs.mcmc_configs.logEpsilon_e_range
+        logepsilon_b_range = self.server_agent_config.client_configs.mcmc_configs.logEpsilon_B_range
+        p_range = self.server_agent_config.client_configs.mcmc_configs.P_range
+        thetawing_range = self.server_agent_config.client_configs.mcmc_configs.thetaWing_range
+        z_range = self.server_agent_config.client_configs.mcmc_configs.Z_range
+        
+        if z_known:
+            if (
+                loge0_range[0] <= logE0 <= loge0_range[1]
+                and thetaobs_range[0] <= thetaObs < thetaobs_range[1]
+                and thetawing_range[0] <= thetaWing < thetawing_range[1]
+                and thetacore_range[0] <= thetaCore < thetacore_range[1]
+                and p_range[0] < p < p_range[1]
+                and logepsilon_e_range[0] < logepsilon_e <= logepsilon_e_range[1]
+                and logepsilon_b_range[0] < logepsilon_B <= logepsilon_b_range[1]
+                and logn0_range[0] < logn0 < logn0_range[1]
+            ):
+                return 0.0
+            return -np.inf
+
+        else:
+            if (
+                loge0_range[0] <= logE0 <= loge0_range[1]
+                and thetaobs_range[0] <= thetaObs < thetaobs_range[1]
+                and thetawing_range[0] <= thetaWing < thetawing_range[1]
+                and thetacore_range[0] <= thetaCore < thetacore_range[1]
+                and p_range[0] < p < p_range[1]
+                and logepsilon_e_range[0] < logepsilon_e <= logepsilon_e_range[1]
+                and logepsilon_e_range[0] < logepsilon_B <= logepsilon_e_range[1]
+                and logn0_range[0] < logn0 < logn0_range[1]
+                and z_range[0] < z < z_range[1]
+            ):
+                return 0.0
+            return -np.inf
+
+        
+    # Global log-probability function (aggregates local log-likelihoods)
+    def global_log_probability(self, theta, num_sites):
+        
+        lp = self.log_prior(theta)
+        if not np.isfinite(lp):
+            return -np.inf
+
+        # Send MCMC tasks to sites
+        self.communicator.send_proposed_theta(theta, self.ongoing_iteration)
+
+        # Collect local log-likelihoods
+        log_likelihoods = self.communicator.collect_local_likelihoods(num_sites, self.ongoing_iteration)
+
+        self.ongoing_iteration = self.ongoing_iteration + 1
+        return lp + sum(log_likelihoods.values())
+
+
+    def save_sampler_state(self, sampler, filename):
+        with open(filename, "wb") as f:
+            pickle.dump(sampler, f)
+            
+    def run_distributed_MCMC(self, communicator):
+        """Run Distributed MCMC workflow"""
+        self.communicator = communicator
+
+        # Prepare MCMC parameters
+        z_known = self.server_agent_config.client_configs.mcmc_configs.Z_known
+        ndim = 8 if z_known else 9
+        nwalkers = self.server_agent_config.client_configs.mcmc_configs.nwalkers
+        niters = self.server_agent_config.client_configs.mcmc_configs.niters
+
+        loge0_range = self.server_agent_config.client_configs.mcmc_configs.logE0_range
+        thetaobs_range = self.server_agent_config.client_configs.mcmc_configs.thetaObs_range
+        thetacore_range = self.server_agent_config.client_configs.mcmc_configs.thetaCore_range
+        logn0_range = self.server_agent_config.client_configs.mcmc_configs.logn0_range
+        logepsilon_e_range = self.server_agent_config.client_configs.mcmc_configs.logEpsilon_e_range
+        logepsilon_b_range = self.server_agent_config.client_configs.mcmc_configs.logEpsilon_B_range
+        p_range = self.server_agent_config.client_configs.mcmc_configs.P_range
+        thetawing_range = self.server_agent_config.client_configs.mcmc_configs.thetaWing_range
+        z_range = self.server_agent_config.client_configs.mcmc_configs.Z_range
+        
+        # Define parameter bounds
+        if z_known:
+            lower_bounds = np.array([
+                loge0_range[0],        # log10(E0)
+                thetaobs_range[0],     # thetaObs
+                thetacore_range[0],    # thetaCore
+                logn0_range[0],        # log10(n0)
+                logepsilon_e_range[0], # log10(eps_e)
+                logepsilon_b_range[0], # log10(eps_B)
+                p_range[0],            # p
+                thetawing_range[0]     # thetaWing
+            ])
+            
+            upper_bounds = np.array([
+                loge0_range[1],        # log10(E0)
+                thetaobs_range[1],     # thetaObs
+                thetacore_range[1],    # thetaCore
+                logn0_range[1],        # log10(n0)
+                logepsilon_e_range[1], # log10(eps_e)
+                logepsilon_b_range[1], # log10(eps_B)
+                p_range[1],            # p
+                thetawing_range[1]     # thetaWing
+            ])
+        else:
+            lower_bounds = np.array([
+                loge0_range[0],        # log10(E0)
+                thetaobs_range[0],     # thetaObs
+                thetacore_range[0],    # thetaCore
+                logn0_range[0],        # log10(n0)
+                logepsilon_e_range[0], # log10(eps_e)
+                logepsilon_b_range[0], # log10(eps_B)
+                p_range[0],            # p
+                thetawing_range[0],    # thetaWing
+                z_range[0]             # z
+            ])
+            
+            upper_bounds = np.array([
+                loge0_range[1],        # log10(E0)
+                thetaobs_range[1],     # thetaObs
+                thetacore_range[1],    # thetaCore
+                logn0_range[1],        # log10(n0)
+                logepsilon_e_range[1], # log10(eps_e)
+                logepsilon_b_range[1], # log10(eps_B)
+                p_range[1],            # p
+                thetawing_range[1],    # thetaWing
+                z_range[1]             # z
+            ])
+        
+
+        np.random.seed(self.server_agent_config.client_configs.mcmc_configs.random_seed)
+
+        # Prepare initial walker positions (in 7 dimensions).
+        # pos = ( [ np.log10(Z["E0"]),
+        #             Z["thetaObs"],
+        #             Z["thetaCore"],
+        #             np.log10(Z["n0"]),
+        #             np.log10(Z["epsilon_e"]),
+        #             np.log10(Z["epsilon_B"]),
+        #             Z["p"] ] 
+        #         + 0.005 * np.random.randn(nwalkers, ndim) )
+
+        # position it locally and uniformly
+        pos = np.random.uniform(low=lower_bounds, high=upper_bounds, size=(nwalkers, ndim))
+
+                
+
+        # Run MCMC
+        num_sites = self.server_agent_config.server_configs.aggregator_kwargs.num_clients
+        # sampler = emcee.EnsembleSampler(nwalkers, ndim, lambda theta: global_log_probability(theta, num_sites))
+        # sampler.run_mcmc(pos, niters, progress=True)
+
+        with Pool() as pool:
+            # Create the sampler that will coordinate with all sites
+            sampler = emcee.EnsembleSampler(
+                nwalkers, ndim, self.global_log_probability, args=(num_sites,), pool=pool,
+                moves=[(mvs.StretchMove(a=1.1), 0.7), (mvs.WalkMove(10), 0.3)])
+            
+            print('Central coordinator: starting sampling')
+            state = sampler.run_mcmc(pos, niters, progress=True)
+        
+        gc.collect()
+
+        # Save results
+        save_folder = self.server_agent_config.server_configs.aggregator_kwargs.save_folder
+        os.makedirs(save_folder, exist_ok=True)
+
+        # Get flat samples after burn-in
+        run_name = self.server_agent_config.server_configs.aggregator_kwargs.run_name
+        burnin = self.client_agent_config.mcmc_configs.burnin
+
+        flat_samples = sampler.get_chain(discard=burnin, flat=True)
+        np.save(os.path.join(save_folder, f"{run_name}_distributed_flat_samples.npy"), flat_samples)
+        
+
+        # Save sampler state
+        self.save_sampler_state(sampler, os.path.join(save_folder, f"{run_name}_distributed_sampler.pkl"))
+        
+
+        # Save log probability
+        log_prob = sampler.get_log_prob(flat=False)
+        np.save(os.path.join(save_folder, f"{run_name}_distributed_log_prob.npy"), log_prob)
+        
+
+       
+        # copied from consensus aggregator
+        # Create consensus plots
+        z_known = self.server_agent_config.client_configs.mcmc_configs.Z_known
+
+        if z_known:
+            params = ['log(E0)','thetaObs','thetaCore','log(n0)','log(eps_e)','log(eps_B)','p', 'thetaWing']
+        else:
+            params = ['log(E0)','thetaObs','thetaCore','log(n0)','log(eps_e)','log(eps_B)','p', 'thetaWing', 'z']
+        
+        ndim = len(params)
+        
+        self.make_posterior_hists(
+            flat_samples, ndim, params, 
+            f"{save_folder}/{run_name}_consensus_PosteriorHists.png"
+        )
+        
+        true_values = self.server_agent_config.client_configs.mcmc_configs.true_values
+        display_truths_on_corner = self.server_agent_config.client_configs.mcmc_configs.display_truths_on_corner
+
+
+        self.make_corner_plots(
+            flat_samples, ndim, params, 
+            true_values, display_truths_on_corner,
+            f"{save_folder}/{run_name}_consensus_CornerPlots.png"
+        )
+        
+        # Send consensus parameters back to clients for their plotting
+        # consensus_medians = np.median(consensus_samples, axis=0)
+
+        # print('Consensus parameter values:')
+        # for i in range(ndim):
+        #     print(f"{params[i]}: {consensus_medians[i]:.4f}")
+
+        print('Consensus parameter values', flush=True)
+        print("Best estimate of parameters", flush=True)
+        self.logger.info("Best estimate of parameters")
+        theta = []
+        results_dict = {}
+
+        for i in range(ndim):
+            mcmc = np.percentile(flat_samples[:, i], [16, 50, 84])
+            """
+            if i in [0, 3, 4, 5]:
+                theta.append(10 ** mcmc[1])
+            else:
+                theta.append(mcmc[1])
+            """
+            #keep it in log space
+            theta.append(mcmc[1])
+            q = np.diff(mcmc)
+            print(f'{params[i]} = {mcmc[1]:.4f} +{q[1]:.4f} -{q[0]:.4f}')
+
+            results_dict[params[i]] = {}
+            results_dict[params[i]]['median'] = mcmc[1]
+            results_dict[params[i]]['LL'] = mcmc[0]
+            results_dict[params[i]]['UL'] = mcmc[2]
+
+        #Save everything in sight:
+        # Save results
+        print(f"Saved results in {save_folder} after {niters} samples with burnin = {burnin}")
+        
+        # Send these results to each client/data site
+        return results_dict
+    
+    def make_posterior_hists(self, samples, ndim, params, save_path):
+        """
+        Create posterior histograms from consensus samples
+        """
+        medians = np.median(samples, axis=0)
+
+        # print('Consensus parameter values:')
+        # for i in range(ndim):
+        #     print(f"{params[i]}: {medians[i]:.4f}")
+
+        # Create subplots
+        if ndim == 8:
+            fig, axes = plt.subplots(2, 4, figsize=(16, 8))  # 2 rows, 4 columns
+        if ndim == 9:
+            fig, axes = plt.subplots(3, 3, figsize=(16, 10))  # 3 rows, 3 columns
+
+        axes = axes.flatten()
+
+        # Loop over each dimension and create a histogram
+        theta = []
+
+        for i in range(ndim):
+            theta_component = np.asarray(samples[:, i])
+            lower, upper = np.percentile(theta_component, [15.865, 84.135])
+
+            theta.append(theta_component)
+            ax = axes[i]
+            ax.hist(samples[:, i], bins=20, color="blue", alpha=0.7, label="Samples")
+
+            # Plot mean value as a vertical line
+            ax.axvline(medians[i], color="red", linestyle="--", label=f"Median: {medians[i]:.4f}")
+            ax.axvline(lower, color="green", linestyle="--", label=f"lower limit: {lower:.4f}")
+            ax.axvline(upper, color="green", linestyle="--", label=f"upper limit: {upper:.4f}")
+
+            ax.set_title(params[i])
+            ax.set_xlabel("Value")
+            ax.set_ylabel("Frequency")
+            ax.legend(loc=4)
+
+        plt.tight_layout()
+        plt.savefig(save_path, bbox_inches='tight')
+        
+        return medians
+
+    def make_corner_plots(self, samples, ndim, params, true_values, display_truths_on_corner, save_path):
+        """
+        Create corner plots from consensus samples
+        """
+        figure = corner.corner(
+            samples,
+            labels=params,
+            show_titles=True,
+            title_fmt=".2f",
+            quantiles=[0.05, 0.5, 0.95],  # 90% credible interval
+            title_kwargs={"fontsize": 12},
+            label_kwargs={"fontsize": 14},
+            plot_datapoints=True,
+            fill_contours=True,
+            levels=(0.50, 0.90,),  # 90% confidence contours
+            smooth=1.0,
+            smooth1d=1.0,
+            truths=true_values if len(true_values) == ndim and display_truths_on_corner else None
+        )
+        plt.tight_layout()
+        plt.savefig(save_path, bbox_inches='tight')

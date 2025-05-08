@@ -1,1 +1,2 @@
-from .FedFit_aggregator import GlobalAggregator
+from .ConsensusMCMC_aggregator import ConsensusAggregator
+from .DistributedMCMC_aggregator import DistributedMCMCAggregator

@@ -36,8 +36,9 @@ class ServerAgent:
         
         self._create_logger()
         # self._load_model()   # load server side model with best GNN weights
-        self._load_aggregator()  # Initialize parameters used by aggregator
-        
+        self._load_consensus_MCMC_aggregator()  # Initialize parameters used by aggregator
+        self._load_distributed_MCMC_aggregator()
+
         self._load_compressor()
         self._load_proxystore()
 
@@ -49,16 +50,30 @@ class ServerAgent:
             kwargs["file_name"] = self.server_agent_config.server_configs.logging_output_filename
         self.logger = ServerAgentFileLogger(**kwargs)
 
-
-    def _load_aggregator(self) -> None:
+    def _load_distributed_MCMC_aggregator(self) -> None:
         """
         Load aggregator and initialize parameters
         """
 
-        self.aggregator: GlobalAggregator = GlobalAggregator(
+        self.distributed_mcmc_aggregator: DistributedMCMCAggregator = DistributedMCMCAggregator(
             OmegaConf.create(
-                self.server_agent_config.server_configs.aggregator_kwargs if
-                hasattr(self.server_agent_config.server_configs, "aggregator_kwargs") else {}
+                self.server_agent_config
+            ),
+            self.logger,
+        )
+
+    def run_distributed_MCMC(self, communicator):
+        """Run Distributed MCMC workflow"""
+        self.distributed_mcmc_aggregator.run_distributed_MCMC(communicator)
+
+    def _load_consensus_MCMC_aggregator(self) -> None:
+        """
+        Load aggregator and initialize parameters
+        """
+
+        self.aggregator: ConsensusAggregator = ConsensusAggregator(
+            OmegaConf.create(
+                self.server_agent_config
             ),
             self.logger,
         )

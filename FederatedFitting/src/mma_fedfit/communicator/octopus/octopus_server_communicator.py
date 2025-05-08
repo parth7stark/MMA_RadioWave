@@ -62,6 +62,25 @@ class OctopusServerCommunicator:
         print("[Server] Published ServerStarted event with config.", flush=True)
         self.logger.info("[Server] Published ServerStarted event with config.")
 
+    def send_aggregation_results(self, results_dict):
+        """
+        Publishes an event to the control topic indicating that the server has started,
+        along with the configuration shared among all clients.
+        """
+
+        event = {
+        
+            "EventType": "AggregationDone",
+            "theta_est": results_dict
+        }
+
+        self.producer.send(self.topic, value=event)
+        self.producer.flush()
+        
+        print("[Server] Published AggregationDone event with best parameter estimates.", flush=True)
+        self.logger.info("[Server] Published AggregationDone event with best parameter estimates.")
+
+
     def handle_local_MCMC_done_message(self, data):
         """
         Message of type "LocalMCMCDone" is detected/consumed. Handle it
@@ -72,9 +91,9 @@ class OctopusServerCommunicator:
         site_id = data["site_id"]    # 0 or 1
         status = data["status"]
         chain_b64 = data["chain"]
-        min_time = data["min_time"]
-        max_time = data["max_time"]
-        unique_frequencies = data["unique_frequencies"]
+        # min_time = data["min_time"]
+        # max_time = data["max_time"]
+        # unique_frequencies = data["unique_frequencies"]
 
         
         # Deserialize and extract tensor
@@ -90,7 +109,8 @@ class OctopusServerCommunicator:
 
 
 
-        self.server_agent.aggregator.process_local_MCMC_done_message(self.producer, self.topic, site_id, status, local_chain_list, min_time, max_time, unique_frequencies)
+        # self.server_agent.aggregator.process_local_MCMC_done_message(self.producer, self.topic, site_id, status, local_chain_list, min_time, max_time, unique_frequencies)
+        self.server_agent.aggregator.process_local_MCMC_done_message(self.producer, self.topic, site_id, status, local_chain_list)
 
 
     def send_proposed_theta(self, theta, iteration_no):
@@ -108,7 +128,7 @@ class OctopusServerCommunicator:
         print("[Server] Published ProposedTheta event.", flush=True)
         self.logger.info("[Server] Published ProposedTheta event.")
 
-    def collect_local_likelihoods(self, num_sites):
+    def collect_local_likelihoods(self, num_sites, ongoing_iteration):
         
         print("collect likelihood", flush=True)
 
@@ -142,19 +162,21 @@ class OctopusServerCommunicator:
             if Event_type == "LogLikelihoodComputed":
                 site_id = data["site_id"]
                 local_likelihood = data["local_likelihood"]
+                iteration_no_in_msg = data["step_no"]
 
-                print(f"[Server] Received LogLikelihoodComputed Event from site {site_id}")
-                self.logger.info(f"[Server] Received LogLikelihoodComputed from site {site_id}")
+                if iteration_no_in_msg == ongoing_iteration:
+                    print(f"[Server] Received LogLikelihoodComputed Event from site {site_id}")
+                    self.logger.info(f"[Server] Received LogLikelihoodComputed from site {site_id}")
 
-                # Add the client to the completed set
-                completed_clients.add(site_id)
+                    # Add the client to the completed set
+                    completed_clients.add(site_id)
 
-                log_likelihoods[site_id] = local_likelihood
+                    log_likelihoods[site_id] = local_likelihood
 
-                if completed_clients == expected_clients:
-                    print("[Server] Collected partial log likelihoods from all the sites. Compute global posterior...")
-                    self.logger.info("[Server] Collected partial log likelihoods from all the sites. Compute global posterior...")
-                    return log_likelihoods
+                    if completed_clients == expected_clients:
+                        print("[Server] Collected partial log likelihoods from all the sites. Compute global posterior...")
+                        self.logger.info("[Server] Collected partial log likelihoods from all the sites. Compute global posterior...")
+                        return log_likelihoods
 
 
         return log_likelihoods

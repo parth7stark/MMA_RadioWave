@@ -105,11 +105,11 @@ class OctopusClientCommunicator:
             "EventType": "LocalMCMCDone",
             "site_id": client_id,
             "status": "DONE",
-            'chain': chains_b64,
+            'chain': chains_b64
             # 'chain': local_results["chain"].tolist() if isinstance(local_results["chain"], np.ndarray) else local_results["chain"],
-            'min_time': float(local_results["min_time"]) if isinstance(local_results["min_time"], np.generic) else local_results["min_time"],
-            'max_time': float(local_results["max_time"]) if isinstance(local_results["max_time"], np.generic) else local_results["max_time"],
-            'unique_frequencies': local_results["unique_frequencies"].tolist() if isinstance(local_results["unique_frequencies"], np.ndarray) else local_results["unique_frequencies"]
+            # 'min_time': float(local_results["min_time"]) if isinstance(local_results["min_time"], np.generic) else local_results["min_time"],
+            # 'max_time': float(local_results["max_time"]) if isinstance(local_results["max_time"], np.generic) else local_results["max_time"],
+            # 'unique_frequencies': local_results["unique_frequencies"].tolist() if isinstance(local_results["unique_frequencies"], np.ndarray) else local_results["unique_frequencies"]
         }
 
     
@@ -126,35 +126,47 @@ class OctopusClientCommunicator:
         return
     
     def get_best_estimate(self, data):
-        theta_est = data["theta_est"]
-        global_min_time = data["global_min_time"]
-        global_max_time = data["global_max_time"]
-        unique_frequencies = data["unique_frequencies"]
-
-        print("Best estimate of parameters", flush=True)
-        self.logger.info("Best estimate of parameters")
-        params = ['log(E0)','thetaObs','thetaCore','log(n0)',
-                  'log(epsilon_e)','log(epsilon_B)','p']
+        """
+        Print consensus parameter values with 68% confidence intervals.
+    
+        Assumes results_dict has keys:
+        - 'median': median value
+        - 'LL': 16th percentile (lower bound)
+        - 'UL': 84th percentile (upper bound)
         
-        ndim = 7
-        for i in range(ndim):
-            if i in [0, 3, 4, 5]:  # Reverse the transformation for log-space parameters
-                log_value = np.log10(theta_est[i])  # Convert back to log-space
-                print(f'{params[i]} = {log_value:.2f}', flush=True)
-                self.logger.info(f'{params[i]} = {log_value:.2f}')
-            else:
-                print(f'{params[i]} = {theta_est[i]:.2f}', flush=True)
-                self.logger.info(f'{params[i]} = {theta_est[i]:.2f}')
+        results_dict: dict with structure:
+        {
+            "log(E0)": {"median": ..., "LL": ..., "UL": ...},
+            ...
+        }
+        """
+        results_dict = data["theta_est"]
+        # global_min_time = data["global_min_time"]
+        # global_max_time = data["global_max_time"]
+        # unique_frequencies = data["unique_frequencies"]
 
-        return theta_est, global_min_time, global_max_time, unique_frequencies
+        print("Consensus MCMC Best estimate of parameters", flush=True)
+        self.logger.info("Consensus MCMC Best estimate of parameters")
+        
+        theta_est = []
+        for param, stats in results_dict.items():
+            median = stats["median"]
+            LL = stats["LL"]
+            UL = stats["UL"]
+            err_minus = median - LL
+            err_plus = UL - median
+            
+            theta_est.append(median)
+
+            print(f"{param:>12s} = {median:.4f} +{err_plus:.4f} -{err_minus:.4f}")
+            
+
+        return theta_est
 
     def handle_proposed_theta_message(self, data, local_data):
         
-        if '_client_id' in kwargs:
-            client_id = str(kwargs["_client_id"])
-            del kwargs["_client_id"]
-        else:
-            client_id = str(self.client_id)
+
+        client_id = str(self.client_id)
 
         iteration_no = data["iteration_no"]
         theta = data["theta"]
@@ -164,13 +176,14 @@ class OctopusClientCommunicator:
         self.logger.info(f"Site {client_id} received proposed theta.")
 
         
-        log_likelihood = client_agent.compute_log_likelihood(theta, local_data)
+        log_likelihood = self.client_agent.compute_local_log_likelihood(theta, local_data)
         
         # Build the JSON payload
         data = {
             "EventType": "LogLikelihoodComputed",
             "site_id": client_id,
             'local_likelihood': log_likelihood,
+            "iteration_no": iteration_no
         }
     
         self.producer.send(
