@@ -3,6 +3,7 @@ from mma_param_estimation.logger import ServerAgentFileLogger
 from mma_param_estimation.downloader import DataDownloader
 from mma_param_estimation.results import AnalyzeResults
 from omegaconf import OmegaConf, DictConfig
+from proxystore.store import Store
 
 import subprocess
 from pathlib import Path
@@ -24,6 +25,7 @@ class ParamEstimatorAgent:
         self._create_logger()
         self._load_downloader()
         self._load_result_analyzer()
+        self._load_proxystore()
         
     def run_dingo_pipe(self, ini_file: Path):
         print(f" Running Dingo-BNS inference using config: {ini_file}")
@@ -58,3 +60,57 @@ class ParamEstimatorAgent:
             self.logger,
         )
     
+    def clean_up(self) -> None:
+        """Clean up the client agent."""
+        if hasattr(self, "proxystore") and self.proxystore is not None:
+            try:
+                self.proxystore.close(clear=True)
+            except:
+                self.proxystore.close()
+
+    def _load_proxystore(self) -> None:
+        """
+        Create the proxystore for storing and sending the local mcmc posterior samples from each site to the server.
+        """
+        if hasattr(self, "proxystore") and self.proxystore is not None:
+            return
+        self.proxystore = None
+        self.use_proxystore = False
+        if not hasattr(self.estimator_config, "comm_configs"):
+            return
+        if not hasattr(self.estimator_config.comm_configs, "proxystore_configs"):
+            return
+        if getattr(self.estimator_config.comm_configs.proxystore_configs, "enable_proxystore", False):
+            self.use_proxystore = True
+            self.proxystore = Store(
+                name="mma-param-estimation-proxystore",
+                connector=self.get_proxystore_connector(
+                    self.estimator_config.comm_configs.proxystore_configs.connector_type,
+                    self.estimator_config.comm_configs.proxystore_configs.connector_configs,
+                ),
+            )
+            self.logger.info(
+                f"Site using proxystore for local MCMC chain transfer with store: {self.estimator_config.comm_configs.proxystore_configs.connector_type}."
+            )
+
+
+    def get_proxystore_connector(self,
+        connector_name,
+        connector_args,
+    ):
+        assert connector_name in ["RedisConnector", "FileConnector", "EndpointConnector"], (
+            f"Invalid connector name: {connector_name}, only RedisConnector, FileConnector, and EndpointConnector are supported"
+        )
+        if connector_name == "RedisConnector":
+            from proxystore.connectors.redis import RedisConnector
+
+            connector = RedisConnector(**connector_args)
+        elif connector_name == "FileConnector":
+            from proxystore.connectors.file import FileConnector
+
+            connector = FileConnector(**connector_args)
+        elif connector_name == "EndpointConnector":
+            from proxystore.connectors.endpoint import EndpointConnector
+
+            connector = EndpointConnector(**connector_args)
+        return connector

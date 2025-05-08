@@ -152,3 +152,28 @@ class AnalyzeResults():
         print(f" Saved corner plot: {output_path}")
         # self.logger.info(f"Saved corner plot ({style} style): {output_path}")
         plt.close()
+    
+    def get_posterior_samples(self, param_names):
+        """
+        Extract posterior samples for specified parameters.
+
+        Args:
+            param_names (list[str]): List of parameter names to extract.
+
+        Returns:
+            dict: A dictionary where keys are parameter names and values are lists of sampled values.
+        """
+        df = self.samples.copy()
+
+        # Check that all requested parameters exist
+        missing = [p for p in param_names if p not in df.columns]
+        if missing:
+            raise ValueError(f"Requested parameters not found in samples: {missing}")
+
+        selected_samples_df = df[param_names]
+
+        # Convert DataFrame to dictionary (column: list of values)
+        # posterior_df = {col: selected_samples[col].tolist() for col in selected_samples.columns}
+
+        self.logger.info(f" Extracted posterior samples for parameters: {param_names}")
+        return selected_samples_df

@@ -4,6 +4,8 @@ from omegaconf import OmegaConf
 from mma_param_estimation.agent import ParamEstimatorAgent
 from mma_param_estimation.logger import ServerAgentFileLogger
 from diaspora_event_sdk import KafkaProducer, KafkaConsumer
+from .utils import serialize_tensor_to_base64, deserialize_tensor_from_base64
+import torch
 
 class OctopusEstimatorCommunicator:
     """
@@ -54,35 +56,82 @@ class OctopusEstimatorCommunicator:
         self.logger.info("Published Parameter Estimator started event.")
 
 
-    def send_posterior_samples(self, data):
+    def send_posterior_samples(self, posterior_df):
         """
-        Encountered a potential merger event, handle it (store it)
-        :param data: Potential Merger event message
-        value={
-        
-            "EventType": "PotentialMerger",
-            "detection_details": detection_details
+        We need to send the posterior_samples of inclination and distance to the MMA_module for overlap analysis
+        :param posterior_dict: 
+        Sample posterior_dict: Instead of dictionary, sending dataframe
+        {
+          "theta_jn": [0.4, 0.41, 0.39, 0.42, ...],
+          "luminosity_distance": [40.2, 41.0, 39.8, 40.5, ...]
         }
         :return: None for async and if sync communication return Metadata containing the server's acknowledgment status.
         """
-        
-        self.logger.info(f"[Merger Listener] Received PotentialMerger event")
-        
-        # Extract detection details
-        detection_details = data.get("detection_details", [])
-        
-        if detection_details:
-            # Store the potential merger event
-            self.estimator_agent.storage.store_merger_event(detection_details)
-            self.logger.info(f"Stored {len(detection_details)} detection details")
-            
-            # Log some details for debugging
-            for detail in detection_details:
-                self.logger.info(f"GPS Time: {detail.get('GPS_time')} -> UTC Time: {detail.get('UTC_time')}")
-        else:
-            self.logger.warning("Received PotentialMerger event with no detection details")
+        param_names = posterior_df.columns.tolist()
+
+        # Step 2: Convert to tensor for transfer
+        tensor_samples = torch.tensor(posterior_df.to_numpy())  # Shape [N, num_params]
+
+        # Step 3: Proxy if needed
+        if self.estimator_agent.use_proxystore:
+            tensor_samples = self.estimator_agent.proxystore.proxy(tensor_samples)
+            self.logger.info(f"Posterior samples proxied via ProxyStore.")
+
+        # Step 4: Serialize tensor to base64
+        payload_b64 = serialize_tensor_to_base64(tensor_samples)
+
+        # Step 5: Build the Kafka JSON payload
+        data = {
+            "EventType": "DingoPosteriorSamplesReady",
+            "parameters": param_names,
+            "posterior_samples": payload_b64
+        }
+
+        self.producer.send(
+            self.mma_topic,
+            value=data
+        )
+
+        self.producer.flush()
+
+        self.logger.info(f"Send Dingo Posterior Samples to MMA module")
+        return    
     
-    
+    # Add this on MMA module side
+    def handle_dingo_posterior_samples_message(self, data):
+        """
+        Handle a Kafka message containing posterior samples payload.
+        This extracts the proxied or normal posterior tensor and returns it as a list.
+
+        Args:
+            data (dict): Kafka message already parsed as dict (after json.loads).
+
+        Returns:
+            dict: A dictionary mapping parameter names to list of posterior samples.
+        """
+        event_type = data.get("EventType")
+        if event_type != "PosteriorSamplesReady":
+            self.logger.warning(f" Received unexpected event type: {event_type}")
+            return None
+
+        param_names = data["parameters"]  # List of parameter names
+        posterior_b64 = data["posterior_samples"]
+
+        # Step 1: Deserialize tensor
+        posterior_tensor = deserialize_tensor_from_base64(posterior_b64)
+
+        # Step 2: Extract if Proxy
+        if isinstance(posterior_tensor, Proxy):
+            self.logger.info("🔗 Extracting posterior tensor from ProxyStore.")
+            posterior_tensor = extract(posterior_tensor)
+
+        # Step 3: Convert tensor to structured dictionary
+        posterior_array = posterior_tensor.numpy()  # Shape: [num_samples, num_parameters]
+        posterior_dict = {param: posterior_array[:, idx].tolist() for idx, param in enumerate(param_names)}
+
+        self.logger.info(f" Received posterior samples for parameters: {param_names}")
+        return posterior_dict
+
     def _default_logger(self):
         """Create a default logger for the server if no logger provided."""
         logger = logging.getLogger(__name__)
