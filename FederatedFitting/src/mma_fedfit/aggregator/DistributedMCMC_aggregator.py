@@ -1,5 +1,5 @@
 import torch
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf, ListConfig
 from typing import Any, Union, List, Dict, Optional
 import numpy as np
 import os
@@ -53,22 +53,22 @@ class DistributedMCMCAggregator():
     # AGGREGATION FUNCTION: GAUSSIAN CONSENSUS
     #-------------------------------------------------
     def log_prior(self, theta):
-        z_known = self.server_agent_config.client_configs.mcmc_configs.Z_known
+        z_known = self.processed_mcmc_config.Z_known
 
         if z_known:
             logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing = theta
         else:
             logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing, z = theta
 
-        loge0_range = self.server_agent_config.client_configs.mcmc_configs.logE0_range
-        thetaobs_range = self.server_agent_config.client_configs.mcmc_configs.thetaObs_range
-        thetacore_range = self.server_agent_config.client_configs.mcmc_configs.thetaCore_range
-        logn0_range = self.server_agent_config.client_configs.mcmc_configs.logn0_range
-        logepsilon_e_range = self.server_agent_config.client_configs.mcmc_configs.logEpsilon_e_range
-        logepsilon_b_range = self.server_agent_config.client_configs.mcmc_configs.logEpsilon_B_range
-        p_range = self.server_agent_config.client_configs.mcmc_configs.P_range
-        thetawing_range = self.server_agent_config.client_configs.mcmc_configs.thetaWing_range
-        z_range = self.server_agent_config.client_configs.mcmc_configs.Z_range
+        loge0_range = self.processed_mcmc_config.logE0_range
+        thetaobs_range = self.processed_mcmc_config.thetaObs_range
+        thetacore_range = self.processed_mcmc_config.thetaCore_range
+        logn0_range = self.processed_mcmc_config.logn0_range
+        logepsilon_e_range = self.processed_mcmc_config.logEpsilon_e_range
+        logepsilon_b_range = self.processed_mcmc_config.logEpsilon_B_range
+        p_range = self.processed_mcmc_config.P_range
+        thetawing_range = self.processed_mcmc_config.thetaWing_range
+        z_range = self.processed_mcmc_config.Z_range
         
         if z_known:
             if (
@@ -124,22 +124,23 @@ class DistributedMCMCAggregator():
     def run_distributed_MCMC(self, communicator):
         """Run Distributed MCMC workflow"""
         self.communicator = communicator
+        self.process_mcmc_config()
 
         # Prepare MCMC parameters
-        z_known = self.server_agent_config.client_configs.mcmc_configs.Z_known
+        z_known = self.processed_mcmc_config.Z_known
         ndim = 8 if z_known else 9
-        nwalkers = self.server_agent_config.client_configs.mcmc_configs.nwalkers
-        niters = self.server_agent_config.client_configs.mcmc_configs.niters
+        nwalkers = self.processed_mcmc_config.nwalkers
+        niters = self.processed_mcmc_config.niters
 
-        loge0_range = self.server_agent_config.client_configs.mcmc_configs.logE0_range
-        thetaobs_range = self.server_agent_config.client_configs.mcmc_configs.thetaObs_range
-        thetacore_range = self.server_agent_config.client_configs.mcmc_configs.thetaCore_range
-        logn0_range = self.server_agent_config.client_configs.mcmc_configs.logn0_range
-        logepsilon_e_range = self.server_agent_config.client_configs.mcmc_configs.logEpsilon_e_range
-        logepsilon_b_range = self.server_agent_config.client_configs.mcmc_configs.logEpsilon_B_range
-        p_range = self.server_agent_config.client_configs.mcmc_configs.P_range
-        thetawing_range = self.server_agent_config.client_configs.mcmc_configs.thetaWing_range
-        z_range = self.server_agent_config.client_configs.mcmc_configs.Z_range
+        loge0_range = self.processed_mcmc_config.logE0_range
+        thetaobs_range = self.processed_mcmc_config.thetaObs_range
+        thetacore_range = self.processed_mcmc_config.thetaCore_range
+        logn0_range = self.processed_mcmc_config.logn0_range
+        logepsilon_e_range = self.processed_mcmc_config.logEpsilon_e_range
+        logepsilon_b_range = self.processed_mcmc_config.logEpsilon_B_range
+        p_range = self.processed_mcmc_config.P_range
+        thetawing_range = self.processed_mcmc_config.thetaWing_range
+        z_range = self.processed_mcmc_config.Z_range
         
         # Define parameter bounds
         if z_known:
@@ -190,7 +191,7 @@ class DistributedMCMCAggregator():
             ])
         
 
-        np.random.seed(self.server_agent_config.client_configs.mcmc_configs.random_seed)
+        np.random.seed(self.processed_mcmc_config.random_seed)
 
         # Prepare initial walker positions (in 7 dimensions).
         # pos = ( [ np.log10(Z["E0"]),
@@ -212,14 +213,15 @@ class DistributedMCMCAggregator():
         # sampler = emcee.EnsembleSampler(nwalkers, ndim, lambda theta: global_log_probability(theta, num_sites))
         # sampler.run_mcmc(pos, niters, progress=True)
 
-        with Pool() as pool:
+        # with Pool() as pool:
             # Create the sampler that will coordinate with all sites
-            sampler = emcee.EnsembleSampler(
-                nwalkers, ndim, self.global_log_probability, args=(num_sites,), pool=pool,
-                moves=[(mvs.StretchMove(a=1.1), 0.7), (mvs.WalkMove(10), 0.3)])
-            
-            print('Central coordinator: starting sampling')
-            state = sampler.run_mcmc(pos, niters, progress=True)
+        # Multi-processing not useful in this method. We query in each iteration
+        sampler = emcee.EnsembleSampler(
+            nwalkers, ndim, self.global_log_probability, args=(num_sites,),
+            moves=[(mvs.StretchMove(a=1.1), 0.7), (mvs.WalkMove(10), 0.3)])
+        
+        print('Central coordinator: starting sampling')
+        state = sampler.run_mcmc(pos, niters, progress=True)
         
         gc.collect()
 
@@ -229,14 +231,14 @@ class DistributedMCMCAggregator():
 
         # Get flat samples after burn-in
         run_name = self.server_agent_config.server_configs.aggregator_kwargs.run_name
-        burnin = self.client_agent_config.mcmc_configs.burnin
+        burnin = self.processed_mcmc_config.burnin
 
         flat_samples = sampler.get_chain(discard=burnin, flat=True)
         np.save(os.path.join(save_folder, f"{run_name}_distributed_flat_samples.npy"), flat_samples)
         
 
         # Save sampler state
-        self.save_sampler_state(sampler, os.path.join(save_folder, f"{run_name}_distributed_sampler.pkl"))
+        # self.save_sampler_state(sampler, os.path.join(save_folder, f"{run_name}_distributed_sampler.pkl"))
         
 
         # Save log probability
@@ -247,7 +249,7 @@ class DistributedMCMCAggregator():
        
         # copied from consensus aggregator
         # Create consensus plots
-        z_known = self.server_agent_config.client_configs.mcmc_configs.Z_known
+        z_known = self.processed_mcmc_config.Z_known
 
         if z_known:
             params = ['log(E0)','thetaObs','thetaCore','log(n0)','log(eps_e)','log(eps_B)','p', 'thetaWing']
@@ -258,17 +260,17 @@ class DistributedMCMCAggregator():
         
         self.make_posterior_hists(
             flat_samples, ndim, params, 
-            f"{save_folder}/{run_name}_consensus_PosteriorHists.png"
+            f"{save_folder}/{run_name}_distributed_PosteriorHists.png"
         )
         
         true_values = self.server_agent_config.client_configs.mcmc_configs.true_values
-        display_truths_on_corner = self.server_agent_config.client_configs.mcmc_configs.display_truths_on_corner
+        display_truths_on_corner = self.processed_mcmc_config.display_truths_on_corner
 
 
         self.make_corner_plots(
             flat_samples, ndim, params, 
             true_values, display_truths_on_corner,
-            f"{save_folder}/{run_name}_consensus_CornerPlots.png"
+            f"{save_folder}/{run_name}_distributed_CornerPlots.png"
         )
         
         # Send consensus parameters back to clients for their plotting
@@ -278,10 +280,10 @@ class DistributedMCMCAggregator():
         # for i in range(ndim):
         #     print(f"{params[i]}: {consensus_medians[i]:.4f}")
 
-        print('Consensus parameter values', flush=True)
+        print('Distributed parameter values', flush=True)
         print("Best estimate of parameters", flush=True)
         self.logger.info("Best estimate of parameters")
-        theta = []
+        # theta = []
         results_dict = {}
 
         for i in range(ndim):
@@ -293,7 +295,7 @@ class DistributedMCMCAggregator():
                 theta.append(mcmc[1])
             """
             #keep it in log space
-            theta.append(mcmc[1])
+            # theta.append(mcmc[1])
             q = np.diff(mcmc)
             print(f'{params[i]} = {mcmc[1]:.4f} +{q[1]:.4f} -{q[0]:.4f}')
 
@@ -374,3 +376,91 @@ class DistributedMCMCAggregator():
         )
         plt.tight_layout()
         plt.savefig(save_path, bbox_inches='tight')
+
+    def process_mcmc_config(self):
+        """
+        Process the YAML configuration loaded via OmegaConf to ensure proper types.
+        This function is meant to be used directly in your existing code.
+        
+        Args:
+            client_agent: Your client agent object with config loaded via OmegaConf
+            
+        Returns:
+            A dictionary with processed configuration values
+        """
+        # Get mcmc_configs from the client agent
+        mcmc_configs = self.server_agent_config.client_configs.mcmc_configs
+        
+        # Create a dictionary to store processed values
+        self.processed_mcmc_config = {}
+        
+        # Process boolean values
+        boolean_keys = [
+            'Z_known', 'include_upper_limits_on_lc', 
+            'exclude_time_flag', 'exclude_ra_dec_flag', 
+            'exclude_name_flag', 'exclude_wrong_name',
+            'exclude_outside_ra_dec_uncertainty', 
+            'display_truths_on_corner'
+        ]
+        
+        for key in boolean_keys:
+            if hasattr(mcmc_configs, key):
+                val = getattr(mcmc_configs, key)
+                if isinstance(val, str):
+                    self.processed_mcmc_config[key] = val.lower() == 'true'
+                else:
+                    self.processed_mcmc_config[key] = bool(val)
+        
+        # Process range values
+        range_keys = [
+            'Z_range', 'thetaObs_range', 'thetaCore_range',
+            'P_range', 'thetaWing_range', 'logE0_range',
+            'logn0_range', 'logEpsilon_e_range', 'logEpsilon_B_range'
+        ]
+        
+        for key in range_keys:
+            if hasattr(mcmc_configs, key):
+                val = getattr(mcmc_configs, key)
+
+                # Convert ListConfig to native list
+                if isinstance(val, ListConfig):
+                    val = list(val)
+                if isinstance(val, list):
+                    self.processed_mcmc_config[key] = [float(x) for x in val]
+                else:
+                    # Handle case where range might be represented as a string "[a, b]"
+                    try:
+                        if isinstance(val, str):
+                            self.processed_mcmc_config[key] = [float(x.strip()) for x in val.strip("[]").split(",")]
+                        else:
+                            self.processed_mcmc_config[key] = [float(val)]  # Single value case
+                    except ValueError:
+                        self.processed_mcmc_config[key] = val  # Keep original if conversion fails
+        
+        # Process numeric values
+        numeric_keys = [
+            'nwalkers', 'niters', 'burnin', 'random_seed',
+            'Z_fixed', 'arcseconds_uncertainty'
+        ]
+        
+        for key in numeric_keys:
+            if hasattr(mcmc_configs, key):
+                val = getattr(mcmc_configs, key)
+                try:
+                    if isinstance(val, str):
+                        if '.' in val:
+                            self.processed_mcmc_config[key] = float(val)
+                        else:
+                            self.processed_mcmc_config[key] = int(val)
+                    else:
+                        self.processed_mcmc_config[key] = val  # Already numeric
+                except ValueError:
+                    self.processed_mcmc_config[key] = val  # Keep original if conversion fails
+        
+        # to keep do notation
+        self.processed_mcmc_config = OmegaConf.create(self.processed_mcmc_config)
+        # return self.processed_mcmc_config
+
+            
+
+

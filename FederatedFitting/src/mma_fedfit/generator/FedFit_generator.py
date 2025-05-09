@@ -1,6 +1,6 @@
 import torch
 from typing import Tuple, Dict, Optional, Any
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf, ListConfig
 import emcee
 import afterglowpy as grb
 import numpy as np
@@ -23,7 +23,7 @@ class LocalGenerator():
     """  
     def __init__(
         self,
-        client_agent_config: DictConfig = DictConfig({}),
+        client_agent_config,
         logger: Optional[Any]=None,
         **kwargs
     ):
@@ -57,8 +57,8 @@ class LocalGenerator():
     # GRB light-curve likelihood, prior, probability
     #-------------------------------------------------
     def log_likelihood(self, theta, nu, x, y, yerr):
-        z_known = bool(self.client_agent_config.mcmc_configs.Z_known)
-        z_fixed = int(self.client_agent_config.mcmc_configs.Z_fixed)
+        z_known = self.processed_mcmc_configs.Z_known
+        z_fixed = self.processed_mcmc_configs.Z_fixed
 
         if z_known == True:
             logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing = theta
@@ -125,37 +125,24 @@ class LocalGenerator():
             sigma2 = yerr**2
             return -0.5 * np.sum((y - model) ** 2 / sigma2 + np.log10(sigma2))
 
-    
-    def ensure_float_list(self, lst):
-        """
-        Convert a list or tuple of values to a list of floats.
-        If any value is not convertible, it raises a ValueError.
-        """
-        if not isinstance(lst, (list, tuple)):
-            raise TypeError("Input must be a list or tuple.")
-        
-        try:
-            return [float(x) for x in lst]
-        except ValueError as e:
-            raise ValueError(f"Failed to convert one or more elements to float in {lst}") from e
-        
+            
     def log_prior(self, theta):
-        z_known = bool(self.client_agent_config.mcmc_configs.Z_known)
+        z_known = self.processed_mcmc_configs.Z_known
 
         if z_known:
             logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing = theta
         else:
             logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing, z = theta
 
-        loge0_range = self.ensure_float_list(self.client_agent_config.mcmc_configs.logE0_range)
-        thetaobs_range = self.ensure_float_list(self.client_agent_config.mcmc_configs.thetaObs_range)
-        thetacore_range = self.ensure_float_list(self.client_agent_config.mcmc_configs.thetaCore_range)
-        logn0_range = self.ensure_float_list(self.client_agent_config.mcmc_configs.logn0_range)
-        logepsilon_e_range = self.ensure_float_list(self.client_agent_config.mcmc_configs.logEpsilon_e_range)
-        logepsilon_b_range = self.ensure_float_list(self.client_agent_config.mcmc_configs.logEpsilon_B_range)
-        p_range = self.ensure_float_list(self.client_agent_config.mcmc_configs.P_range)
-        thetawing_range = self.ensure_float_list(self.client_agent_config.mcmc_configs.thetaWing_range)
-        z_range = self.ensure_float_list(self.client_agent_config.mcmc_configs.Z_range)
+        loge0_range = self.processed_mcmc_configs.logE0_range
+        thetaobs_range = self.processed_mcmc_configs.thetaObs_range
+        thetacore_range = self.processed_mcmc_configs.thetaCore_range
+        logn0_range = self.processed_mcmc_configs.logn0_range
+        logepsilon_e_range = self.processed_mcmc_configs.logEpsilon_e_range
+        logepsilon_b_range = self.processed_mcmc_configs.logEpsilon_B_range
+        p_range = self.processed_mcmc_configs.P_range
+        thetawing_range = self.processed_mcmc_configs.thetaWing_range
+        z_range = self.processed_mcmc_configs.Z_range
         
         if z_known:
             if (
@@ -179,13 +166,12 @@ class LocalGenerator():
                 and thetacore_range[0] <= thetaCore < thetacore_range[1]
                 and p_range[0] < p < p_range[1]
                 and logepsilon_e_range[0] < logepsilon_e <= logepsilon_e_range[1]
-                and logepsilon_e_range[0] < logepsilon_B <= logepsilon_e_range[1]
+                and logepsilon_b_range[0] < logepsilon_B <= logepsilon_b_range[1]
                 and logn0_range[0] < logn0 < logn0_range[1]
                 and z_range[0] < z < z_range[1]
             ):
                 return 0.0
             return -np.inf
-
 
     def log_probability(self, theta, nu, x, y, yerr):
         lp = self.log_prior(theta)
@@ -200,7 +186,93 @@ class LocalGenerator():
         with open(filename, "wb") as f:
             pickle.dump(sampler, f)
             
-    def run_local_mcmc(self, local_data, pos, niter, nwalkers, ndim):
+    def run_local_mcmc(self, local_data):
+        
+        self.process_mcmc_config()
+
+        # For boolean values
+        z_known = self.processed_mcmc_configs.Z_known
+
+        ndim = 8 if z_known else 9
+        nwalkers = self.processed_mcmc_configs.nwalkers
+        niters = self.processed_mcmc_configs.niters
+        
+        # Safe extraction of configuration values
+        logn0_range = self.processed_mcmc_configs.logn0_range
+        logepsilon_e_range = self.processed_mcmc_configs.logEpsilon_e_range
+        logepsilon_b_range = self.processed_mcmc_configs.logEpsilon_B_range
+        p_range = self.processed_mcmc_configs.P_range
+        thetawing_range = self.processed_mcmc_configs.thetaWing_range
+        z_range = self.processed_mcmc_configs.Z_range
+        thetaobs_range = self.processed_mcmc_configs.thetaObs_range
+        thetacore_range = self.processed_mcmc_configs.thetaCore_range
+        loge0_range = self.processed_mcmc_configs.logE0_range
+
+
+        # Define parameter bounds
+        if z_known:
+            lower_bounds = np.array([
+                loge0_range[0],        # log10(E0)
+                thetaobs_range[0],     # thetaObs
+                thetacore_range[0],    # thetaCore
+                logn0_range[0],        # log10(n0)
+                logepsilon_e_range[0], # log10(eps_e)
+                logepsilon_b_range[0], # log10(eps_B)
+                p_range[0],            # p
+                thetawing_range[0]     # thetaWing 
+            ])
+            
+            upper_bounds = np.array([
+                loge0_range[1],        # log10(E0)
+                thetaobs_range[1],     # thetaObs
+                thetacore_range[1],    # thetaCore
+                logn0_range[1],        # log10(n0)
+                logepsilon_e_range[1], # log10(eps_e)
+                logepsilon_b_range[1], # log10(eps_B)
+                p_range[1],            # p
+                thetawing_range[1]     # thetaWing
+            ])
+        else:
+            lower_bounds = np.array([
+                loge0_range[0],        # log10(E0)
+                thetaobs_range[0],     # thetaObs
+                thetacore_range[0],    # thetaCore
+                logn0_range[0],        # log10(n0)
+                logepsilon_e_range[0], # log10(eps_e)
+                logepsilon_b_range[0], # log10(eps_B)
+                p_range[0],            # p
+                thetawing_range[0],    # thetaWing
+                z_range[0]             # z
+            ])
+            
+            upper_bounds = np.array([
+                loge0_range[1],        # log10(E0)
+                thetaobs_range[1],     # thetaObs
+                thetacore_range[1],    # thetaCore
+                logn0_range[1],        # log10(n0)
+                logepsilon_e_range[1], # log10(eps_e)
+                logepsilon_b_range[1], # log10(eps_B)
+                p_range[1],            # p
+                thetawing_range[1],    # thetaWing
+                z_range[1]             # z
+            ])
+        
+
+        np.random.seed(self.processed_mcmc_configs.random_seed)
+
+        # Prepare initial walker positions (in 7 dimensions).
+        # pos = ( [ np.log10(Z["E0"]),
+        #             Z["thetaObs"],
+        #             Z["thetaCore"],
+        #             np.log10(Z["n0"]),
+        #             np.log10(Z["epsilon_e"]),
+        #             np.log10(Z["epsilon_B"]),
+        #             Z["p"] ] 
+        #         + 0.005 * np.random.randn(nwalkers, ndim) )
+
+        # position it locally and uniformly
+        pos = np.random.uniform(low=lower_bounds, high=upper_bounds, size=(nwalkers, ndim))
+
         # Extract arrays from this site's data subset
         t = np.array(local_data["t"])
         nu = np.array(local_data["frequency"])
@@ -211,7 +283,7 @@ class LocalGenerator():
             moves=[(mvs.StretchMove(a=1.1), 0.7), (mvs.WalkMove(10), 0.3)])
             # sampler.run_mcmc(pos, niter, progress=True)
         
-            state = sampler.run_mcmc(pos, niter, progress=True)
+            state = sampler.run_mcmc(pos, niters, progress=True)
 
         gc.collect()
 
@@ -220,7 +292,7 @@ class LocalGenerator():
         os.makedirs(site_folder, exist_ok=True)
 
         # Get flat samples after burn-in
-        burnin = int(self.client_agent_config.mcmc_configs.burnin)
+        burnin = self.processed_mcmc_configs.burnin
         run_name = self.client_agent_config.fitting_configs.run_name
 
         flat_samples = sampler.get_chain(discard=burnin, flat=True)
@@ -238,20 +310,37 @@ class LocalGenerator():
         # cov = np.cov(flat_samples, rowvar=False)
         
         # Create plots for local site
-        z_known = bool(self.client_agent_config.mcmc_configs.Z_known)
+        z_known = self.processed_mcmc_configs.Z_known
 
         if z_known:
             params = ['log(E0)','thetaObs','thetaCore','log(n0)','log(eps_e)','log(eps_B)','p', 'thetaWing']
         else:
             params = ['log(E0)','thetaObs','thetaCore','log(n0)','log(eps_e)','log(eps_B)','p', 'thetaWing', 'z']
         
+        print('Local Site parameter values', flush=True)
+        print("Best estimate of parameters", flush=True)
+        self.logger.info("Local site: Best estimate of parameters")
+        for i in range(ndim):
+            mcmc = np.percentile(flat_samples[:, i], [16, 50, 84])
+            """
+            if i in [0, 3, 4, 5]:
+                theta.append(10 ** mcmc[1])
+            else:
+                theta.append(mcmc[1])
+            """
+            #keep it in log space
+            q = np.diff(mcmc)
+            print(f'{params[i]} = {mcmc[1]:.4f} +{q[1]:.4f} -{q[0]:.4f}')
+
         # Plotting function present in generator.inference_utils
         make_posterior_hists(flat_samples, burnin, nwalkers, ndim, params, f"{site_folder}/{run_name}_PosteriorHists.png")
         
         true_values = self.client_agent_config.mcmc_configs.true_values
-        display_truths_on_corner = self.client_agent_config.mcmc_configs.display_truths_on_corner
+        display_truths_on_corner = self.processed_mcmc_configs.display_truths_on_corner
         make_corner_plots(flat_samples, burnin, nwalkers, ndim, params, true_values, display_truths_on_corner, f"{site_folder}/{run_name}_CornerPlots.png")
-        make_Log_Likelihood_plot(log_prob, burnin, nwalkers, f"{site_folder}/{run_name}_LogProb.png")
+        
+        plot_names = self.client_agent_config.fitting_configs.plot_names
+        make_Log_Likelihood_plot(log_prob, burnin, nwalkers, plot_names, f"{site_folder}/{run_name}_LogProb.png")
 
     # Return statistics for consensus (not raw data)
     # return mean, cov
@@ -272,9 +361,95 @@ class LocalGenerator():
         Function that takes proposed theta from server and computes local log-likelihood
         """
 
+        self.process_mcmc_config()
+
         # Extract site data arrays.
         t = np.array(site_data["t"])
         nu = np.array(site_data["frequency"])
         fnu = np.array(site_data["flux"])
         err = np.array(site_data["err"])
         return self.log_likelihood(theta, nu, t, fnu, err)
+    
+    def process_mcmc_config(self):
+        """
+        Process the YAML configuration loaded via OmegaConf to ensure proper types.
+        This function is meant to be used directly in your existing code.
+        
+        Args:
+            client_agent: Your client agent object with config loaded via OmegaConf
+            
+        Returns:
+            A dictionary with processed configuration values
+        """
+        # Get mcmc_configs from the client agent
+        mcmc_configs = self.client_agent_config.mcmc_configs
+        
+        # Create a dictionary to store processed values
+        self.processed_mcmc_configs = {}
+        
+        # Process boolean values
+        boolean_keys = [
+            'Z_known', 'include_upper_limits_on_lc', 
+            'exclude_time_flag', 'exclude_ra_dec_flag', 
+            'exclude_name_flag', 'exclude_wrong_name',
+            'exclude_outside_ra_dec_uncertainty', 
+            'display_truths_on_corner'
+        ]
+        
+        for key in boolean_keys:
+            if hasattr(mcmc_configs, key):
+                val = getattr(mcmc_configs, key)
+                if isinstance(val, str):
+                    self.processed_mcmc_configs[key] = val.lower() == 'true'
+                else:
+                    self.processed_mcmc_configs[key] = bool(val)
+        
+        # Process range values
+        range_keys = [
+            'Z_range', 'thetaObs_range', 'thetaCore_range',
+            'P_range', 'thetaWing_range', 'logE0_range',
+            'logn0_range', 'logEpsilon_e_range', 'logEpsilon_B_range'
+        ]
+        
+        for key in range_keys:
+            if hasattr(mcmc_configs, key):
+                val = getattr(mcmc_configs, key)
+
+                # Convert ListConfig to native list
+                if isinstance(val, ListConfig):
+                    val = list(val)
+                if isinstance(val, list):
+                    self.processed_mcmc_configs[key] = [float(x) for x in val]
+                else:
+                    # Handle case where range might be represented as a string "[a, b]"
+                    try:
+                        if isinstance(val, str):
+                            self.processed_mcmc_configs[key] = [float(x.strip()) for x in val.strip("[]").split(",")]
+                        else:
+                            self.processed_mcmc_configs[key] = [float(val)]  # Single value case
+                    except ValueError:
+                        self.processed_mcmc_configs[key] = val  # Keep original if conversion fails
+        
+        # Process numeric values
+        numeric_keys = [
+            'nwalkers', 'niters', 'burnin', 'random_seed',
+            'Z_fixed', 'arcseconds_uncertainty'
+        ]
+        
+        for key in numeric_keys:
+            if hasattr(mcmc_configs, key):
+                val = getattr(mcmc_configs, key)
+                try:
+                    if isinstance(val, str):
+                        if '.' in val:
+                            self.processed_mcmc_configs[key] = float(val)
+                        else:
+                            self.processed_mcmc_configs[key] = int(val)
+                    else:
+                        self.processed_mcmc_configs[key] = val  # Already numeric
+                except ValueError:
+                    self.processed_mcmc_configs[key] = val  # Keep original if conversion fails
+        
+        # to keep do notation
+        self.processed_mcmc_configs = OmegaConf.create(self.processed_mcmc_configs)
+        # return self.processed_mcmc_config

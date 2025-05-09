@@ -470,7 +470,7 @@ def plot_global_light_curve(data, theta, global_min, global_max, frequencies, ou
     # plt.close()
     # print(f"Global light curve saved to {output_filename}", flush=True)
 
-def make_Log_Likelihood_plot(log_prob, burnin, nwalkers, save_path):
+def make_Log_Likelihood_plot(log_prob, burnin, nwalkers, plot_names, save_path):
     """
     Modified to take save path as a parameter
     """
@@ -514,9 +514,9 @@ def make_posterior_hists(samples, burnin, nwalkers, ndim, params, save_path):
     """
     medians = np.median(samples[burnin * nwalkers:], axis=0)
 
-    print('median parameter values after burnin:')
-    for i in range(ndim):
-        print(f"{params[i]}: {medians[i]:.4f}")
+    # print('median parameter values after burnin:')
+    # for i in range(ndim):
+    #     print(f"{params[i]}: {medians[i]:.4f}")
     
     # Create subplots
     if ndim == 8:

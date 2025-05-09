@@ -119,7 +119,7 @@ class OctopusServerCommunicator:
         event = {
             "EventType": "ProposedTheta",
             "iteration_no": iteration_no,
-            "theta": theta,
+            "theta": theta.tolist(),  # Convert ndarray to list,
         }
 
         self.producer.send(self.topic, value=event)
@@ -162,7 +162,7 @@ class OctopusServerCommunicator:
             if Event_type == "LogLikelihoodComputed":
                 site_id = data["site_id"]
                 local_likelihood = data["local_likelihood"]
-                iteration_no_in_msg = data["step_no"]
+                iteration_no_in_msg = data["iteration_no"]
 
                 if iteration_no_in_msg == ongoing_iteration:
                     print(f"[Server] Received LogLikelihoodComputed Event from site {site_id}")

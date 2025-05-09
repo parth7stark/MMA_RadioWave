@@ -8,7 +8,7 @@ import numpy as np
 from .utils import serialize_tensor_to_base64, deserialize_tensor_from_base64
 from diaspora_event_sdk import KafkaProducer, KafkaConsumer
 import torch
-
+import logging
 
 class OctopusClientCommunicator:
     """
@@ -145,8 +145,8 @@ class OctopusClientCommunicator:
         # global_max_time = data["global_max_time"]
         # unique_frequencies = data["unique_frequencies"]
 
-        print("Consensus MCMC Best estimate of parameters", flush=True)
-        self.logger.info("Consensus MCMC Best estimate of parameters")
+        print("MCMC Best estimate of parameters", flush=True)
+        self.logger.info("MCMC Best estimate of parameters")
         
         theta_est = []
         for param, stats in results_dict.items():
@@ -169,14 +169,14 @@ class OctopusClientCommunicator:
         client_id = str(self.client_id)
 
         iteration_no = data["iteration_no"]
-        theta = data["theta"]
+        theta = np.array(data["theta"])
 
 
         print(f"Site {client_id} received proposed theta.")
         self.logger.info(f"Site {client_id} received proposed theta.")
 
         
-        log_likelihood = self.client_agent.compute_local_log_likelihood(theta, local_data)
+        log_likelihood = self.client_agent.generator.compute_local_log_likelihood(theta, local_data)
         
         # Build the JSON payload
         data = {

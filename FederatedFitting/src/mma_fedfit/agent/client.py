@@ -3,9 +3,10 @@ from proxystore.store import Store
 from mma_fedfit.compressor import *
 from mma_fedfit.generator import LocalGenerator
 from mma_fedfit.config import ClientAgentConfig
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig, OmegaConf, ListConfig
 from typing import Union, Dict, OrderedDict, Tuple, Optional
 from mma_fedfit.logger import ClientAgentFileLogger
+
 
 
 class ClientAgent:
@@ -47,9 +48,9 @@ class ClientAgent:
         return self.client_id
     
 
-    def run_local_mcmc(self, preprocessed_local_data, pos, niter, nwalkers, ndim) -> None:
+    def run_local_mcmc(self, preprocessed_local_data) -> None:
         """Compute local embedding using the local data."""
-        self.generator.run_local_mcmc(preprocessed_local_data, pos, niter, nwalkers, ndim)
+        self.generator.run_local_mcmc(preprocessed_local_data)
 
     
     def compute_log_likelihood(self, theta, fitting_data) -> None:
@@ -190,7 +191,6 @@ class ClientAgent:
 
             connector = EndpointConnector(**connector_args)
         return connector
-
 
             
 

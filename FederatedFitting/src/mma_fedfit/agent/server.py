@@ -64,8 +64,9 @@ class ServerAgent:
 
     def run_distributed_MCMC(self, communicator):
         """Run Distributed MCMC workflow"""
-        self.distributed_mcmc_aggregator.run_distributed_MCMC(communicator)
-
+        results_dict =  self.distributed_mcmc_aggregator.run_distributed_MCMC(communicator)
+        return results_dict
+    
     def _load_consensus_MCMC_aggregator(self) -> None:
         """
         Load aggregator and initialize parameters

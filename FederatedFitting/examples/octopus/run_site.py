@@ -9,6 +9,8 @@ import json
 import pandas as pd
 import numpy as np
 import os
+import traceback
+
 
 
 argparser = argparse.ArgumentParser()
@@ -51,12 +53,6 @@ for msg in client_communicator.consumer:
         break  # We can break from the loop as we only need that single event
     
 
-#  Start running local MCMC
-print(f"[Site {client_agent.get_id()}] ready for curve fitting. Now computing local posterior samples and sending to server...")
-client_agent.logger.info(f"[Site {client_agent.get_id()}] ready for curve fitting. Now computing local posterior samples and sending to server...")
-
-
-
 if client_agent.client_agent_config.fitting_configs.use_approach=="2":
     # Use Global likelihood MCMC approach
     # print("Workflow to be implemented")
@@ -83,9 +79,12 @@ if client_agent.client_agent_config.fitting_configs.use_approach=="2":
 
     # Listen for incoming proposed theta
     for message in client_communicator.consumer:
-        data_str = msg.value.decode("utf-8")  # decode to string
+        topic = message.topic
+        # try:
+        data_str = message.value.decode("utf-8")  # decode to string
         data = json.loads(data_str)          # parse JSON to dict
 
+        client_agent.logger.info(f"[Site {client_agent.get_id()}] msg: {data}")
         Event_type = data["EventType"]
 
         if Event_type == "ProposedTheta":
@@ -105,7 +104,43 @@ if client_agent.client_agent_config.fitting_configs.use_approach=="2":
 
             # Skip plotting for now
             break
+        elif Event_type == "SiteReady":  
+                # Site connected and ready for fitting the curve
+                # not triggering anything on server side, just publishing event to octopus fabric
+                # Keep on listening other events
+                continue 
 
+                # Later we will keep track of connected Sites and check if anyone got disconnected
+
+        elif Event_type == "ServerStarted":
+            # Continue listening other events
+            continue
+        elif Event_type == "LogLikelihoodComputed":
+            # Continue listening other events
+            continue
+        else:
+            print(f"[Site {client_agent.get_id()}] Unknown Event Type in topic ({topic}): {Event_type}", flush=True)
+            client_agent.logger.info(f"[Site {client_agent.get_id()}] Unknown Event Type in topic ({topic}): {Event_type}")
+
+        # except json.JSONDecodeError as e:
+        #     # Handle invalid JSON messages
+        #     print(f"[Site {client_agent.get_id()}] JSONDecodeError for message from topic ({topic}): {e}", flush=True)
+        #     client_agent.logger.error(f"[Site {client_agent.get_id()}] JSONDecodeError for message from topic ({topic}): {e}")
+        
+        # except Exception as e:
+        #     # Catch-all for other unexpected exceptions
+        #     """Octopus down or got a message which doesn't have 'EventType' key"""
+            
+        #     # Log the traceback
+        #     tb = traceback.format_exc()
+
+        #     print(f"[Site {client_agent.get_id()}] Unexpected error while processing message from topic ({topic}): {e}", flush=True)
+        #     print(f"[Site {client_agent.get_id()}] Raw message: {msg}", flush=True)
+        #     print(f"[Site {client_agent.get_id()}] Traceback: {tb}", flush=True)
+
+        #     client_agent.logger.error(f"[Site {client_agent.get_id()}] Unexpected error while processing message from topic ({topic}): {e}")
+        #     client_agent.logger.error(f"[Site {client_agent.get_id()}] Raw message: {msg}")
+        #     client_agent.logger.error(f"[Site {client_agent.get_id()}] Traceback: {tb}")
 
 else:
     ### Consensus MCMC workflow ###
@@ -138,90 +173,6 @@ else:
     start_time = time.time()
     print("Running local MCMC")
 
-    # Prepare MCMC parameters
-    def ensure_float_list(lst):
-        """
-        Convert a list or tuple of values to a list of floats.
-        If any value is not convertible, it raises a ValueError.
-        """
-        if not isinstance(lst, (list, tuple)):
-            raise TypeError("Input must be a list or tuple.")
-        
-        try:
-            return [float(x) for x in lst]
-        except ValueError as e:
-            raise ValueError(f"Failed to convert one or more elements to float in {lst}") from e
-
-    # For boolean values
-    z_known = bool(client_agent.client_agent_config.mcmc_configs.Z_known)
-
-    ndim = 8 if z_known else 9
-    nwalkers = int(client_agent.client_agent_config.mcmc_configs.nwalkers)
-    niters = int(client_agent.client_agent_config.mcmc_configs.niters)
-    
-    # Safe extraction of configuration values
-    logn0_range = ensure_float_list(client_agent.client_agent_config.mcmc_configs.logn0_range)
-    logepsilon_e_range = ensure_float_list(client_agent.client_agent_config.mcmc_configs.logEpsilon_e_range)
-    logepsilon_b_range = ensure_float_list(client_agent.client_agent_config.mcmc_configs.logEpsilon_B_range)
-    p_range = ensure_float_list(client_agent.client_agent_config.mcmc_configs.P_range)
-    thetawing_range = ensure_float_list(client_agent.client_agent_config.mcmc_configs.thetaWing_range)
-    z_range = ensure_float_list(client_agent.client_agent_config.mcmc_configs.Z_range)
-    thetaobs_range = ensure_float_list(client_agent.client_agent_config.mcmc_configs.thetaObs_range)
-    thetacore_range = ensure_float_list(client_agent.client_agent_config.mcmc_configs.thetaCore_range)
-    loge0_range = ensure_float_list(client_agent.client_agent_config.mcmc_configs.logE0_range)
-
-
-    # Define parameter bounds
-    if z_known:
-        lower_bounds = np.array([
-            loge0_range[0],        # log10(E0)
-            thetaobs_range[0],     # thetaObs
-            thetacore_range[0],    # thetaCore
-            logn0_range[0],        # log10(n0)
-            logepsilon_e_range[0], # log10(eps_e)
-            logepsilon_b_range[0], # log10(eps_B)
-            p_range[0],            # p
-            thetawing_range[0]     # thetaWing
-        ])
-        
-        upper_bounds = np.array([
-            loge0_range[1],        # log10(E0)
-            thetaobs_range[1],     # thetaObs
-            thetacore_range[1],    # thetaCore
-            logn0_range[1],        # log10(n0)
-            logepsilon_e_range[1], # log10(eps_e)
-            logepsilon_b_range[1], # log10(eps_B)
-            p_range[1],            # p
-            thetawing_range[1]     # thetaWing
-        ])
-    else:
-        lower_bounds = np.array([
-            loge0_range[0],        # log10(E0)
-            thetaobs_range[0],     # thetaObs
-            thetacore_range[0],    # thetaCore
-            logn0_range[0],        # log10(n0)
-            logepsilon_e_range[0], # log10(eps_e)
-            logepsilon_b_range[0], # log10(eps_B)
-            p_range[0],            # p
-            thetawing_range[0],    # thetaWing
-            z_range[0]             # z
-        ])
-        
-        upper_bounds = np.array([
-            loge0_range[1],        # log10(E0)
-            thetaobs_range[1],     # thetaObs
-            thetacore_range[1],    # thetaCore
-            logn0_range[1],        # log10(n0)
-            logepsilon_e_range[1], # log10(eps_e)
-            logepsilon_b_range[1], # log10(eps_B)
-            p_range[1],            # p
-            thetawing_range[1],    # thetaWing
-            z_range[1]             # z
-        ])
-    
-
-    np.random.seed(int(client_agent.client_agent_config.mcmc_configs.random_seed))
-
     # Prepare initial walker positions (in 7 dimensions).
     # pos = ( [ np.log10(Z["E0"]),
     #             Z["thetaObs"],
@@ -233,10 +184,14 @@ else:
     #         + 0.005 * np.random.randn(nwalkers, ndim) )
 
     # position it locally and uniformly
-    pos = np.random.uniform(low=lower_bounds, high=upper_bounds, size=(nwalkers, ndim))
-
+   
     
-    client_agent.run_local_mcmc(preprocessed_local_data, pos, niters, nwalkers, ndim)
+    #  Start running local MCMC
+    print(f"[Site {client_agent.get_id()}] ready for curve fitting. Now computing local posterior samples and sending to server...")
+    client_agent.logger.info(f"[Site {client_agent.get_id()}] ready for curve fitting. Now computing local posterior samples and sending to server...")
+
+
+    client_agent.run_local_mcmc(preprocessed_local_data)
         
     local_result = client_agent.get_parameters()
         
