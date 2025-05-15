@@ -20,8 +20,8 @@ client_configs:
 
   mcmc_configs:
     nwalkers: 32
-    niters: 101
-    burnin: 10
+    niters: 2000
+    burnin: 200
 
     random_seed: 42
     #If Z is known, set Z_known = True and give its value. It will not be included in the smapling proceedure.

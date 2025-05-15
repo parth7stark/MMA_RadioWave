@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --mem=100g                              # required number of memory
+#SBATCH --mem=32g                              # required number of memory
 #SBATCH --nodes=1                               # nodes required for whole simulation
 
-#SBATCH --cpus-per-task=32                       # CPUs for each task
+#SBATCH --cpus-per-task=16                       # CPUs for each task
 ## SBATCH --gpus-per-task=1                      # Uncomment if using gpu
 ##SBATCH --ntasks-per-node=1                     # Uncomment if using gpu 
 
@@ -12,16 +12,16 @@
 ##SBATCH --gpu-bind=none        # Uncomment if using gpu
 
 
-#SBATCH --job-name=MMA_GW_TestContainer_VFL_detector0   # job name
-#SBATCH --time=01:00:00                         # dd-hh:mm:ss for the job
+#SBATCH --job-name=FedFit_Consensus_polling_site0   # job name
+#SBATCH --time=00:40:00                         # dd-hh:mm:ss for the job
 
-#SBATCH -e MMA_GW_TestContainer_VFL_detector0-err-%j.log
-#SBATCH -o MMA_GW_TestContainer_VFL_detector0-out-%j.log
+#SBATCH -e FedFit_Consensus_polling_site0-err-%j.log
+#SBATCH -o FedFit_Consensus_polling_site0-out-%j.log
 
 #SBATCH --constraint="scratch"
 
-#SBATCH --account=<charging account>
-#SBATCH --mail-user=<email-id>
+#SBATCH --account=bbjo-delta-cpu
+#SBATCH --mail-user=pp32@illinois.edu
 #SBATCH --mail-type="BEGIN,END" # See sbatch or srun man pages for more email options
 
 
@@ -35,13 +35,13 @@ module reset  # load the default Delta modules
 module load anaconda3_gpu
 module list
 
+source /sw/external/python/anaconda3_gpu/etc/profile.d/conda.sh
+conda activate /u/parthpatel7173/.conda/envs/fedfit
+
 # Change directory to the cloned repo
-cd <path to cloned repo>
+cd /u/parthpatel7173/MMA_RadioWave/FederatedFitting
 
-apptainer exec --nv \
-  MMA_GW_Inference_miniapp.sif \
-  python /app/examples/octopus/run_detector.py --config <absolute path to FL detector0 config file>/detector0.yaml
-  
-
-
-
+python ./examples/octopus/run_site.py --config ./examples/configs/detector0.yaml
+# apptainer exec --nv \
+#   MMA_GW_Inference_miniapp.sif \
+#   python /app/examples/octopus/run_detector.py --config <absolute path to FL detector0 config file>/detector0.yaml

@@ -105,7 +105,7 @@ class OctopusServerCommunicator:
         local_chain_list = local_tensor.tolist()  # Get back list for further processing
 
         # print(f"[Site {site_id}] chains: {local_chain_list}", flush=True)
-        self.logger.info(f"[Site {site_id}] chains: {local_chain_list}")
+        # self.logger.info(f"[Site {site_id}] chains: {local_chain_list}")
 
 
 

@@ -143,6 +143,8 @@ class ConsensusAggregator():
         #     print(f"{params[i]}: {consensus_medians[i]:.4f}")
 
         print('Consensus parameter values', flush=True)
+        self.logger.info('Consensus parameter values')
+
         print("Best estimate of parameters", flush=True)
         self.logger.info("Best estimate of parameters")
         theta = []
@@ -160,6 +162,7 @@ class ConsensusAggregator():
             theta.append(mcmc[1])
             q = np.diff(mcmc)
             print(f'{params[i]} = {mcmc[1]:.4f} +{q[1]:.4f} -{q[0]:.4f}')
+            self.logger.info(f'{params[i]} = {mcmc[1]:.4f} +{q[1]:.4f} -{q[0]:.4f}')
 
             results_dict[params[i]] = {}
             results_dict[params[i]]['median'] = mcmc[1]
@@ -174,6 +177,8 @@ class ConsensusAggregator():
         # Code to send consensus_result via Kafka would go here
         
         print(f"\nConsensus MCMC complete. Results saved to {save_folder}")
+        self.logger.info(f"\nConsensus MCMC complete. Results saved to {save_folder}")
+        
         # Compute final aggregated parameters.
         # print("Best estimate of parameters", flush=True)
         # self.logger.info("Best estimate of parameters")

@@ -97,7 +97,7 @@ class OctopusClientCommunicator:
 
 
         # print(f"[Site {client_id}] chains: {send_chains}", flush=True)
-        self.logger.info(f"[Site {client_id}] chains: {chains_b64}")
+        # self.logger.info(f"[Site {client_id}] chains: {chains_b64}")
 
         # Build the JSON payload
         # Convert NumPy arrays to lists to avoid serialization issues
@@ -123,7 +123,7 @@ class OctopusClientCommunicator:
         print(f"[Site {client_id}] Sent Local Posterior Samples", flush=True)
         self.logger.info(f"[Site {client_id}] Sent Local Posterior Samples")
 
-        return
+        # return
     
     def get_best_estimate(self, data):
         """
@@ -159,6 +159,7 @@ class OctopusClientCommunicator:
             theta_est.append(median)
 
             print(f"{param:>12s} = {median:.4f} +{err_plus:.4f} -{err_minus:.4f}")
+            self.logger.info(f"{param:>12s} = {median:.4f} +{err_plus:.4f} -{err_minus:.4f}")
             
 
         return theta_est

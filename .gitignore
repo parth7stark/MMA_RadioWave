@@ -52,8 +52,8 @@ env/
 
 
 # Generated figures or plots
-*.png
-*.jpg
+#*.png
+#*.jpg
 *.svg
 *.pdf
 *.pptx

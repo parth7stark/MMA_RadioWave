@@ -318,7 +318,7 @@ class LocalGenerator():
             params = ['log(E0)','thetaObs','thetaCore','log(n0)','log(eps_e)','log(eps_B)','p', 'thetaWing', 'z']
         
         print('Local Site parameter values', flush=True)
-        print("Best estimate of parameters", flush=True)
+        # print("Best estimate of parameters", flush=True)
         self.logger.info("Local site: Best estimate of parameters")
         for i in range(ndim):
             mcmc = np.percentile(flat_samples[:, i], [16, 50, 84])
@@ -331,6 +331,7 @@ class LocalGenerator():
             #keep it in log space
             q = np.diff(mcmc)
             print(f'{params[i]} = {mcmc[1]:.4f} +{q[1]:.4f} -{q[0]:.4f}')
+            self.logger.info(f'{params[i]} = {mcmc[1]:.4f} +{q[1]:.4f} -{q[0]:.4f}')
 
         # Plotting function present in generator.inference_utils
         make_posterior_hists(flat_samples, burnin, nwalkers, ndim, params, f"{site_folder}/{run_name}_PosteriorHists.png")
