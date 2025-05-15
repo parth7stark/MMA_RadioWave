@@ -125,8 +125,8 @@ class OctopusServerCommunicator:
         self.producer.send(self.topic, value=event)
         self.producer.flush()
         
-        print("[Server] Published ProposedTheta event.", flush=True)
-        self.logger.info("[Server] Published ProposedTheta event.")
+        print(f"[Server] Published ProposedTheta event. Iteration no: {iteration_no}", flush=True)
+        self.logger.info(f"[Server] Published ProposedTheta event. Iteration no: {iteration_no}")
 
     def collect_local_likelihoods(self, num_sites, ongoing_iteration):
         

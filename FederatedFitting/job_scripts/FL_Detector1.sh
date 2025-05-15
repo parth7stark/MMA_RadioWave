@@ -12,11 +12,11 @@
 ##SBATCH --gpu-bind=none        # Uncomment if using gpu
 
 
-#SBATCH --job-name=FedFit_Consensus_polling_site1   # job name
-#SBATCH --time=00:40:00                         # dd-hh:mm:ss for the job
+#SBATCH --job-name=FedFit_Distributed_likelihood_site1   # job name
+#SBATCH --time=03:40:00                         # dd-hh:mm:ss for the job
 
-#SBATCH -e FedFit_Consensus_polling_site1-err-%j.log
-#SBATCH -o FedFit_Consensus_polling_site1-out-%j.log
+#SBATCH -e FedFit_Distributed_likelihood_site1-err-%j.log
+#SBATCH -o FedFit_Distributed_likelihood_site1-out-%j.log
 
 #SBATCH --constraint="scratch"
 

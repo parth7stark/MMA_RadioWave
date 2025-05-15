@@ -7,7 +7,7 @@ fitting_configs:
   dataset_path: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/fitting_dataset/GW170817_data/Makhatini2021Data_site2.csv"
 
   # Path to save local results
-  save_folder: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/results/consenses_site2/"
+  save_folder: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/results/distributed_site2/"
   run_name: example
   plot_names: GW170817
 

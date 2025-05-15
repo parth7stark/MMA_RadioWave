@@ -282,7 +282,7 @@ class DistributedMCMCAggregator():
 
         print('Distributed parameter values', flush=True)
         print("Best estimate of parameters", flush=True)
-        self.logger.info("Best estimate of parameters")
+        self.logger.info("Distributed Log-likelihood Best estimate of parameters")
         # theta = []
         results_dict = {}
 
@@ -298,6 +298,7 @@ class DistributedMCMCAggregator():
             # theta.append(mcmc[1])
             q = np.diff(mcmc)
             print(f'{params[i]} = {mcmc[1]:.4f} +{q[1]:.4f} -{q[0]:.4f}')
+            self.logger.info(f'{params[i]} = {mcmc[1]:.4f} +{q[1]:.4f} -{q[0]:.4f}')
 
             results_dict[params[i]] = {}
             results_dict[params[i]]['median'] = mcmc[1]
@@ -307,6 +308,7 @@ class DistributedMCMCAggregator():
         #Save everything in sight:
         # Save results
         print(f"Saved results in {save_folder} after {niters} samples with burnin = {burnin}")
+        self.logger.info(f"Saved results in {save_folder} after {niters} samples with burnin = {burnin}")
         
         # Send these results to each client/data site
         return results_dict

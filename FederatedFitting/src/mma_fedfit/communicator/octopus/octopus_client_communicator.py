@@ -173,8 +173,8 @@ class OctopusClientCommunicator:
         theta = np.array(data["theta"])
 
 
-        print(f"Site {client_id} received proposed theta.")
-        self.logger.info(f"Site {client_id} received proposed theta.")
+        print(f"Site {client_id} received proposed theta. Iteration no: {iteration_no}")
+        self.logger.info(f"Site {client_id} received proposed theta. Iteration no: {iteration_no}")
 
         
         log_likelihood = self.client_agent.generator.compute_local_log_likelihood(theta, local_data)
@@ -194,8 +194,8 @@ class OctopusClientCommunicator:
 
         self.producer.flush()
 
-        print(f"[Site {client_id}] Sent Local log-likelihood", flush=True)
-        self.logger.info(f"[Site {client_id}] Sent Local log-likelihood")
+        print(f"[Site {client_id}] Sent Local log-likelihood. Iteration no: {iteration_no}", flush=True)
+        self.logger.info(f"[Site {client_id}] Sent Local log-likelihood. Iteration no: {iteration_no}")
 
         return
     

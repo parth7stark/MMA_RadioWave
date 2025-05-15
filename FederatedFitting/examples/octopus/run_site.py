@@ -40,24 +40,25 @@ print(f"[Site {client_agent.get_id()}] Waiting for ServerStarted event...", flus
 client_agent.logger.info(f"[Site {client_agent.get_id()}] Waiting for ServerStarted event...")
 
 # 1) Wait for ServerStarted event
-# for msg in client_communicator.consumer:
-server_started = False
-while True:
-    msg_pack = client_communicator.consumer.poll(timeout_ms=1000)
-    for tp, messages in msg_pack.items():
-        for msg in messages:
-            client_agent.logger.info(f"[Site {client_agent.get_id()}] msg: {msg}")
+for msg in client_communicator.consumer:
+# server_started = False
+# while True:
+#     msg_pack = client_communicator.consumer.poll(timeout_ms=1000)
+#     for tp, messages in msg_pack.items():
+#         for msg in messages:
+    client_agent.logger.info(f"[Site {client_agent.get_id()}] msg: {msg}")
 
-            data_str = msg.value.decode("utf-8")
-            data = json.loads(data_str)
+    data_str = msg.value.decode("utf-8")
+    data = json.loads(data_str)
 
-            Event_type = data["EventType"]
+    Event_type = data["EventType"]
 
-            if Event_type == "ServerStarted" and not server_started:        
-                client_communicator.on_server_started(data)
-                server_started = True
-    if server_started:
-        break            
+    if Event_type == "ServerStarted":        
+        client_communicator.on_server_started(data)
+        break
+        # server_started = True
+# if server_started:
+# break            
                 # break  # We can break from the loop as we only need that single event
     
 
@@ -86,13 +87,17 @@ if client_agent.client_agent_config.fitting_configs.use_approach=="2":
     preprocessed_local_data_UL = interpret_ULs(local_data, client_agent.client_agent_config)
 
     # Listen for incoming proposed theta
+    # while True:
+    #     msg_pack = client_communicator.consumer.poll(timeout_ms=1000)
+    #     for tp, messages in msg_pack.items():
+    #         for message in messages:
     for message in client_communicator.consumer:
         topic = message.topic
         # try:
         data_str = message.value.decode("utf-8")  # decode to string
         data = json.loads(data_str)          # parse JSON to dict
 
-        client_agent.logger.info(f"[Site {client_agent.get_id()}] msg: {data}")
+        # client_agent.logger.info(f"[Site {client_agent.get_id()}] msg: {data}")
         Event_type = data["EventType"]
 
         if Event_type == "ProposedTheta":
@@ -238,71 +243,73 @@ else:
     # for msg in client_communicator.consumer:
     client_agent.logger.info(f"[Site {client_agent.get_id()}] Waiting for AggregationDone event from server...")
         
-    aggregation_done = False
+    # aggregation_done = False
     # while max_attempts is None or attempts < max_attempts:
     # Begin polling loop
-    while True:
-        # Poll messages every second
-        msg_pack = client_communicator.consumer.poll(timeout_ms=5000)
-        # Use poll() with timeout instead of iterator
+    # while True:
+    for msg in client_communicator.consumer:
 
-        for topic_partition, messages in msg_pack.items():
-            for msg in messages:
+        # # Poll messages every second
+        # msg_pack = client_communicator.consumer.poll(timeout_ms=5000)
+        # # Use poll() with timeout instead of iterator
+
+        # for topic_partition, messages in msg_pack.items():
+        #     for msg in messages:
                           
-                # client_agent.logger.info(f"[Site {client_agent.get_id()}] msg: {msg}")
+        # client_agent.logger.info(f"[Site {client_agent.get_id()}] msg: {msg}")
 
-                data_str = msg.value.decode("utf-8")
-                data = json.loads(data_str)
+        data_str = msg.value.decode("utf-8")
+        data = json.loads(data_str)
 
-                Event_type = data["EventType"]
+        Event_type = data["EventType"]
 
-                if Event_type == "AggregationDone" and not aggregation_done:     
-                    print(f"[Site {client_agent.get_id()}] Received consensus MCMC results", flush=True)
-                    client_agent.logger.info(f"[Site {client_agent.get_id()}] Received consensus MCMC results")
+        if Event_type == "AggregationDone":     
+            print(f"[Site {client_agent.get_id()}] Received consensus MCMC results", flush=True)
+            client_agent.logger.info(f"[Site {client_agent.get_id()}] Received consensus MCMC results")
 
-                    theta_est = client_communicator.get_best_estimate(data)
+            theta_est = client_communicator.get_best_estimate(data)
 
-                    # consensus_result = {}  # This would be populated from Kafka message
-                
-                    # # Parse consensus parameters
-                    # consensus_params = np.array(consensus_result['medians'])
-                    consensus_params = np.array(theta_est)
-
-
-                    # Skip plotting for now
-
-                    # print(f"[Site {client_agent.get_id()}] Plotting light curve using consensus mcmc model paramters", flush=True)
-                    # client_agent.logger.info(f"[Site {client_agent.get_id()}] Plotting light curve using consensus mcmc model paramters")
+            # consensus_result = {}  # This would be populated from Kafka message
         
-                    # # Plot local data with consensus model
-                    # include_upper_limits_on_lc = client_agent.client_agent_config.mcmc_configs.include_upper_limits_on_lc
-                    
-                    # site_folder = client_agent.client_agent_config.fitting_configs.save_folder
-                    # os.makedirs(site_folder, exist_ok=True)
-                    
-                    # site_id = client_agent.get_id()
-                    # run_name = client_agent.client_agent_config.fitting_configs.run_name
+            # # Parse consensus parameters
+            # consensus_params = np.array(consensus_result['medians'])
+            consensus_params = np.array(theta_est)
 
-                    # if include_upper_limits_on_lc:
-                    #     plot_lc_wUL(data, preprocessed_local_data_UL, consensus_params, site_id, f"{site_folder}/{run_name}_lightcurve_consensus.png")
-                    # else:
-                    #     plot_lc_noUL(data, consensus_params, site_id, f"{site_folder}/{run_name}_lightcurve_consensus.png")
-                    
-                    # print(f"Site {site_id} processing complete. Results saved to {site_folder}")
 
-                    # theta_est, global_min_time, global_max_time, unique_frequencies = client_communicator.get_best_estimate(data)
-                    
-                    # # Plot the global light curve locally using the aggregated info.
-                    # output_filename = f"{client_agent.client_agent_config.fitting_configs.logging_output_dirname}/global_light_curve_Site_{client_agent.get_id()}.png"
+            # Skip plotting for now
 
-                    # # Function present in generator utils
-                    # plot_global_light_curve(preprocessed_local_data, theta_est, global_min_time, global_max_time, unique_frequencies, output_filename)
-                    # break  # We can break from the loop as we only need that single event
-                    aggregation_done = True  # Done
+            # print(f"[Site {client_agent.get_id()}] Plotting light curve using consensus mcmc model paramters", flush=True)
+            # client_agent.logger.info(f"[Site {client_agent.get_id()}] Plotting light curve using consensus mcmc model paramters")
+
+            # # Plot local data with consensus model
+            # include_upper_limits_on_lc = client_agent.client_agent_config.mcmc_configs.include_upper_limits_on_lc
+            
+            # site_folder = client_agent.client_agent_config.fitting_configs.save_folder
+            # os.makedirs(site_folder, exist_ok=True)
+            
+            # site_id = client_agent.get_id()
+            # run_name = client_agent.client_agent_config.fitting_configs.run_name
+
+            # if include_upper_limits_on_lc:
+            #     plot_lc_wUL(data, preprocessed_local_data_UL, consensus_params, site_id, f"{site_folder}/{run_name}_lightcurve_consensus.png")
+            # else:
+            #     plot_lc_noUL(data, consensus_params, site_id, f"{site_folder}/{run_name}_lightcurve_consensus.png")
+            
+            # print(f"Site {site_id} processing complete. Results saved to {site_folder}")
+
+            # theta_est, global_min_time, global_max_time, unique_frequencies = client_communicator.get_best_estimate(data)
+            
+            # # Plot the global light curve locally using the aggregated info.
+            # output_filename = f"{client_agent.client_agent_config.fitting_configs.logging_output_dirname}/global_light_curve_Site_{client_agent.get_id()}.png"
+
+            # # Function present in generator utils
+            # plot_global_light_curve(preprocessed_local_data, theta_est, global_min_time, global_max_time, unique_frequencies, output_filename)
+            break  # We can break from the loop as we only need that single event
+            # aggregation_done = True  # Done
 
         # Optionally break the loop if everything's finished
-        if aggregation_done:
-            break
+        # if aggregation_done:
+        #     break
     # trigger clean up function
     # close producer, consumer and clean up other things
 

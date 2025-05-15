@@ -1,6 +1,6 @@
 client_configs:
   fitting_configs:
-    use_approach: "1"
+    use_approach: "2"
   
   # initial_guess:
   #   # Troja 2020
@@ -88,7 +88,7 @@ server_configs:
   aggregator_kwargs:
     num_clients: 2
     # directory to store results after consensus/aggregation/sum of log-likelihood
-    save_folder: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/results/consenses_server/"
+    save_folder: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/results/distributed_server/"
     run_name: "example"
     plot_names: "GW170817"
     
