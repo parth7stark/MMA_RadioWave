@@ -17,6 +17,7 @@ from matplotlib.lines import Line2D
 import shutil
 # import afterglowpy as grb
 import emcee
+import threading
 
 class DistributedMCMCAggregator():
     """
@@ -48,6 +49,10 @@ class DistributedMCMCAggregator():
         num_clients = self.server_agent_config.server_configs.aggregator_kwargs.num_clients  # Change this value as needed
         self.expected_clients = {str(i) for i in range(num_clients)}
         
+        # for tagging each call
+        self.iteration = 0
+        self.walker_counter = 0
+        self.lock = threading.Lock()
 
     #-------------------------------------------------
     # AGGREGATION FUNCTION: GAUSSIAN CONSENSUS
@@ -103,18 +108,43 @@ class DistributedMCMCAggregator():
     # Global log-probability function (aggregates local log-likelihoods)
     def global_log_probability(self, theta, num_sites):
         
+        # lp = self.log_prior(theta)
+        # if not np.isfinite(lp):
+        #     return -np.inf
+
+        # # Send MCMC tasks to sites
+        # self.communicator.send_proposed_theta(theta, self.ongoing_iteration)
+
+        # # Collect local log-likelihoods
+        # log_likelihoods = self.communicator.collect_local_likelihoods(num_sites, self.ongoing_iteration)
+
+        # self.ongoing_iteration = self.ongoing_iteration + 1
+        # return lp + sum(log_likelihoods.values())
+
+        # Atomically grab this call’s (iter, walker) identifiers
+        with self.lock:
+            iteration_no = self.iteration
+            walker_no = self.walker_counter
+            self.walker_counter += 1
+            if self.walker_counter >= self.nwalkers:
+                self.walker_counter = 0
+                self.iteration += 1
+
         lp = self.log_prior(theta)
         if not np.isfinite(lp):
             return -np.inf
 
-        # Send MCMC tasks to sites
-        self.communicator.send_proposed_theta(theta, self.ongoing_iteration)
+        # 1) broadcast θ to all sites
+        self.communicator.send_proposed_theta(theta, iteration_no, walker_no)
 
-        # Collect local log-likelihoods
-        log_likelihoods = self.communicator.collect_local_likelihoods(num_sites, self.ongoing_iteration)
+        # 2) wait until each site returns its local likelihood
+        local_lls = self.communicator.collect_local_likelihoods(
+            self.num_sites, iteration_no, walker_no
+        )
 
-        self.ongoing_iteration = self.ongoing_iteration + 1
-        return lp + sum(log_likelihoods.values())
+        # 3) aggregate
+        return lp + sum(local_lls.values())
+
 
 
     def save_sampler_state(self, sampler, filename):
@@ -128,8 +158,8 @@ class DistributedMCMCAggregator():
 
         # Prepare MCMC parameters
         z_known = self.processed_mcmc_config.Z_known
-        ndim = 8 if z_known else 9
-        nwalkers = self.processed_mcmc_config.nwalkers
+        self.ndim = 8 if z_known else 9
+        self.nwalkers = self.processed_mcmc_config.nwalkers
         niters = self.processed_mcmc_config.niters
 
         loge0_range = self.processed_mcmc_config.logE0_range
@@ -209,9 +239,13 @@ class DistributedMCMCAggregator():
                 
 
         # Run MCMC
-        num_sites = self.server_agent_config.server_configs.aggregator_kwargs.num_clients
+        self.num_sites = self.server_agent_config.server_configs.aggregator_kwargs.num_clients
         # sampler = emcee.EnsembleSampler(nwalkers, ndim, lambda theta: global_log_probability(theta, num_sites))
         # sampler.run_mcmc(pos, niters, progress=True)
+
+        # Start background thread that listens to all the events and store "LogLikelihoodComputed" Events
+        self.communicator._start_background_poller()
+
 
         # with Pool() as pool:
             # Create the sampler that will coordinate with all sites

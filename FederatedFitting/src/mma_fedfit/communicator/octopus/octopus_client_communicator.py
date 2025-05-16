@@ -170,11 +170,12 @@ class OctopusClientCommunicator:
         client_id = str(self.client_id)
 
         iteration_no = data["iteration_no"]
+        walker_no = data["walker_no"]
         theta = np.array(data["theta"])
 
 
-        print(f"Site {client_id} received proposed theta. Iteration no: {iteration_no}")
-        self.logger.info(f"Site {client_id} received proposed theta. Iteration no: {iteration_no}")
+        print(f"Site {client_id} received proposed theta. Iteration no: {iteration_no}, walker={walker_no}")
+        self.logger.info(f"Site {client_id} received proposed theta. Iteration no: {iteration_no}, walker={walker_no}")
 
         
         log_likelihood = self.client_agent.generator.compute_local_log_likelihood(theta, local_data)
@@ -184,7 +185,9 @@ class OctopusClientCommunicator:
             "EventType": "LogLikelihoodComputed",
             "site_id": client_id,
             'local_likelihood': log_likelihood,
-            "iteration_no": iteration_no
+            "iteration_no": iteration_no,
+            "walker_no": walker_no
+
         }
     
         self.producer.send(
@@ -194,8 +197,8 @@ class OctopusClientCommunicator:
 
         self.producer.flush()
 
-        print(f"[Site {client_id}] Sent Local log-likelihood. Iteration no: {iteration_no}", flush=True)
-        self.logger.info(f"[Site {client_id}] Sent Local log-likelihood. Iteration no: {iteration_no}")
+        print(f"[Site {client_id}] Sent Local log-likelihood. Iteration no: {iteration_no}, walker={walker_no}", flush=True)
+        self.logger.info(f"[Site {client_id}] Sent Local log-likelihood. Iteration no: {iteration_no}, walker={walker_no}")
 
         return
     

@@ -9,6 +9,10 @@ from .utils import serialize_tensor_to_base64, deserialize_tensor_from_base64
 
 from diaspora_event_sdk import KafkaProducer, KafkaConsumer
 from proxystore.proxy import Proxy, extract
+import threading
+import json
+import time
+from collections import defaultdict
 
 class OctopusServerCommunicator:
     """
@@ -40,6 +44,11 @@ class OctopusServerCommunicator:
 
         # Track readiness, which detector is connected and ready for inference
         self.detectors_ready = set()
+
+        # In‐memory store: (iteration, walker) → { site_id: likelihood }
+        self.store: dict[tuple[int,int], dict[str,float]] = defaultdict(dict)
+        self.lock = threading.Lock()
+        # self._start_background_poller()
 
         # This is to handle scenario: You do not wait for all detectors to say “ready” if you want to begin listening to embeddings as soon as any client is ready.
 
@@ -112,32 +121,50 @@ class OctopusServerCommunicator:
         # self.server_agent.aggregator.process_local_MCMC_done_message(self.producer, self.topic, site_id, status, local_chain_list, min_time, max_time, unique_frequencies)
         self.server_agent.aggregator.process_local_MCMC_done_message(self.producer, self.topic, site_id, status, local_chain_list)
 
+    def _start_background_poller(self):
+        thread = threading.Thread(target=self._background_poller, daemon=True)
+        thread.start()
 
-    def send_proposed_theta(self, theta, iteration_no):
+    def _background_poller(self):
+        for msg in self.consumer:
+            data = json.loads(msg.value.decode('utf-8'))
+            if data.get("EventType") == "LogLikelihoodComputed":
+                key = (data["iteration_no"], data["walker_no"])
+                with self.lock:
+                    # Store every reply for later
+                    self.store[key][data["site_id"]] = data["local_likelihood"]
 
-        print("prposed_theta", flush=True)
+
+    def send_proposed_theta(self, theta, iteration_no, walker_no):
+
+        print("proposed_theta", flush=True)
         event = {
             "EventType": "ProposedTheta",
             "iteration_no": iteration_no,
+            "walker_no": walker_no,
             "theta": theta.tolist(),  # Convert ndarray to list,
         }
 
         self.producer.send(self.topic, value=event)
         self.producer.flush()
         
-        print(f"[Server] Published ProposedTheta event. Iteration no: {iteration_no}", flush=True)
-        self.logger.info(f"[Server] Published ProposedTheta event. Iteration no: {iteration_no}")
+        print(f"[Server] Published ProposedTheta event. Iteration no: {iteration_no}, walker={walker_no}", flush=True)
+        self.logger.info(f"[Server] Published ProposedTheta event. Iteration no: {iteration_no}, walker={walker_no}")
 
-    def collect_local_likelihoods(self, num_sites, ongoing_iteration):
+    def collect_local_likelihoods(self, num_sites, ongoing_iteration, walker_no):
         
         print("collect likelihood", flush=True)
 
-        log_likelihoods = {}
+        # log_likelihoods = {}
         # received_sites = 0
 
         # Track which clients have finished
-        completed_clients = set()
-        expected_clients = {str(i) for i in range(num_sites)}
+        # completed_clients = set()
+        # expected_clients = {str(i) for i in range(num_sites)}
+
+        key = (ongoing_iteration, walker_no)
+        expected_sites = {str(i) for i in range(num_sites)}
+
 
         # while received_sites < num_sites:
         #     for message in consumer:
@@ -153,33 +180,47 @@ class OctopusServerCommunicator:
         #             if received_sites == num_sites:
         #                 break
 
-        for msg in self.consumer:
-            data_str = msg.value.decode("utf-8")  # decode to string
-            data = json.loads(data_str)          # parse JSON to dict
+        # for msg in self.consumer:
+        #     data_str = msg.value.decode("utf-8")  # decode to string
+        #     data = json.loads(data_str)          # parse JSON to dict
 
-            Event_type = data["EventType"]
+        #     Event_type = data["EventType"]
 
-            if Event_type == "LogLikelihoodComputed":
-                site_id = data["site_id"]
-                local_likelihood = data["local_likelihood"]
-                iteration_no_in_msg = data["iteration_no"]
+        #     if Event_type == "LogLikelihoodComputed":
+        #         site_id = data["site_id"]
+        #         local_likelihood = data["local_likelihood"]
+        #         iteration_no_in_msg = data["iteration_no"]
 
-                if iteration_no_in_msg == ongoing_iteration:
-                    print(f"[Server] Received LogLikelihoodComputed Event from site {site_id}")
-                    self.logger.info(f"[Server] Received LogLikelihoodComputed from site {site_id}")
+        #         if iteration_no_in_msg == ongoing_iteration:
+        #             print(f"[Server] Received LogLikelihoodComputed Event from site {site_id}")
+        #             self.logger.info(f"[Server] Received LogLikelihoodComputed from site {site_id}")
 
-                    # Add the client to the completed set
-                    completed_clients.add(site_id)
+        #             # Add the client to the completed set
+        #             completed_clients.add(site_id)
 
-                    log_likelihoods[site_id] = local_likelihood
+        #             log_likelihoods[site_id] = local_likelihood
 
-                    if completed_clients == expected_clients:
-                        print("[Server] Collected partial log likelihoods from all the sites. Compute global posterior...")
-                        self.logger.info("[Server] Collected partial log likelihoods from all the sites. Compute global posterior...")
-                        return log_likelihoods
+        #             if completed_clients == expected_clients:
+        #                 print("[Server] Collected partial log likelihoods from all the sites. Compute global posterior...")
+        #                 self.logger.info("[Server] Collected partial log likelihoods from all the sites. Compute global posterior...")
+        #                 return log_likelihoods
+                    
+        # Block until all sites have replied
+        while True:
+            with self.lock:
+                got = self.store.get(key, {})
+                # if got.keys() >= expected_sites:
+                if got.keys() == expected_sites:
+
+                    result = got.copy()
+                    # Clean up so we don’t grow unbounded
+                    del self.store[key]
+                    print(f"[Server] Collected all likelihoods for (iter={ongoing_iteration},walker={walker_no})")
+                    return result
+            time.sleep(0.01)
 
 
-        return log_likelihoods
+        # return log_likelihoods
 
 
     def _default_logger(self):
