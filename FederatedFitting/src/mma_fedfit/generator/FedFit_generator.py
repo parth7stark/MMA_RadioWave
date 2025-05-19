@@ -60,14 +60,29 @@ class LocalGenerator():
         z_known = self.processed_mcmc_configs.Z_known
         z_fixed = self.processed_mcmc_configs.Z_fixed
 
-        if z_known == True:
+        dl_known = self.processed_mcmc_configs.DL_known
+        dl_fixed = self.processed_mcmc_configs.DL_fixed
+
+        if z_known == True and dl_known == True:
             logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing = theta
             z = z_fixed
-        else:
-            logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing, z = theta
+            DL = dl_fixed 
 
-        DL = cosmo.luminosity_distance(z).to(u.cm)
-        DL = DL.value
+        elif z_known == True and dl_known == False:
+            logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing, DL = theta
+            z = z_fixed
+
+        elif z_known == False and dl_known == True:
+            logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing, z = theta
+            DL = dl_fixed
+        else:
+            logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing, z, DL = theta
+
+        # DL = cosmo.luminosity_distance(z).to(u.cm)
+        # DL = DL.value
+
+        DL = (DL*u.Mpc).to(u.cm).value #Turn it to cm for the fitting
+
 
 
         E0 = 10 ** logE0
@@ -128,11 +143,19 @@ class LocalGenerator():
             
     def log_prior(self, theta):
         z_known = self.processed_mcmc_configs.Z_known
+        dl_known = self.processed_mcmc_configs.DL_known
 
-        if z_known:
+        if z_known == True and dl_known == True:
             logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing = theta
-        else:
+
+        elif z_known == True and dl_known == False:
+            logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing, DL = theta
+
+        elif z_known == False and dl_known == True:
             logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing, z = theta
+            
+        else:
+            logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing, z, DL = theta
 
         loge0_range = self.processed_mcmc_configs.logE0_range
         thetaobs_range = self.processed_mcmc_configs.thetaObs_range
@@ -143,8 +166,10 @@ class LocalGenerator():
         p_range = self.processed_mcmc_configs.P_range
         thetawing_range = self.processed_mcmc_configs.thetaWing_range
         z_range = self.processed_mcmc_configs.Z_range
+        dl_range = self.processed_mcmc_configs.DL_range
+
         
-        if z_known:
+        if z_known == True and dl_known == True:
             if (
                 loge0_range[0] <= logE0 <= loge0_range[1]
                 and thetaobs_range[0] <= thetaObs < thetaobs_range[1]
@@ -154,6 +179,36 @@ class LocalGenerator():
                 and logepsilon_e_range[0] < logepsilon_e <= logepsilon_e_range[1]
                 and logepsilon_b_range[0] < logepsilon_B <= logepsilon_b_range[1]
                 and logn0_range[0] < logn0 < logn0_range[1]
+            ):
+                return 0.0
+            return -np.inf
+        
+        elif z_known == True and dl_known == False:
+            if (
+                loge0_range[0] <= logE0 <= loge0_range[1]
+                and thetaobs_range[0] <= thetaObs < thetaobs_range[1]
+                and thetawing_range[0] <= thetaWing < thetawing_range[1]
+                and thetacore_range[0] <= thetaCore < thetacore_range[1]
+                and p_range[0] < p < p_range[1]
+                and logepsilon_e_range[0] < logepsilon_e <= logepsilon_e_range[1]
+                and logepsilon_b_range[0] < logepsilon_B <= logepsilon_b_range[1]
+                and logn0_range[0] < logn0 < logn0_range[1]
+                and dl_range[0] < DL < dl_range[1]
+            ):
+                return 0.0
+            return -np.inf
+
+        elif z_known == False and dl_known == True:
+            if (
+                loge0_range[0] <= logE0 <= loge0_range[1]
+                and thetaobs_range[0] <= thetaObs < thetaobs_range[1]
+                and thetawing_range[0] <= thetaWing < thetawing_range[1]
+                and thetacore_range[0] <= thetaCore < thetacore_range[1]
+                and p_range[0] < p < p_range[1]
+                and logepsilon_e_range[0] < logepsilon_e <= logepsilon_e_range[1]
+                and logepsilon_b_range[0] < logepsilon_B <= logepsilon_b_range[1]
+                and logn0_range[0] < logn0 < logn0_range[1]
+                and z_range[0] < z < z_range[1]
             ):
                 return 0.0
             return -np.inf
@@ -169,6 +224,7 @@ class LocalGenerator():
                 and logepsilon_b_range[0] < logepsilon_B <= logepsilon_b_range[1]
                 and logn0_range[0] < logn0 < logn0_range[1]
                 and z_range[0] < z < z_range[1]
+                and dl_range[0] < DL < dl_range[1]
             ):
                 return 0.0
             return -np.inf
@@ -192,6 +248,8 @@ class LocalGenerator():
 
         # For boolean values
         z_known = self.processed_mcmc_configs.Z_known
+        dl_known = self.processed_mcmc_configs.DL_known
+
 
         ndim = 8 if z_known else 9
         nwalkers = self.processed_mcmc_configs.nwalkers
@@ -204,13 +262,15 @@ class LocalGenerator():
         p_range = self.processed_mcmc_configs.P_range
         thetawing_range = self.processed_mcmc_configs.thetaWing_range
         z_range = self.processed_mcmc_configs.Z_range
+        dl_range = self.processed_mcmc_configs.DL_range
         thetaobs_range = self.processed_mcmc_configs.thetaObs_range
         thetacore_range = self.processed_mcmc_configs.thetaCore_range
         loge0_range = self.processed_mcmc_configs.logE0_range
 
 
         # Define parameter bounds
-        if z_known:
+        if z_known == True and dl_known == True:
+            ndim = 8
             lower_bounds = np.array([
                 loge0_range[0],        # log10(E0)
                 thetaobs_range[0],     # thetaObs
@@ -232,31 +292,86 @@ class LocalGenerator():
                 p_range[1],            # p
                 thetawing_range[1]     # thetaWing
             ])
-        else:
+        elif z_known == True and dl_known == False:
+            ndim = 9
             lower_bounds = np.array([
                 loge0_range[0],        # log10(E0)
-                thetaobs_range[0],     # thetaObs
-                thetacore_range[0],    # thetaCore
+                thetaobs_range[0],       # thetaObs
+                thetacore_range[0],      # thetaCore
                 logn0_range[0],        # log10(n0)
-                logepsilon_e_range[0], # log10(eps_e)
-                logepsilon_b_range[0], # log10(eps_B)
-                p_range[0],            # p
-                thetawing_range[0],    # thetaWing
-                z_range[0]             # z
+                logepsilon_e_range[0],        # log10(eps_e)
+                logepsilon_b_range[0],        # log10(eps_B)
+                p_range[0],       # p
+                thetawing_range[0],        # thetaWing
+                dl_range[0]
             ])
             
             upper_bounds = np.array([
                 loge0_range[1],        # log10(E0)
-                thetaobs_range[1],     # thetaObs
-                thetacore_range[1],    # thetaCore
+                thetaobs_range[1],       # thetaObs
+                thetacore_range[1],      # thetaCore
                 logn0_range[1],        # log10(n0)
-                logepsilon_e_range[1], # log10(eps_e)
-                logepsilon_b_range[1], # log10(eps_B)
-                p_range[1],            # p
-                thetawing_range[1],    # thetaWing
-                z_range[1]             # z
+                logepsilon_e_range[1],        # log10(eps_e)
+                logepsilon_b_range[1],        # log10(eps_B)
+                p_range[1],       # p
+                thetawing_range[1],        # thetaWing
+                dl_range[1]
             ])
-        
+
+        elif z_known == False and dl_known == True:
+            ndim = 9
+            lower_bounds = np.array([
+                loge0_range[0],        # log10(E0)
+                thetaobs_range[0],       # thetaObs
+                thetacore_range[0],      # thetaCore
+                logn0_range[0],        # log10(n0)
+                logepsilon_e_range[0],        # log10(eps_e)
+                logepsilon_b_range[0],        # log10(eps_B)
+                p_range[0],       # p
+                thetawing_range[0],        # thetaWing
+                z_range[0]
+            ])
+            
+            upper_bounds = np.array([
+                loge0_range[1],        # log10(E0)
+                thetaobs_range[1],       # thetaObs
+                thetacore_range[1],      # thetaCore
+                logn0_range[1],        # log10(n0)
+                logepsilon_e_range[1],        # log10(eps_e)
+                logepsilon_b_range[1],        # log10(eps_B)
+                p_range[1],       # p
+                thetawing_range[1],        # thetaWing
+                z_range[1]
+            ])
+
+        else:
+            ndim = 10
+            lower_bounds = np.array([
+                loge0_range[0],        # log10(E0)
+                thetaobs_range[0],       # thetaObs
+                thetacore_range[0],      # thetaCore
+                logn0_range[0],        # log10(n0)
+                logepsilon_e_range[0],        # log10(eps_e)
+                logepsilon_b_range[0],        # log10(eps_B)
+                p_range[0],       # p
+                thetawing_range[0],        # thetaWing
+                z_range[0],
+                dl_range[0]
+            ])
+            
+            upper_bounds = np.array([
+                loge0_range[1],        # log10(E0)
+                thetaobs_range[1],       # thetaObs
+                thetacore_range[1],      # thetaCore
+                logn0_range[1],        # log10(n0)
+                logepsilon_e_range[1],        # log10(eps_e)
+                logepsilon_b_range[1],        # log10(eps_B)
+                p_range[1],       # p
+                thetawing_range[1],        # thetaWing
+                z_range[1],
+                dl_range[1] 
+            ])
+
 
         np.random.seed(self.processed_mcmc_configs.random_seed)
 
@@ -311,12 +426,21 @@ class LocalGenerator():
         
         # Create plots for local site
         z_known = self.processed_mcmc_configs.Z_known
+        dl_known = self.processed_mcmc_configs.DL_known
 
-        if z_known:
+
+        if z_known == True and dl_known == True:
             params = ['log(E0)','thetaObs','thetaCore','log(n0)','log(eps_e)','log(eps_B)','p', 'thetaWing']
-        else:
+
+        elif z_known == False and dl_known == True:
             params = ['log(E0)','thetaObs','thetaCore','log(n0)','log(eps_e)','log(eps_B)','p', 'thetaWing', 'z']
-        
+
+        elif z_known == True and dl_known == False:
+            params = ['log(E0)','thetaObs','thetaCore','log(n0)','log(eps_e)','log(eps_B)','p', 'thetaWing', 'DL']
+
+        else:
+            params = ['log(E0)','thetaObs','thetaCore','log(n0)','log(eps_e)','log(eps_B)','p', 'thetaWing', 'z', 'DL']
+
         print('Local Site parameter values', flush=True)
         # print("Best estimate of parameters", flush=True)
         self.logger.info("Local site: Best estimate of parameters")
@@ -390,7 +514,7 @@ class LocalGenerator():
         
         # Process boolean values
         boolean_keys = [
-            'Z_known', 'include_upper_limits_on_lc', 
+            'Z_known', 'DL_known','include_upper_limits_on_lc', 
             'exclude_time_flag', 'exclude_ra_dec_flag', 
             'exclude_name_flag', 'exclude_wrong_name',
             'exclude_outside_ra_dec_uncertainty', 
@@ -407,7 +531,7 @@ class LocalGenerator():
         
         # Process range values
         range_keys = [
-            'Z_range', 'thetaObs_range', 'thetaCore_range',
+            'Z_range', 'DL_range', 'thetaObs_range', 'thetaCore_range',
             'P_range', 'thetaWing_range', 'logE0_range',
             'logn0_range', 'logEpsilon_e_range', 'logEpsilon_B_range'
         ]
@@ -434,7 +558,7 @@ class LocalGenerator():
         # Process numeric values
         numeric_keys = [
             'nwalkers', 'niters', 'burnin', 'random_seed',
-            'Z_fixed', 'arcseconds_uncertainty'
+            'Z_fixed', 'DL_fixed', 'arcseconds_uncertainty'
         ]
         
         for key in numeric_keys:

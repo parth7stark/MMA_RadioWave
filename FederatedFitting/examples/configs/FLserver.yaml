@@ -27,7 +27,14 @@ client_configs:
     #If Z is known, set Z_known = True and give its value. It will not be included in the smapling proceedure.
     Z_known: True
     Z_range: [.001,8]
-    Z_fixed: 0.00897
+    Z_fixed: 0.00980
+
+    #If DL is known, set DL_known = True and give its value. It will not be included in the smapling proceedure.
+    #DL_range should be the output of Dingo, in Mpc (will convert internally to cm)
+
+    DL_known: False
+    DL_range: [38, 42]
+    DL_fixed: 40
 
     #thetaObs is observing angle in radians (0, pi/2)
     thetaObs_range: [0,1.571] 
@@ -76,7 +83,7 @@ client_configs:
 
     #whether or not to include the truth valueson the corner plots
     display_truths_on_corner: True
-    true_values: [53, .54, 0.088, -1.699, -2, -3.699, 2.139, 0.6, 0.00897]
+    true_values: [53, .54, 0.088, -1.699, -2, -3.699, 2.139, 0.6, 0.0098, 40]
 
 
   comm_configs:

@@ -112,12 +112,20 @@ class ConsensusAggregator():
         
         # Create consensus plots
         z_known = self.server_agent_config.client_configs.mcmc_configs.Z_known
+        dl_known = self.server_agent_config.client_configs.mcmc_configs.DL_known
 
-        if z_known:
+        if z_known == True and dl_known == True:
             params = ['log(E0)','thetaObs','thetaCore','log(n0)','log(eps_e)','log(eps_B)','p', 'thetaWing']
-        else:
+
+        elif z_known == False and dl_known == True:
             params = ['log(E0)','thetaObs','thetaCore','log(n0)','log(eps_e)','log(eps_B)','p', 'thetaWing', 'z']
-        
+
+        elif z_known == True and dl_known == False:
+            params = ['log(E0)','thetaObs','thetaCore','log(n0)','log(eps_e)','log(eps_B)','p', 'thetaWing', 'DL']
+
+        else:
+            params = ['log(E0)','thetaObs','thetaCore','log(n0)','log(eps_e)','log(eps_B)','p', 'thetaWing', 'z', 'DL']
+
         ndim = len(params)
         
         self.make_posterior_hists(
@@ -244,7 +252,9 @@ class ConsensusAggregator():
             fig, axes = plt.subplots(2, 4, figsize=(16, 8))  # 2 rows, 4 columns
         if ndim == 9:
             fig, axes = plt.subplots(3, 3, figsize=(16, 10))  # 3 rows, 3 columns
-
+        if ndim == 10:
+            fig, axes = plt.subplots(2, 5, figsize=(16, 10))  # 3 rows, 3 columns
+            
         axes = axes.flatten()
 
         # Loop over each dimension and create a histogram
@@ -290,7 +300,7 @@ class ConsensusAggregator():
             levels=(0.50, 0.90,),  # 90% confidence contours
             smooth=1.0,
             smooth1d=1.0,
-            truths=true_values if len(true_values) == ndim and display_truths_on_corner else None
+            truths=true_values[0:ndim] if display_truths_on_corner else None
         )
         plt.tight_layout()
         plt.savefig(save_path, bbox_inches='tight')

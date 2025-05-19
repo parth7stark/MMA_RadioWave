@@ -503,7 +503,7 @@ def make_corner_plots(samples, burnin, nwalkers, ndim, params, true_values, disp
         levels=(0.50, 0.90,),  # 90% confidence contours
         smooth=1.0,
         smooth1d=1.0,
-        truths=true_values if len(true_values) == ndim and display_truths_on_corner else None
+        truths=true_values[0:ndim] if display_truths_on_corner else None
     )
     plt.tight_layout()
     plt.savefig(save_path, bbox_inches='tight')
@@ -523,6 +523,8 @@ def make_posterior_hists(samples, burnin, nwalkers, ndim, params, save_path):
         fig, axes = plt.subplots(2, 4, figsize=(16, 8))  # 2 rows, 4 columns
     if ndim == 9:
         fig, axes = plt.subplots(3, 3, figsize=(16, 10))  # 3 rows, 3 columns
+    if ndim == 10:
+        fig, axes = plt.subplots(2, 5, figsize=(16, 10))  # 3 rows, 3 columns
         
     axes = axes.flatten()
     
