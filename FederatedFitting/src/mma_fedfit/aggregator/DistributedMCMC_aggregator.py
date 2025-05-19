@@ -130,6 +130,8 @@ class DistributedMCMCAggregator():
                 self.walker_counter = 0
                 self.iteration += 1
 
+        self.logger.info(f"[Server] Computing global log prob. Iteration no: {iteration_no}, walker={walker_no}")
+
         lp = self.log_prior(theta)
         if not np.isfinite(lp):
             return -np.inf
@@ -139,7 +141,7 @@ class DistributedMCMCAggregator():
 
         # 2) wait until each site returns its local likelihood
         local_lls = self.communicator.collect_local_likelihoods(
-            self.num_sites, iteration_no, walker_no
+            num_sites, iteration_no, walker_no
         )
 
         # 3) aggregate
@@ -158,7 +160,7 @@ class DistributedMCMCAggregator():
 
         # Prepare MCMC parameters
         z_known = self.processed_mcmc_config.Z_known
-        self.ndim = 8 if z_known else 9
+        ndim = 8 if z_known else 9
         self.nwalkers = self.processed_mcmc_config.nwalkers
         niters = self.processed_mcmc_config.niters
 
@@ -234,12 +236,12 @@ class DistributedMCMCAggregator():
         #         + 0.005 * np.random.randn(nwalkers, ndim) )
 
         # position it locally and uniformly
-        pos = np.random.uniform(low=lower_bounds, high=upper_bounds, size=(nwalkers, ndim))
+        pos = np.random.uniform(low=lower_bounds, high=upper_bounds, size=(self.nwalkers, ndim))
 
                 
 
         # Run MCMC
-        self.num_sites = self.server_agent_config.server_configs.aggregator_kwargs.num_clients
+        num_sites = self.server_agent_config.server_configs.aggregator_kwargs.num_clients
         # sampler = emcee.EnsembleSampler(nwalkers, ndim, lambda theta: global_log_probability(theta, num_sites))
         # sampler.run_mcmc(pos, niters, progress=True)
 
@@ -251,7 +253,7 @@ class DistributedMCMCAggregator():
             # Create the sampler that will coordinate with all sites
         # Multi-processing not useful in this method. We query in each iteration
         sampler = emcee.EnsembleSampler(
-            nwalkers, ndim, self.global_log_probability, args=(num_sites,),
+            self.nwalkers, ndim, self.global_log_probability, args=(num_sites,),
             moves=[(mvs.StretchMove(a=1.1), 0.7), (mvs.WalkMove(10), 0.3)])
         
         print('Central coordinator: starting sampling')

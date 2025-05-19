@@ -20,7 +20,7 @@ client_configs:
 
   mcmc_configs:
     nwalkers: 32
-    niters: 2000
+    niters: 1000
     burnin: 200
 
     random_seed: 42
@@ -88,7 +88,7 @@ server_configs:
   aggregator_kwargs:
     num_clients: 2
     # directory to store results after consensus/aggregation/sum of log-likelihood
-    save_folder: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/results/distributed_server/"
+    save_folder: "/lus/eagle/projects/RAPINS/parth/MMA_RadioWave/FederatedFitting/examples/results/distributed_server/"
     run_name: "example"
     plot_names: "GW170817"
     
@@ -96,7 +96,7 @@ server_configs:
     # display_truths_on_corner: "True"
     # true_values: [53, .54, 0.088, -1.699, -2, -3.699, 2.139, 0.6, 0.00897]
 
-  logging_output_dirname: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/output"
+  logging_output_dirname: "/lus/eagle/projects/RAPINS/parth/MMA_RadioWave/FederatedFitting/examples/output"
   logging_output_filename: "result"
 
   # define server side kafka parameters here like consumer settings (offset policy)

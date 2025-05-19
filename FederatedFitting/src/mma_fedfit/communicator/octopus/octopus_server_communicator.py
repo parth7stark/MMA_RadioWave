@@ -122,6 +122,8 @@ class OctopusServerCommunicator:
         self.server_agent.aggregator.process_local_MCMC_done_message(self.producer, self.topic, site_id, status, local_chain_list)
 
     def _start_background_poller(self):
+        self.logger.info(f"[Server] Started Background poller/event listener")
+
         thread = threading.Thread(target=self._background_poller, daemon=True)
         thread.start()
 
@@ -145,8 +147,9 @@ class OctopusServerCommunicator:
             "theta": theta.tolist(),  # Convert ndarray to list,
         }
 
-        self.producer.send(self.topic, value=event)
-        self.producer.flush()
+        future = self.producer.send(self.topic, value=event)
+        # self.producer.flush()
+        print(future.get(timeout=10))
         
         print(f"[Server] Published ProposedTheta event. Iteration no: {iteration_no}, walker={walker_no}", flush=True)
         self.logger.info(f"[Server] Published ProposedTheta event. Iteration no: {iteration_no}, walker={walker_no}")
@@ -215,7 +218,9 @@ class OctopusServerCommunicator:
                     result = got.copy()
                     # Clean up so we don’t grow unbounded
                     del self.store[key]
-                    print(f"[Server] Collected all likelihoods for (iter={ongoing_iteration},walker={walker_no})")
+                    print(f"[Server] Collected all likelihoods for (iter={ongoing_iteration},walker={walker_no})", flush=True)
+                    self.logger.info(f"[Server] Collected all likelihoods for (iter={ongoing_iteration},walker={walker_no})")
+                    
                     return result
             time.sleep(0.01)
 
