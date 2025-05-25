@@ -21,7 +21,12 @@ argparser.add_argument(
     help="Path to the configuration file."
 )
 
+argparser.add_argument("--day",
+        type=str, required=True,
+        help='Max day to include (e.g. "3") or "all"')
+
 args = argparser.parse_args()
+day_threshold = args.day
 
 # Load config from YAML (via OmegaConf)
 server_agent_config = OmegaConf.load(args.config)
@@ -39,7 +44,7 @@ if server_agent_config.client_configs.fitting_configs.use_approach == "1":
 
     # Consensus MCMC workflow
     # Publish "ServerStarted" event with config so that clients can pick it up
-    communicator.publish_server_started_event()
+    communicator.publish_server_started_event(threshold=day_threshold)
 
     #save a copy of the .ini to the save folder:
     # shutil.copy(ini_file_path, os.path.join(save_folder, run_name + '_params.ini'))
@@ -55,6 +60,11 @@ if server_agent_config.client_configs.fitting_configs.use_approach == "1":
             data = json.loads(data_str)          # parse JSON to dict
 
             Event_type = data["EventType"]
+            day_threshold_in_msg = data["threshold"]
+
+            # ignore runs/msgs not meant for this threshold
+            if str(day_threshold_in_msg) != str(day_threshold):
+                continue
 
             if Event_type == "LocalMCMCDone":
                 communicator.handle_local_MCMC_done_message(data)
@@ -67,7 +77,8 @@ if server_agent_config.client_configs.fitting_configs.use_approach == "1":
                 # Site connected and ready for fitting the curve
                 # not triggering anything on server side, just publishing event to octopus fabric
                 # Keep on listening other events
-                continue 
+                # continue
+                communicator.handle_SiteReady_message(data)
 
                 # Later we will keep track of connected Sites and check if anyone got disconnected
 
@@ -105,7 +116,34 @@ else:
     server_agent.logger.info("Running sum of log likelihood approach")
     
     # Publish "ServerStarted" event with config so that clients can pick it up
-    communicator.publish_server_started_event()
+    communicator.publish_server_started_event(threshold=day_threshold)
+
+    # ─── 2) Wait for all 12 sites to report in ────────────────────────────────
+    TOTAL_SITES = server_agent.server_agent_config.client_configs.num_sites  # assume 12
+    # site_summary = {}    # sid → {has_data, n_points, n_upper_limits}
+    # active_sites = set()
+
+    server_agent.logger.info(f"[Server] Waiting for {TOTAL_SITES} SiteReady msgs…")
+    # while len(site_summary) < TOTAL_SITES:
+    for msg in communicator.consumer:
+        topic = msg.topic
+
+        data_str = msg.value.decode("utf-8")  # decode to string
+        data = json.loads(data_str)          # parse JSON to dict
+
+        Event_type = data["EventType"]
+        day_threshold_in_msg = data["threshold"]
+
+        # ignore runs/msgs not meant for this threshold
+        if str(day_threshold_in_msg) != str(day_threshold):
+            continue
+
+        if Event_type == "SiteReady":  
+            # Site connected and ready for fitting the curve
+            # not triggering anything on server side, just publishing event to octopus fabric
+            # Keep on listening other events
+            # continue
+            communicator.handle_SiteReady_message(data)
 
     start_time = time.time()
     print("Running global MCMC")

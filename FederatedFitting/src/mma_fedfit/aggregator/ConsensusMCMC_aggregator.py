@@ -64,10 +64,23 @@ class ConsensusAggregator():
         mu_full = Sigma_full @ weighted_mean_sum
         return mu_full, Sigma_full
 
-    def process_local_MCMC_done_message(self, producer, topic, site_id, status, local_chain):
+    def process_local_MCMC_done_message(self, producer, topic, site_id, status, local_chain, site_summary):
         """
         Handle "Local_MCMC_done" messages. Wait until all clients are done.
         """    
+
+        if status == "SKIPPED":
+            # self.logger.info(f"[Server] Site {site_id} skipped — no data")
+            print(f"[Server] Received Skipped from site {site_id} — no data")
+            self.logger.info(f"[Server] Received Skipped from site {site_id} — no data")
+
+            # Add the client to the completed set
+            self.completed_clients.add(site_id)
+
+            self.aggregated_results[site_id] = {
+                "local_chain": []
+            }
+
         if status == "DONE" and site_id is not None:
             print(f"[Server] Received DONE from site {site_id}")
             self.logger.info(f"[Server] Received DONE from site {site_id}")
@@ -86,17 +99,29 @@ class ConsensusAggregator():
             if self.completed_clients == self.expected_clients:
                 print("[Server] All sites are DONE. Invoking global aggregation process...")
                 self.logger.info("[Server] All sites are DONE. Invoking global aggregation process...")
-                self.global_aggregation(producer, topic)
+                self.global_aggregation(producer, topic, site_summary)
 
-    def global_aggregation(self, producer, topic):
+    def global_aggregation(self, producer, topic, site_summary):
         """
         Once all site's local MCMC is done, we gather local chains, time_range and frequencies
         """
         if self.aggregated_results:
 
             # Aggregate the chains from each site.
-            chains = [self.aggregated_results[site]["local_chain"] for site in self.aggregated_results]
-            mu_full, Sigma_full = self.aggregate_gaussian(chains)
+            # chains = [self.aggregated_results[site]["local_chain"] for site in self.aggregated_results]
+            active_chains = []
+            for site_id, result in self.aggregated_results.items():
+                chain = result.get("local_chain", [])
+                if len(chain) == 0:
+                    self.logger.info(f"[Server] Skipping site {site_id} (empty chain)")
+                    continue
+                active_chains.append(chain)
+
+            if not active_chains:
+                self.logger.warning("[Server] No chains to aggregate! Skipping aggregation.")
+                return
+            
+            mu_full, Sigma_full = self.aggregate_gaussian(active_chains)
             
         print(f"[Server] Global mu, sigma: {mu_full}, {Sigma_full}", flush=True)  #length of signal = length of output tensor
 
@@ -184,6 +209,17 @@ class ConsensusAggregator():
         
         # Code to send consensus_result via Kafka would go here
         
+        # ─── 3) Log participation summary ──────────────────────────────────────────
+        self.logger.info(f"[Server] Participation Summary:")
+        for sid, info in site_summary.items():
+            if info["has_data"]:
+                threshold = info['day_threshold']
+                self.logger.info(
+                    f"  • Site {sid}: {info['n_data_points']} pts, day threshold = {info['day_threshold']}"
+                )
+            else:
+                self.logger.info(f"  • Site {sid}: no data, day threshold = {info['day_threshold']}")
+                
         print(f"\nConsensus MCMC complete. Results saved to {save_folder}")
         self.logger.info(f"\nConsensus MCMC complete. Results saved to {save_folder}")
         
@@ -222,7 +258,8 @@ class ConsensusAggregator():
         producer.send(topic, value={
         
             "EventType": "AggregationDone",
-            "theta_est": results_dict
+            "theta_est": results_dict,
+            "day_threshold": threshold,
             # "global_min_time": global_min,
             # "global_max_time": global_max,
             # "unique_frequencies": global_freqs

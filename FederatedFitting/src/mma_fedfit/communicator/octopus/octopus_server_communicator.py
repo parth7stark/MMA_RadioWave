@@ -42,8 +42,10 @@ class OctopusServerCommunicator:
             group_id=self.server_agent.server_agent_config.server_configs.comm_configs.octopus_configs.group_id
         )
 
+        self.site_summary = {}
+
         # Track readiness, which detector is connected and ready for inference
-        self.detectors_ready = set()
+        self.active_sites = set()
 
         # In‐memory store: (iteration, walker) → { site_id: likelihood }
         self.store: dict[tuple[int,int], dict[str,float]] = defaultdict(dict)
@@ -52,7 +54,7 @@ class OctopusServerCommunicator:
 
         # This is to handle scenario: You do not wait for all detectors to say “ready” if you want to begin listening to embeddings as soon as any client is ready.
 
-    def publish_server_started_event(self):
+    def publish_server_started_event(self, threshold):
         """
         Publishes an event to the control topic indicating that the server has started,
         along with the configuration shared among all clients.
@@ -60,9 +62,11 @@ class OctopusServerCommunicator:
         client_config =  self.server_agent.get_client_configs()
         client_config_dict = OmegaConf.to_container(client_config, resolve=True)
 
+        self.threshold = threshold
         event = {
             "EventType": "ServerStarted",
             "site_config": client_config_dict,
+            "day_threshold": self.threshold,
         }
 
         self.producer.send(self.topic, value=event)
@@ -80,7 +84,8 @@ class OctopusServerCommunicator:
         event = {
         
             "EventType": "AggregationDone",
-            "theta_est": results_dict
+            "theta_est": results_dict,
+            "day_threshold": self.threshold,
         }
 
         self.producer.send(self.topic, value=event)
@@ -104,14 +109,17 @@ class OctopusServerCommunicator:
         # max_time = data["max_time"]
         # unique_frequencies = data["unique_frequencies"]
 
-        
-        # Deserialize and extract tensor
-        local_tensor = deserialize_tensor_from_base64(chain_b64)
+        if status == "SKIPPED":
+            self.logger.info(f"[Server] Site {site_id} skipped MCMC — no data")
+            local_chain_list = []
+        else:
+            # Deserialize and extract tensor
+            local_tensor = deserialize_tensor_from_base64(chain_b64)
 
-        if isinstance(local_tensor, Proxy):
-            local_tensor = extract(local_tensor)
+            if isinstance(local_tensor, Proxy):
+                local_tensor = extract(local_tensor)
 
-        local_chain_list = local_tensor.tolist()  # Get back list for further processing
+            local_chain_list = local_tensor.tolist()  # Get back list for further processing
 
         # print(f"[Site {site_id}] chains: {local_chain_list}", flush=True)
         # self.logger.info(f"[Site {site_id}] chains: {local_chain_list}")
@@ -119,7 +127,35 @@ class OctopusServerCommunicator:
 
 
         # self.server_agent.aggregator.process_local_MCMC_done_message(self.producer, self.topic, site_id, status, local_chain_list, min_time, max_time, unique_frequencies)
-        self.server_agent.aggregator.process_local_MCMC_done_message(self.producer, self.topic, site_id, status, local_chain_list)
+        self.server_agent.aggregator.process_local_MCMC_done_message(self.producer, self.topic, site_id, status, local_chain_list, self.site_summary)
+
+    def handle_SiteReady_message(self, data):
+        """
+        Message of type "SiteReady" is detected/consumed. Handle it
+        Example of Message
+        msg:  ConsumerRecord(topic='mma-GWwave-Triggers', partition=0, offset=7705, timestamp=1736957074944, timestamp_type=0, key=None, value=b'{"EventType": "PostProcess", "detector_id": "1", "status": "DONE", "details": "DONE -> Invoke post process pipeline", "GPS_start_time": 1264314069}', headers=[], checksum=None, serialized_key_size=-1, serialized_value_size=147, serialized_header_size=-1)
+        """
+
+
+
+        site_id = str(data["Site_id"])    # 0 or 1
+        day_threshold = data["day_threshold"]
+        has_data = data["has_data"]
+        n_data_points = data["n_data_points"]
+    
+        
+        self.site_summary[site_id] = {
+                        "has_data":       has_data,
+                        "n_data_points":   data.get("n_data_points", 0),
+                        "day_threshold": data.get("day_threshold", 0),
+                    }
+        
+
+        if has_data:
+            self.active_sites.add(site_id)
+        self.logger.info(f"[Server] Site {site_id} ready -> has_data={has_data}, n_data_points={n_data_points}, day_threshold={day_threshold} ")
+        
+        # return self.site_summary, self.active_sites
 
     def _start_background_poller(self):
         self.logger.info(f"[Server] Started Background poller/event listener")
@@ -145,11 +181,12 @@ class OctopusServerCommunicator:
             "iteration_no": iteration_no,
             "walker_no": walker_no,
             "theta": theta.tolist(),  # Convert ndarray to list,
+            "day_threshold": self.threshold,
         }
 
-        future = self.producer.send(self.topic, value=event)
-        # self.producer.flush()
-        print(future.get(timeout=10))
+        self.producer.send(self.topic, value=event)
+        self.producer.flush()
+        # print(future.get(timeout=10))
         
         print(f"[Server] Published ProposedTheta event. Iteration no: {iteration_no}, walker={walker_no}", flush=True)
         self.logger.info(f"[Server] Published ProposedTheta event. Iteration no: {iteration_no}, walker={walker_no}")
@@ -166,8 +203,9 @@ class OctopusServerCommunicator:
         # expected_clients = {str(i) for i in range(num_sites)}
 
         key = (ongoing_iteration, walker_no)
-        expected_sites = {str(i) for i in range(num_sites)}
-
+        # Use active sites instead of num_sites
+        # expected_sites = {str(i) for i in range(num_sites)}
+        expected_sites = self.active_sites  # only sites with data
 
         # while received_sites < num_sites:
         #     for message in consumer:
@@ -213,7 +251,7 @@ class OctopusServerCommunicator:
             with self.lock:
                 got = self.store.get(key, {})
                 # if got.keys() >= expected_sites:
-                if got.keys() == expected_sites:
+                if set(got.keys()) == expected_sites:
 
                     result = got.copy()
                     # Clean up so we don’t grow unbounded

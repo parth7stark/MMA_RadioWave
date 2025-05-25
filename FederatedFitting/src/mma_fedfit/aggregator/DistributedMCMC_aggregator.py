@@ -457,6 +457,17 @@ class DistributedMCMCAggregator():
             results_dict[params[i]]['LL'] = mcmc[0]
             results_dict[params[i]]['UL'] = mcmc[2]
 
+
+        # ─── 3) Log participation summary ──────────────────────────────────────────
+        self.logger.info(f"[Server] Participation Summary:")
+        for sid, info in self.communicator.site_summary.items():
+            if info["has_data"]:
+                self.logger.info(
+                    f"  • Site {sid}: {info['n_data_points']} pts, day threshold = {info['day_threshold']}"
+                )
+            else:
+                self.logger.info(f"  • Site {sid}: no data, day threshold = {info['day_threshold']}")
+
         #Save everything in sight:
         # Save results
         print(f"Saved results in {save_folder} after {niters} samples with burnin = {burnin}")
