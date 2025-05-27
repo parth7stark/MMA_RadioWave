@@ -41,7 +41,7 @@ class OctopusClientCommunicator:
         self.consumer = KafkaConsumer(
             self.topic,
             enable_auto_commit=True,
-            auto_offset_reset="earliest",  # This ensures it reads all past messages
+            auto_offset_reset="latest",  # This ensures it reads all past messages
             group_id=client_group_id
         )
 
