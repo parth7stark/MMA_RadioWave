@@ -13,7 +13,7 @@ import threading
 import json
 import time
 from collections import defaultdict
-
+import sys
 class OctopusServerCommunicator:
     """
     Octopus communicator for federated learning server.
@@ -46,6 +46,8 @@ class OctopusServerCommunicator:
 
         # Track readiness, which detector is connected and ready for inference
         self.active_sites = set()
+        self.expected_sites = set()
+
 
         # In‐memory store: (iteration, walker) → { site_id: likelihood }
         self.store: dict[tuple[int,int], dict[str,float]] = defaultdict(dict)
@@ -84,6 +86,7 @@ class OctopusServerCommunicator:
         event = {
         
             "EventType": "AggregationDone",
+            "status": "HAS_DATA",
             "theta_est": results_dict,
             "day_threshold": self.threshold,
         }
@@ -129,7 +132,7 @@ class OctopusServerCommunicator:
         # self.server_agent.aggregator.process_local_MCMC_done_message(self.producer, self.topic, site_id, status, local_chain_list, min_time, max_time, unique_frequencies)
         self.server_agent.aggregator.process_local_MCMC_done_message(self.producer, self.topic, site_id, status, local_chain_list, self.site_summary)
 
-    def handle_SiteReady_message(self, data):
+    def handle_SiteReady_message(self, data, num_sites):
         """
         Message of type "SiteReady" is detected/consumed. Handle it
         Example of Message
@@ -150,12 +153,36 @@ class OctopusServerCommunicator:
                         "day_threshold": data.get("day_threshold", 0),
                     }
         
-
+        # self.expected_sites.add(site_id)
         if has_data:
             self.active_sites.add(site_id)
         self.logger.info(f"[Server] Site {site_id} ready -> has_data={has_data}, n_data_points={n_data_points}, day_threshold={day_threshold} ")
         
+        # Detect when all sites are ready. check if there is any site which has data
+        if len(self.site_summary) == num_sites:
+            if len(self.active_sites)==0:
+                self.logger.info("[Server] All sites responded — but none have usable data. Skipping MCMC.")
+                # Optionally: broadcast dummy AggregationDone
+                self.send_empty_aggregation_result()
         # return self.site_summary, self.active_sites
+
+    def send_empty_aggregation_result(self):
+        
+        event = {
+        
+            "EventType": "AggregationDone",
+            "status": "NO_DATA",
+            "theta_est": "none",
+            "day_threshold": self.threshold,
+        }
+
+        
+
+        self.producer.send(self.topic, value=event)
+        self.producer.flush()
+        self.logger.info("[Server] Broadcasted empty AggregationDone due to lack of data.")
+        
+        sys.exit(0)
 
     def _start_background_poller(self):
         self.logger.info(f"[Server] Started Background poller/event listener")

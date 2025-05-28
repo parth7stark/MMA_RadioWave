@@ -20,8 +20,8 @@ client_configs:
 
   mcmc_configs:
     nwalkers: 32
-    niters: 1000
-    burnin: 200
+    niters: 20
+    burnin: 2
 
     random_seed: 42
     #If Z is known, set Z_known = True and give its value. It will not be included in the smapling proceedure.
@@ -33,7 +33,7 @@ client_configs:
     #DL_range should be the output of Dingo, in Mpc (will convert internally to cm)
 
     DL_known: False
-    DL_range: [38, 42]
+    DL_range: [18.532, 45.399]
     DL_fixed: 40
 
     #thetaObs is observing angle in radians (0, pi/2)
@@ -95,16 +95,16 @@ server_configs:
   aggregator_kwargs:
     num_clients: 2
     # directory to store results after consensus/aggregation/sum of log-likelihood
-    save_folder: "/lus/eagle/projects/RAPINS/parth/MMA_RadioWave/FederatedFitting/examples/results/distributed_server/"
-    run_name: "example"
+    save_folder: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/results/pf_2site_distributed/"
+    run_name: "2sites_distributed"
     plot_names: "GW170817"
     
     # #whether or not to include the truth valueson the corner plots
     # display_truths_on_corner: "True"
     # true_values: [53, .54, 0.088, -1.699, -2, -3.699, 2.139, 0.6, 0.00897]
 
-  logging_output_dirname: "/lus/eagle/projects/RAPINS/parth/MMA_RadioWave/FederatedFitting/examples/output"
-  logging_output_filename: "result"
+  logging_output_dirname: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/output"
+  logging_output_filename: "pf_2site_distributed"
 
   # define server side kafka parameters here like consumer settings (offset policy)
   # Fedfit module listens to overlap analysis messages from MMA module as well topic and post it to another topic fedfit topic to interact with clients/sites

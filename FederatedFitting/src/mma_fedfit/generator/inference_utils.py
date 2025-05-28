@@ -1,10 +1,14 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import afterglowpy as grb
 from astropy.coordinates import SkyCoord
 import astropy.units as u
 import corner
+
+import matplotlib
+matplotlib.use('agg')
+import matplotlib.pyplot as plt
+# This avoids any GUI-related thread issues and will still allow saving plots via plt.savefig().
 
 #-------------------------------------------------
 # Dictionary for filter names (if needed)

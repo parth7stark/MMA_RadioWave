@@ -49,6 +49,8 @@ if server_agent_config.client_configs.fitting_configs.use_approach == "1":
     #save a copy of the .ini to the save folder:
     # shutil.copy(ini_file_path, os.path.join(save_folder, run_name + '_params.ini'))
 
+    TOTAL_SITES = server_agent.server_agent_config.server_configs.aggregator_kwargs.num_clients  # assume 12
+
 
     print("[Server] Listening for messages...", flush=True)
     server_agent.logger.info("[Server] Listening for messages...")
@@ -59,26 +61,27 @@ if server_agent_config.client_configs.fitting_configs.use_approach == "1":
             data_str = msg.value.decode("utf-8")  # decode to string
             data = json.loads(data_str)          # parse JSON to dict
 
+            # print(data)
             Event_type = data["EventType"]
-            day_threshold_in_msg = data["threshold"]
+            day_threshold_in_msg = data["day_threshold"]
 
             # ignore runs/msgs not meant for this threshold
             if str(day_threshold_in_msg) != str(day_threshold):
                 continue
 
-            if Event_type == "LocalMCMCDone":
-                communicator.handle_local_MCMC_done_message(data)
-
-            elif Event_type == "AggregationDone":
-                # not triggering anything on server side
-                continue
-
-            elif Event_type == "SiteReady":  
+            if Event_type == "SiteReady":  
                 # Site connected and ready for fitting the curve
                 # not triggering anything on server side, just publishing event to octopus fabric
                 # Keep on listening other events
                 # continue
-                communicator.handle_SiteReady_message(data)
+                communicator.handle_SiteReady_message(data, TOTAL_SITES)
+           
+            elif Event_type == "AggregationDone":
+                # not triggering anything on server side
+                continue
+
+            elif Event_type == "LocalMCMCDone":
+                communicator.handle_local_MCMC_done_message(data)
 
                 # Later we will keep track of connected Sites and check if anyone got disconnected
 
@@ -119,7 +122,7 @@ else:
     communicator.publish_server_started_event(threshold=day_threshold)
 
     # ─── 2) Wait for all 12 sites to report in ────────────────────────────────
-    TOTAL_SITES = server_agent.server_agent_config.client_configs.num_sites  # assume 12
+    TOTAL_SITES = server_agent.server_agent_config.server_configs.aggregator_kwargs.num_clients  # assume 12
     # site_summary = {}    # sid → {has_data, n_points, n_upper_limits}
     # active_sites = set()
 
@@ -132,7 +135,7 @@ else:
         data = json.loads(data_str)          # parse JSON to dict
 
         Event_type = data["EventType"]
-        day_threshold_in_msg = data["threshold"]
+        day_threshold_in_msg = data["day_threshold"]
 
         # ignore runs/msgs not meant for this threshold
         if str(day_threshold_in_msg) != str(day_threshold):
@@ -143,7 +146,9 @@ else:
             # not triggering anything on server side, just publishing event to octopus fabric
             # Keep on listening other events
             # continue
-            communicator.handle_SiteReady_message(data)
+            communicator.handle_SiteReady_message(data, TOTAL_SITES)
+        if len(communicator.site_summary)==TOTAL_SITES:
+            break
 
     start_time = time.time()
     print("Running global MCMC")

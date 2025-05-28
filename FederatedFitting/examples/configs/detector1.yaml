@@ -1,14 +1,14 @@
 client_id: '1'
 fitting_configs:
   logging_id: "FedFit_Site1"
-  logging_output_dirname: "/lus/eagle/projects/RAPINS/parth/MMA_RadioWave/FederatedFitting/examples/output"
-  logging_output_filename: "result"
+  logging_output_dirname: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/output"
+  logging_output_filename: "pf_2site_distributed"
 
-  dataset_path: "/lus/eagle/projects/RAPINS/parth/MMA_RadioWave/FederatedFitting/examples/fitting_dataset/GW170817_data/Makhatini2021Data_site2.csv"
+  dataset_path: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/fitting_dataset/GW170817_data/Makhatini2021Data_site2.csv"
 
   # Path to save local results
-  save_folder: "/lus/eagle/projects/RAPINS/parth/MMA_RadioWave/FederatedFitting/examples/results/distributed_site2/"
-  run_name: example
+  save_folder: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/results/pf_2site_distributed_site1/"
+  run_name: 2sites_distributed
   plot_names: GW170817
 
 comm_configs:
@@ -25,4 +25,4 @@ comm_configs:
         
       connector_type: "FileConnector"
       connector_configs:
-        store_dir: "/lus/eagle/projects/RAPINS/parth/proxystore"
+        store_dir: "/scratch/bcbw/parthpatel7173/proxystore"

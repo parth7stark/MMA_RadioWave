@@ -58,7 +58,7 @@ for msg in client_communicator.consumer:
     data = json.loads(data_str)
 
     Event_type = data["EventType"]
-    day_threshold_in_msg = data["threshold"]
+    day_threshold_in_msg = data["day_threshold"]
 
     # ignore runs/msgs not meant for this threshold
     if str(day_threshold_in_msg) != str(day_threshold):
@@ -91,12 +91,23 @@ if client_agent.client_agent_config.fitting_configs.use_approach=="2":
     if local_data.shape[1] == 1:
         local_data = pd.read_csv(data_dir, delim_whitespace=True)
     
+    """ 
+    Preprocess local data
+    """
+    preprocessed_local_data = interpret(local_data, client_agent.client_agent_config)
+    preprocessed_local_data_UL = interpret_ULs(local_data, client_agent.client_agent_config)
+
     # Publish Site ready event with metadata
     # load & slice local CSV ──
     if day_threshold != "all":
-        local_data = local_data[local_data["days"] <= float(day_threshold)]
+        #  interpret() removes the days column and only keeps t in seconds
+        max_seconds = float(day_threshold) * 86400
+        preprocessed_local_data = preprocessed_local_data[
+            preprocessed_local_data["t"] <= max_seconds
+        ]
+        # preprocessed_local_data = preprocessed_local_data[preprocessed_local_data["days"] <= float(day_threshold)]
 
-    n_pts = len(local_data)
+    n_pts = len(preprocessed_local_data)
     has_data = n_pts > 0
 
     # ─── 3) Report readiness & data stats ─────────────────────────────────
@@ -114,7 +125,7 @@ if client_agent.client_agent_config.fitting_configs.use_approach=="2":
             # client_agent.logger.info(f"[Site {client_agent.get_id()}] msg: {data}")
             Event_type = data["EventType"]
 
-            day_threshold_in_msg = data["threshold"]
+            day_threshold_in_msg = data["day_threshold"]
 
             # ignore runs/msgs not meant for this threshold
             if str(day_threshold_in_msg) != str(day_threshold):
@@ -136,12 +147,7 @@ if client_agent.client_agent_config.fitting_configs.use_approach=="2":
                 # Skip plotting for now
                 break
     else:
-        """ 
-        Preprocess local data
-        """
-        preprocessed_local_data = interpret(local_data, client_agent.client_agent_config)
-        preprocessed_local_data_UL = interpret_ULs(local_data, client_agent.client_agent_config)
-
+        
         # Listen for incoming proposed theta
         # while True:
         #     msg_pack = client_communicator.consumer.poll(timeout_ms=1000)
@@ -155,7 +161,7 @@ if client_agent.client_agent_config.fitting_configs.use_approach=="2":
 
             # client_agent.logger.info(f"[Site {client_agent.get_id()}] msg: {data}")
             Event_type = data["EventType"]
-            day_threshold_in_msg = data["threshold"]
+            day_threshold_in_msg = data["day_threshold"]
 
             # ignore runs/msgs not meant for this threshold
             if str(day_threshold_in_msg) != str(day_threshold):
@@ -234,12 +240,23 @@ else:
     if local_data.shape[1] == 1:
         local_data = pd.read_csv(data_dir, delim_whitespace=True)
     
+    """ 
+    Preprocess local data
+    """
+    preprocessed_local_data = interpret(local_data, client_agent.client_agent_config)
+    preprocessed_local_data_UL = interpret_ULs(local_data, client_agent.client_agent_config)
+
     # Publish Site ready event with metadata
     # load & slice local CSV ──
     if day_threshold != "all":
-        local_data = local_data[local_data["days"] <= float(day_threshold)]
+        #  interpret() removes the days column and only keeps t in seconds
+        max_seconds = float(day_threshold) * 86400
+        preprocessed_local_data = preprocessed_local_data[
+            preprocessed_local_data["t"] <= max_seconds
+        ]
+        # preprocessed_local_data = preprocessed_local_data[preprocessed_local_data["days"] <= float(day_threshold)]
 
-    n_pts = len(local_data)
+    n_pts = len(preprocessed_local_data)
     has_data = n_pts > 0
 
     # ─── 3) Report readiness & data stats ─────────────────────────────────
@@ -253,20 +270,14 @@ else:
         )
     else:
     
-        """ 
-        Preprocess local data
-        """
-        preprocessed_local_data = interpret(local_data, client_agent.client_agent_config)
-        preprocessed_local_data_UL = interpret_ULs(local_data, client_agent.client_agent_config)
-
         """
         Take initial guess from client_config:
             client_agent.run_local_mcmc(processed_local_data)
             local_result = client_agent.get_parameters()
             client_communicator.send_results(local_result)
         """
-        start_time = time.time()
-        print("Running local MCMC")
+        # start_time = time.time()
+        # print("Running local MCMC")
 
         # Prepare initial walker positions (in 7 dimensions).
         # pos = ( [ np.log10(Z["E0"]),
@@ -316,9 +327,9 @@ else:
         mcmc_thread = threading.Thread(target=run_mcmc_and_send)
         mcmc_thread.start()        
         
-        elapsed_time = time.time() - start_time
-        print(f"Time to run local MCMC: {elapsed_time:.2f} seconds", flush=True)
-        client_agent.logger.info(f"Time to run local MCMC: {elapsed_time:.2f} seconds")
+        # elapsed_time = time.time() - start_time
+        # print(f"Time to run local MCMC: {elapsed_time:.2f} seconds", flush=True)
+        # client_agent.logger.info(f"Time to run local MCMC: {elapsed_time:.2f} seconds")
         
     # Listen for AggregationDone Event and plot local graphs
     #  Listen for consensus results from server
@@ -344,7 +355,7 @@ else:
         data = json.loads(data_str)
 
         Event_type = data["EventType"]
-        day_threshold_in_msg = data["threshold"]
+        day_threshold_in_msg = data["day_threshold"]
 
         # ignore runs/msgs not meant for this threshold
         if str(day_threshold_in_msg) != str(day_threshold):

@@ -118,7 +118,7 @@ class ConsensusAggregator():
                 active_chains.append(chain)
 
             if not active_chains:
-                self.logger.warning("[Server] No chains to aggregate! Skipping aggregation.")
+                self.logger.info("[Server] No chains to aggregate! Skipping aggregation.")
                 return
             
             mu_full, Sigma_full = self.aggregate_gaussian(active_chains)
@@ -258,6 +258,7 @@ class ConsensusAggregator():
         producer.send(topic, value={
         
             "EventType": "AggregationDone",
+            "status": "HAS_DATA",
             "theta_est": results_dict,
             "day_threshold": threshold,
             # "global_min_time": global_min,

@@ -115,6 +115,10 @@ class OctopusClientCommunicator:
                 "chain": "none",   # or None or "null"
                 "day_threshold": self.threshold,
             }
+
+            print(f"[Site {client_id}] No data available. Sent 0 Local Posterior Samples", flush=True)
+            self.logger.info(f"[Site {client_id}] No data available. Sent 0 Local Posterior Samples")
+
         else:
             # Keep local_chains as list
             local_chains = local_results["chain"].tolist() if isinstance(local_results["chain"], np.ndarray) else local_results["chain"]
@@ -146,6 +150,9 @@ class OctopusClientCommunicator:
                 # 'max_time': float(local_results["max_time"]) if isinstance(local_results["max_time"], np.generic) else local_results["max_time"],
                 # 'unique_frequencies': local_results["unique_frequencies"].tolist() if isinstance(local_results["unique_frequencies"], np.ndarray) else local_results["unique_frequencies"]
             }
+            print(f"[Site {client_id}] Sent Local Posterior Samples", flush=True)
+            self.logger.info(f"[Site {client_id}] Sent Local Posterior Samples")
+
 
     
         self.producer.send(
@@ -155,8 +162,8 @@ class OctopusClientCommunicator:
 
         self.producer.flush()
 
-        print(f"[Site {client_id}] Sent Local Posterior Samples", flush=True)
-        self.logger.info(f"[Site {client_id}] Sent Local Posterior Samples")
+        # print(f"[Site {client_id}] Sent Local Posterior Samples", flush=True)
+        # self.logger.info(f"[Site {client_id}] Sent Local Posterior Samples")
 
         # return
     
@@ -175,27 +182,32 @@ class OctopusClientCommunicator:
             ...
         }
         """
-        results_dict = data["theta_est"]
-        # global_min_time = data["global_min_time"]
-        # global_max_time = data["global_max_time"]
-        # unique_frequencies = data["unique_frequencies"]
+        status = data["status"]
+        if status == "NO_DATA":
+            theta_est = []
+            self.logger.info("All sites responded — but none have any data. Skipped MCMC")
+        else:
+            results_dict = data["theta_est"]
+            # global_min_time = data["global_min_time"]
+            # global_max_time = data["global_max_time"]
+            # unique_frequencies = data["unique_frequencies"]
 
-        print("MCMC Best estimate of parameters", flush=True)
-        self.logger.info("MCMC Best estimate of parameters")
-        
-        theta_est = []
-        for param, stats in results_dict.items():
-            median = stats["median"]
-            LL = stats["LL"]
-            UL = stats["UL"]
-            err_minus = median - LL
-            err_plus = UL - median
+            print("MCMC Best estimate of parameters", flush=True)
+            self.logger.info("MCMC Best estimate of parameters")
             
-            theta_est.append(median)
+            theta_est = []
+            for param, stats in results_dict.items():
+                median = stats["median"]
+                LL = stats["LL"]
+                UL = stats["UL"]
+                err_minus = median - LL
+                err_plus = UL - median
+                
+                theta_est.append(median)
 
-            print(f"{param:>12s} = {median:.4f} +{err_plus:.4f} -{err_minus:.4f}")
-            self.logger.info(f"{param:>12s} = {median:.4f} +{err_plus:.4f} -{err_minus:.4f}")
-            
+                print(f"{param:>12s} = {median:.4f} +{err_plus:.4f} -{err_minus:.4f}")
+                self.logger.info(f"{param:>12s} = {median:.4f} +{err_plus:.4f} -{err_minus:.4f}")
+                
 
         return theta_est
 
