@@ -3,7 +3,7 @@
 Thumbs.db
 
 # Logs and temporary files
-*.log
+#*.log
 *.tmp
 *.bak
 *.swp
