@@ -51,7 +51,7 @@ class OctopusClientCommunicator:
         We can parse the config or update local settings, then send 'ClientReady' event.
         """
 
-        print(f"[Site {self.client_agent.get_id()}] Received ServerStarted event.", flush=True)
+        # print(f"[Site {self.client_agent.get_id()}] Received ServerStarted event.", flush=True)
         self.logger.info(f"[Site {self.client_agent.get_id()}] Received ServerStarted event.")
         
         client_config = data["site_config"]  # This is the dict from OmegaConf
@@ -87,7 +87,7 @@ class OctopusClientCommunicator:
         }
         self.producer.send(self.topic, ready_msg)
         self.producer.flush()
-        print(f"[Site {self.client_id}] Published SiteReady event.")
+        # print(f"[Site {self.client_id}] Published SiteReady event.")
         self.logger.info(f"[Site {self.client_id}] Published SiteReady event.")
 
 
@@ -116,7 +116,7 @@ class OctopusClientCommunicator:
                 "day_threshold": self.threshold,
             }
 
-            print(f"[Site {client_id}] No data available. Sent 0 Local Posterior Samples", flush=True)
+            # print(f"[Site {client_id}] No data available. Sent 0 Local Posterior Samples", flush=True)
             self.logger.info(f"[Site {client_id}] No data available. Sent 0 Local Posterior Samples")
 
         else:
@@ -150,7 +150,7 @@ class OctopusClientCommunicator:
                 # 'max_time': float(local_results["max_time"]) if isinstance(local_results["max_time"], np.generic) else local_results["max_time"],
                 # 'unique_frequencies': local_results["unique_frequencies"].tolist() if isinstance(local_results["unique_frequencies"], np.ndarray) else local_results["unique_frequencies"]
             }
-            print(f"[Site {client_id}] Sent Local Posterior Samples", flush=True)
+            # print(f"[Site {client_id}] Sent Local Posterior Samples", flush=True)
             self.logger.info(f"[Site {client_id}] Sent Local Posterior Samples")
 
 
@@ -192,7 +192,7 @@ class OctopusClientCommunicator:
             # global_max_time = data["global_max_time"]
             # unique_frequencies = data["unique_frequencies"]
 
-            print("MCMC Best estimate of parameters", flush=True)
+            # print("MCMC Best estimate of parameters", flush=True)
             self.logger.info("MCMC Best estimate of parameters")
             
             theta_est = []
@@ -205,7 +205,7 @@ class OctopusClientCommunicator:
                 
                 theta_est.append(median)
 
-                print(f"{param:>12s} = {median:.4f} +{err_plus:.4f} -{err_minus:.4f}")
+                # print(f"{param:>12s} = {median:.4f} +{err_plus:.4f} -{err_minus:.4f}")
                 self.logger.info(f"{param:>12s} = {median:.4f} +{err_plus:.4f} -{err_minus:.4f}")
                 
 
@@ -221,7 +221,7 @@ class OctopusClientCommunicator:
         theta = np.array(data["theta"])
 
 
-        print(f"Site {client_id} received proposed theta. Iteration no: {iteration_no}, walker={walker_no}")
+        # print(f"Site {client_id} received proposed theta. Iteration no: {iteration_no}, walker={walker_no}")
         self.logger.info(f"Site {client_id} received proposed theta. Iteration no: {iteration_no}, walker={walker_no}")
 
         
@@ -245,7 +245,7 @@ class OctopusClientCommunicator:
 
         self.producer.flush()
 
-        print(f"[Site {client_id}] Sent Local log-likelihood. Iteration no: {iteration_no}, walker={walker_no}", flush=True)
+        # print(f"[Site {client_id}] Sent Local log-likelihood. Iteration no: {iteration_no}, walker={walker_no}", flush=True)
         self.logger.info(f"[Site {client_id}] Sent Local log-likelihood. Iteration no: {iteration_no}, walker={walker_no}")
 
         return

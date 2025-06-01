@@ -74,7 +74,7 @@ class OctopusServerCommunicator:
         self.producer.send(self.topic, value=event)
         self.producer.flush()
         
-        print("[Server] Published ServerStarted event with config.", flush=True)
+        # print("[Server] Published ServerStarted event with config.", flush=True)
         self.logger.info("[Server] Published ServerStarted event with config.")
 
     def send_aggregation_results(self, results_dict):
@@ -94,7 +94,7 @@ class OctopusServerCommunicator:
         self.producer.send(self.topic, value=event)
         self.producer.flush()
         
-        print("[Server] Published AggregationDone event with best parameter estimates.", flush=True)
+        # print("[Server] Published AggregationDone event with best parameter estimates.", flush=True)
         self.logger.info("[Server] Published AggregationDone event with best parameter estimates.")
 
 
@@ -138,7 +138,6 @@ class OctopusServerCommunicator:
         Example of Message
         msg:  ConsumerRecord(topic='mma-GWwave-Triggers', partition=0, offset=7705, timestamp=1736957074944, timestamp_type=0, key=None, value=b'{"EventType": "PostProcess", "detector_id": "1", "status": "DONE", "details": "DONE -> Invoke post process pipeline", "GPS_start_time": 1264314069}', headers=[], checksum=None, serialized_key_size=-1, serialized_value_size=147, serialized_header_size=-1)
         """
-
 
 
         site_id = str(data["Site_id"])    # 0 or 1
@@ -202,7 +201,7 @@ class OctopusServerCommunicator:
 
     def send_proposed_theta(self, theta, iteration_no, walker_no):
 
-        print("proposed_theta", flush=True)
+        # print("proposed_theta", flush=True)
         event = {
             "EventType": "ProposedTheta",
             "iteration_no": iteration_no,
@@ -215,12 +214,12 @@ class OctopusServerCommunicator:
         self.producer.flush()
         # print(future.get(timeout=10))
         
-        print(f"[Server] Published ProposedTheta event. Iteration no: {iteration_no}, walker={walker_no}", flush=True)
+        # print(f"[Server] Published ProposedTheta event. Iteration no: {iteration_no}, walker={walker_no}", flush=True)
         self.logger.info(f"[Server] Published ProposedTheta event. Iteration no: {iteration_no}, walker={walker_no}")
 
     def collect_local_likelihoods(self, num_sites, ongoing_iteration, walker_no):
         
-        print("collect likelihood", flush=True)
+        # print("collect likelihood", flush=True)
 
         # log_likelihoods = {}
         # received_sites = 0
@@ -283,7 +282,7 @@ class OctopusServerCommunicator:
                     result = got.copy()
                     # Clean up so we don’t grow unbounded
                     del self.store[key]
-                    print(f"[Server] Collected all likelihoods for (iter={ongoing_iteration},walker={walker_no})", flush=True)
+                    # print(f"[Server] Collected all likelihoods for (iter={ongoing_iteration},walker={walker_no})", flush=True)
                     self.logger.info(f"[Server] Collected all likelihoods for (iter={ongoing_iteration},walker={walker_no})")
                     
                     return result

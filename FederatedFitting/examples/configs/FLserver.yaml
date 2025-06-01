@@ -20,8 +20,8 @@ client_configs:
 
   mcmc_configs:
     nwalkers: 32
-    niters: 20
-    burnin: 2
+    niters: 2000
+    burnin: 200
 
     random_seed: 42
     #If Z is known, set Z_known = True and give its value. It will not be included in the smapling proceedure.
@@ -93,18 +93,18 @@ client_configs:
 
 server_configs:
   aggregator_kwargs:
-    num_clients: 2
+    num_clients: 8
     # directory to store results after consensus/aggregation/sum of log-likelihood
-    save_folder: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/results/pf_2site_distributed/"
-    run_name: "2sites_distributed"
-    plot_names: "GW170817"
+    save_folder: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/results/pf_8sites_distributed_day50/"
+    run_name: "pf_8sites_distributed_day50"
+    plot_names: "GW170817_pf_8sites_distributed_day50"
     
     # #whether or not to include the truth valueson the corner plots
     # display_truths_on_corner: "True"
     # true_values: [53, .54, 0.088, -1.699, -2, -3.699, 2.139, 0.6, 0.00897]
 
   logging_output_dirname: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/output"
-  logging_output_filename: "pf_2site_distributed"
+  logging_output_filename: "pf_8sites_distributed_day50"
 
   # define server side kafka parameters here like consumer settings (offset policy)
   # Fedfit module listens to overlap analysis messages from MMA module as well topic and post it to another topic fedfit topic to interact with clients/sites

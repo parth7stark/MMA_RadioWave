@@ -82,7 +82,7 @@ if client_agent.client_agent_config.fitting_configs.use_approach=="2":
     data_dir = client_agent.client_agent_config.fitting_configs.dataset_path
     dataset_name = data_dir.split('/')[-1].split('_')[0]
 
-    print(f"Computing log-likelihood on {dataset_name} dataset", flush=True)
+    # print(f"Computing log-likelihood on {dataset_name} dataset", flush=True)
     client_agent.logger.info(f"[Site {client_agent.get_id()}] Computing log-likelihood on {dataset_name} dataset")
 
     # Load flux-time at the site (local data)
@@ -170,7 +170,7 @@ if client_agent.client_agent_config.fitting_configs.use_approach=="2":
             if Event_type == "ProposedTheta":
                 client_communicator.handle_proposed_theta_message(data, preprocessed_local_data)
             elif Event_type == "AggregationDone":     
-                print(f"[Site {client_agent.get_id()}] Received distributed MCMC results", flush=True)
+                # print(f"[Site {client_agent.get_id()}] Received distributed MCMC results", flush=True)
                 client_agent.logger.info(f"[Site {client_agent.get_id()}] Received distributed MCMC results")
 
                 theta_est = client_communicator.get_best_estimate(data)

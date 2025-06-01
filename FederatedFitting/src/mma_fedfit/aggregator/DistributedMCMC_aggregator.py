@@ -432,8 +432,8 @@ class DistributedMCMCAggregator():
         # for i in range(ndim):
         #     print(f"{params[i]}: {consensus_medians[i]:.4f}")
 
-        print('Distributed parameter values', flush=True)
-        print("Best estimate of parameters", flush=True)
+        # print('Distributed parameter values', flush=True)
+        # print("Best estimate of parameters", flush=True)
         self.logger.info("Distributed Log-likelihood Best estimate of parameters")
         # theta = []
         results_dict = {}

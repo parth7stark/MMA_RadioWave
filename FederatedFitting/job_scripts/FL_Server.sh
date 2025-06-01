@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --mem=32g                              # required number of memory
+#SBATCH --mem=150g                              # required number of memory
 #SBATCH --nodes=1                               # nodes required for whole simulation
 
-#SBATCH --cpus-per-task=16                       # CPUs for each task
+#SBATCH --cpus-per-task=40                       # CPUs for each task
 ## SBATCH --gpus-per-task=1                      # Uncomment if using gpu
 ##SBATCH --ntasks-per-node=1                     # Uncomment if using gpu 
 
@@ -12,11 +12,11 @@
 ##SBATCH --gpu-bind=none        # Uncomment if using gpu
 
 
-#SBATCH --job-name=FedFit_Distributed_server_run1   # job name
-#SBATCH --time=03:40:00                         # dd-hh:mm:ss for the job
+#SBATCH --job-name=FedFit_Distributed_server_day50   # job name
+#SBATCH --time=03:10:00                         # dd-hh:mm:ss for the job
 
-#SBATCH -e FedFit_Distributed_server_run1-err-%j.log
-#SBATCH -o FedFit_Distributed_server_run1-out-%j.log
+#SBATCH -e FedFit_Distributed_server_day50-err-%j.log
+#SBATCH -o FedFit_Distributed_server_day50-out-%j.log
 
 #SBATCH --constraint="scratch"
 
@@ -24,6 +24,8 @@
 #SBATCH --mail-user=pp32@illinois.edu
 #SBATCH --mail-type="BEGIN,END" # See sbatch or srun man pages for more email options
 
+
+set -x
 
 # Load necessary modules
 source /sw/external/python/anaconda3_gpu/etc/profile.d/conda.sh
@@ -41,7 +43,7 @@ conda activate /u/parthpatel7173/.conda/envs/fedfit
 # Change directory to the cloned repo
 cd /u/parthpatel7173/MMA_RadioWave/FederatedFitting
 
-python ./examples/octopus/run_server.py --config ./examples/configs/FLserver.yaml
+python ./examples/octopus/run_server.py --config ./examples/configs/FLserver.yaml --day "50"
 # apptainer exec --nv \
 #   MMA_GW_Inference_miniapp.sif \
 #   python /app/examples/octopus/run_server.py --config <absolute path to FL server config file>/FLserver.yaml

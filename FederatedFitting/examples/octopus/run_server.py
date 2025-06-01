@@ -52,7 +52,7 @@ if server_agent_config.client_configs.fitting_configs.use_approach == "1":
     TOTAL_SITES = server_agent.server_agent_config.server_configs.aggregator_kwargs.num_clients  # assume 12
 
 
-    print("[Server] Listening for messages...", flush=True)
+    # print("[Server] Listening for messages...", flush=True)
     server_agent.logger.info("[Server] Listening for messages...")
 
     for msg in communicator.consumer:
@@ -90,12 +90,12 @@ if server_agent_config.client_configs.fitting_configs.use_approach == "1":
                 continue
 
             else:
-                print(f"[Server] Unknown Event Type in topic ({topic}): {Event_type}", flush=True)
+                # print(f"[Server] Unknown Event Type in topic ({topic}): {Event_type}", flush=True)
                 server_agent.logger.info(f"[Server] Unknown Event Type in topic ({topic}): {Event_type}")
 
         except json.JSONDecodeError as e:
             # Handle invalid JSON messages
-            print(f"[Server] JSONDecodeError for message from topic ({topic}): {e}", flush=True)
+            # print(f"[Server] JSONDecodeError for message from topic ({topic}): {e}", flush=True)
             server_agent.logger.error(f"[Server] JSONDecodeError for message from topic ({topic}): {e}")
         
         except Exception as e:
@@ -105,9 +105,9 @@ if server_agent_config.client_configs.fitting_configs.use_approach == "1":
             # Log the traceback
             tb = traceback.format_exc()
 
-            print(f"[Server] Unexpected error while processing message from topic ({topic}): {e}", flush=True)
-            print(f"[Server] Raw message: {msg}", flush=True)
-            print(f"[Server] Traceback: {tb}", flush=True)
+            # print(f"[Server] Unexpected error while processing message from topic ({topic}): {e}", flush=True)
+            # print(f"[Server] Raw message: {msg}", flush=True)
+            # print(f"[Server] Traceback: {tb}", flush=True)
 
             server_agent.logger.error(f"[Server] Unexpected error while processing message from topic ({topic}): {e}")
             server_agent.logger.error(f"[Server] Raw message: {msg}")
@@ -115,7 +115,7 @@ if server_agent_config.client_configs.fitting_configs.use_approach == "1":
 else:
 
     # Sum of log likelihood approach workflow
-    print("Running sum of log likelihood approach", flush=True )
+    # print("Running sum of log likelihood approach", flush=True )
     server_agent.logger.info("Running sum of log likelihood approach")
     
     # Publish "ServerStarted" event with config so that clients can pick it up
@@ -133,6 +133,8 @@ else:
 
         data_str = msg.value.decode("utf-8")  # decode to string
         data = json.loads(data_str)          # parse JSON to dict
+
+        server_agent.logger.info(data)        
 
         Event_type = data["EventType"]
         day_threshold_in_msg = data["day_threshold"]
