@@ -41,7 +41,7 @@ def parse_value(val):
         return ast.literal_eval(val)  # handles lists, numbers, etc.
     except:
         return val  # fallback to string
-            
+
 def parse_ini(filename):
     config = configparser.ConfigParser()
     config.read(filename)
@@ -104,17 +104,17 @@ radio_bands = {
 }
 
 def process_RA_Dec_constraints(data):
-    
+
     """
     Here we examine the data and reject all which falls outside of the user's specified arcsecond_uncertainty
     """
-    
+
     #Collect the indices we keep:
     #If True, we use the data. If False, we exclude it.
     indices_not_flagged_for_exclusion_RA_Dec = []
-    
+
     if "RA" in data.columns and "Dec" in data.columns and exclude_outside_ra_dec_uncertainty == True:
-            
+
         for i in range(data.shape[0]):
             #These are the RA and Dec given by the data.
             RA_str = data.iloc[i]["RA"]
@@ -122,7 +122,7 @@ def process_RA_Dec_constraints(data):
 
             #put the units in:
             RA_str = RA_str.split(':')
-            RA = RA_str[0] + 'h' + RA_str[1] + 'm' + RA_str[2] + 's' 
+            RA = RA_str[0] + 'h' + RA_str[1] + 'm' + RA_str[2] + 's'
 
             #put the units in:
             Dec_str = Dec_str.split(':')
@@ -134,7 +134,7 @@ def process_RA_Dec_constraints(data):
             # Calculate angular separation
             separation = coordinates_from_data.separation(coordinates_from_user)
             separation = separation.to(u.arcsec).value
-            
+
             if separation <= arcseconds_uncertainty:
                 indices_not_flagged_for_exclusion_RA_Dec.append(True) #we keep it
             if separation > arcseconds_uncertainty:
@@ -151,7 +151,7 @@ def process_flags(data):
     """
     Process all of the flags given in the .csv file into an array indicating which data points we discard.
     """
-    
+
     #Collect the indices we keep:
     #If True, we use the data. If False, we exclude it.
     indices_not_flagged_for_exclusion = []
@@ -171,7 +171,7 @@ def process_flags(data):
         use_name_flag = True
     else:
         use_name_flag = False
-        
+
     for i in range(data.shape[0]):
         flags = []
         if use_time_flag:
@@ -183,7 +183,7 @@ def process_flags(data):
         if use_name_flag:
             name_flag = data.iloc[i]["name_flag"]
             flags.append(name_flag)
-            
+
         flags = np.asarray(flags)
 
         #This means it contains a nonzero flag and we exclude it
@@ -191,7 +191,7 @@ def process_flags(data):
             indices_not_flagged_for_exclusion.append(False)
         else:
             indices_not_flagged_for_exclusion.append(True)
-    
+
     return indices_not_flagged_for_exclusion
 
 
@@ -203,21 +203,21 @@ def interpret(data):
         data["t"] = data["seconds"]
     elif "t_delta" in data.columns:
         data["t"] = data["t_delta"]
-    
+
     if "Filter" in data.columns:
         data["filter"] = data["Filter"]
     elif "Band" in data.columns:
         data["filter"] = data["Band"]
     elif "band" in data.columns:
         data["filter"] = data["band"]
-    
+
     if "GHz" in data.columns:
         data["frequency"] = data["GHz"]
         freq_correct = 1e9
     if "Hz" in data.columns:
         data["frequency"] = data["Hz"]
         freq_correct = 1
-    
+
     if "microJy" in data.columns:
         data["flux"] = data["microJy"]
         flux_correct = 1e-3
@@ -233,10 +233,10 @@ def interpret(data):
 
     #use the RA and Dec radius:
     indices_not_flagged_for_exclusion_RA_Dec = process_RA_Dec_constraints(data)
-    
+
     #use the flags:
     indices_not_flagged_for_exclusion = process_flags(data)
-    
+
     freq, new_flux, err, tvals = [], [], [], []
 
     for i in range(data.shape[0]):
@@ -245,7 +245,7 @@ def interpret(data):
                 this_freq = float(data.iloc[i]["frequency"]) * freq_correct
             except:
                 continue  # skip this row entirely if frequency can't be parsed
-    
+
             if "err" in data.columns:
                 flux = data.iloc[i]["flux"]
                 error = float(data.iloc[i]["err"])
@@ -265,7 +265,7 @@ def interpret(data):
                     tvals.append(data.iloc[i]["t"])
             else:
                 flux = data.iloc[i]["flux"]
-    
+
                 if "<" in flux:
                     continue
                     #new_flux.append("UL")
@@ -274,7 +274,7 @@ def interpret(data):
                     continue
                     #new_flux.append("UL")
                     #err.append(0)
-                
+
                 if "±" in flux:
                     splt = flux.split("±")
                     new_flux.append(float(splt[0]))
@@ -299,7 +299,7 @@ def interpret(data):
                     err.append(0)
                     freq.append(this_freq)
                     tvals.append(data.iloc[i]["t"])
-    
+
     for i in range(len(new_flux)):
         if new_flux[i] != "UL":
             if flux_correct != "mag":
@@ -307,13 +307,13 @@ def interpret(data):
                 err[i] = err[i] * flux_correct
 
     # Build a clean DataFrame only from valid, parsed values
-    
+
     valid_data = pd.DataFrame({
     "t": tvals,
     "frequency": freq,
     "flux": new_flux,
     "err": err})
-    
+
     # Return just the columns we want, fully cleaned
     valid_data = valid_data[["t", "frequency", "flux", "err"]].astype(np.float64)
     return valid_data
@@ -322,7 +322,7 @@ def interpret(data):
 def interpret_ULs(data):
     print('interpret UL data')
     """
-    This takes in the same datafile as interpret(), but it picks out the upper limits only. 
+    This takes in the same datafile as interpret(), but it picks out the upper limits only.
     We use this for the plotting.
     """
     if "days" in data.columns:
@@ -331,21 +331,21 @@ def interpret_ULs(data):
         data["t"] = data["seconds"]
     elif "t_delta" in data.columns:
         data["t"] = data["t_delta"]
-    
+
     if "Filter" in data.columns:
         data["filter"] = data["Filter"]
     elif "Band" in data.columns:
         data["filter"] = data["Band"]
     elif "band" in data.columns:
         data["filter"] = data["band"]
-    
+
     if "GHz" in data.columns:
         data["frequency"] = data["GHz"]
         freq_correct = 1e9
     if "Hz" in data.columns:
         data["frequency"] = data["Hz"]
         freq_correct = 1
-    
+
     if "microJy" in data.columns:
         data["flux"] = data["microJy"]
         flux_correct = 1e-3
@@ -361,7 +361,7 @@ def interpret_ULs(data):
 
     #use the RA and Dec radius:
     indices_not_flagged_for_exclusion_RA_Dec = process_RA_Dec_constraints(data)
-    
+
     #use the flags:
     indices_not_flagged_for_exclusion = process_flags(data)
 
@@ -373,7 +373,7 @@ def interpret_ULs(data):
                 this_freq = float(data.iloc[i]["frequency"]) * freq_correct
             except:
                 continue  # skip this row entirely if frequency can't be parsed
-    
+
             if "err" in data.columns:
                 flux = data.iloc[i]["flux"]
                 error = float(data.iloc[i]["err"])
@@ -391,10 +391,10 @@ def interpret_ULs(data):
                     new_flux.append(flux)
                     freq.append(this_freq)
                     tvals.append(data.iloc[i]["t"])
-    
+
             else:
                 flux = data.iloc[i]["flux"]
-    
+
                 if "<" in flux:
                     flux_str = flux.split('<')
                     flux = flux_str[1]
@@ -409,18 +409,18 @@ def interpret_ULs(data):
                     new_flux.append(flux)
                     freq.append(this_freq)
                     tvals.append(data.iloc[i]["t"])
-    
+
     for i in range(len(new_flux)):
         if new_flux[i] != "UL":
             if flux_correct != "mag":
                 new_flux[i] = new_flux[i] * flux_correct
                 #err[i] = err[i] * flux_correct
-    
+
     valid_data = pd.DataFrame({
     "t": tvals,
     "frequency": freq,
     "flux": new_flux})
-    
+
     # Return just the columns we want, fully cleaned
     valid_data = valid_data[["t", "frequency", "flux"]].astype(np.float64)
     return valid_data
@@ -431,7 +431,7 @@ def log_likelihood(theta, nu, x, y, yerr):
     if z_known == True and dl_known == True:
         logE0, thetaObs, logn0 = theta  # REMOVED thetaCore, p, thetaWing, logepsilon_e, logepsilon_B
         z = z_fixed
-        DL = dl_fixed 
+        DL = dl_fixed
 
     elif z_known == True and dl_known == False:
         logE0, thetaObs, logn0, DL = theta  # REMOVED thetaCore, p, thetaWing, logepsilon_e, logepsilon_B
@@ -440,13 +440,13 @@ def log_likelihood(theta, nu, x, y, yerr):
     elif z_known == False and dl_known == True:
         logE0, thetaObs, logn0, z = theta  # REMOVED thetaCore, p, thetaWing, logepsilon_e, logepsilon_B
         DL = dl_fixed
-        
+
     else:
         logE0, thetaObs, logn0, z, DL = theta  # REMOVED thetaCore, p, thetaWing, logepsilon_e, logepsilon_B
 
     E0 = 10 ** logE0
     n0 = 10 ** logn0
-    
+
     # USE FIXED VALUES INSTEAD OF FITTING
     epsilon_e = epsilon_e_fixed
     epsilon_B = epsilon_b_fixed
@@ -472,7 +472,7 @@ def log_likelihood(theta, nu, x, y, yerr):
     "z": z,
     }
 
-    try:    
+    try:
         model = grb.fluxDensity(x, nu, **Z)
         sigma2 = yerr**2
         return -0.5 * np.sum((y - model) ** 2 / sigma2 + np.log10(sigma2))
@@ -508,10 +508,10 @@ def log_prior(theta):
 
     elif z_known == False and dl_known == True:
         logE0, thetaObs, logn0, z = theta  # REMOVED thetaCore, p, thetaWing, logepsilon_e, logepsilon_B
-        
+
     else:
         logE0, thetaObs, logn0, z, DL = theta  # REMOVED thetaCore, p, thetaWing, logepsilon_e, logepsilon_B
-    
+
 
     if z_known == True and dl_known == True:
         if (
@@ -556,7 +556,7 @@ def log_prior(theta):
         ):
             return 0.0
         return -np.inf
-    
+
 def log_probability(theta, nu, x, y, yerr):
 
     lp = log_prior(theta)
@@ -581,14 +581,14 @@ def plot_lc_noUL(data, theta):
     elif z_known == False and dl_known == True:
         logE0, thetaObs, logn0, z = theta  # REMOVED thetaCore, p, thetaWing, logepsilon_e, logepsilon_B
         DL = dl_fixed
-        
+
     else:
         logE0, thetaObs, logn0, z, DL = theta  # REMOVED thetaCore, p, thetaWing, logepsilon_e, logepsilon_B
 
-    DL = (DL * u.Mpc).to(u.cm).value   
+    DL = (DL * u.Mpc).to(u.cm).value
     E0 = 10 ** logE0
     n0 = 10 ** logn0
-    
+
     # USE FIXED VALUES
     epsilon_e = epsilon_e_fixed
     epsilon_B = epsilon_b_fixed
@@ -611,7 +611,7 @@ def plot_lc_noUL(data, theta):
         "d_L": DL,
         "z": z,
     }
-       
+
     times = np.geomspace(min(data["t"]), max(data["t"]), 100)
     fig, ax = plt.subplots()
 
@@ -687,7 +687,7 @@ def plot_lc_noUL(data, theta):
     plt.tight_layout()
     plt.savefig(save_folder + '/' + run_name + '_' + 'lightcurve.png', bbox_inches = 'tight')
 
-    
+
 def plot_lc_wUL(data, data_UL, theta):
 
     data = data.sort_values(by=["frequency"], ascending=False)
@@ -705,14 +705,14 @@ def plot_lc_wUL(data, data_UL, theta):
     elif z_known == False and dl_known == True:
         logE0, thetaObs, logn0, z = theta  # REMOVED thetaCore, p, thetaWing, logepsilon_e, logepsilon_B
         DL = dl_fixed
-        
+
     else:
         logE0, thetaObs, logn0, z, DL = theta  # REMOVED thetaCore, p, thetaWing, logepsilon_e, logepsilon_B
 
     DL = (DL * u.Mpc).to(u.cm).value
     E0 = 10 **logE0
     n0 = 10 ** logn0
-    
+
     # USE FIXED VALUES
     epsilon_e = epsilon_e_fixed
     epsilon_B = epsilon_b_fixed
@@ -798,7 +798,7 @@ def plot_lc_wUL(data, data_UL, theta):
                 markersize=7,
                 label=legend_label
             ))
-            
+
     #plot the upper limits as triangles:
     for i, (band, (fmin, fmax, fcen, marker)) in enumerate(radio_bands.items()):
         band_data = data_UL[(data_UL["frequency"] >= fmin) & (data_UL["frequency"] < fmax)]
@@ -850,7 +850,7 @@ def plot_lc_wUL(data, data_UL, theta):
 
 
 if __name__ == "__main__":
-    
+
     data_from_csv = pd.read_csv(datafile)
     if data_from_csv.shape[1] == 1:
         data_from_csv = pd.read_csv(datafile, delim_whitespace=True)
@@ -862,14 +862,14 @@ if __name__ == "__main__":
         print("A minimum of 100 iterations must be used for the fitting.")
         exit()
     """
-    
+
     t = np.array(list(data["t"]))
     nu = np.array(list(data["frequency"]))
     fnu = np.array(list(data["flux"]))
     err = np.array(list(data["err"]))
 
     # np.random.seed(42)
-    np.random.seed(42)
+    np.random.seed(981721)
 
 
     nwalkers = 32
@@ -881,7 +881,7 @@ if __name__ == "__main__":
             logn0_range[0],        # log10(n0)
             # REMOVED thetaCore, p, thetaWing bounds
         ])
-        
+
         upper_bounds = np.array([
             loge0_range[1],        # log10(E0)
             thetaobs_range[1],     # thetaObs
@@ -898,7 +898,7 @@ if __name__ == "__main__":
             dl_range[0]            # DL
             # REMOVED thetaCore, p, thetaWing bounds
         ])
-        
+
         upper_bounds = np.array([
             loge0_range[1],        # log10(E0)
             thetaobs_range[1],     # thetaObs
@@ -916,7 +916,7 @@ if __name__ == "__main__":
             z_range[0]             # z
             # REMOVED thetaCore, p, thetaWing bounds
         ])
-        
+
         upper_bounds = np.array([
             loge0_range[1],        # log10(E0)
             thetaobs_range[1],     # thetaObs
@@ -935,7 +935,7 @@ if __name__ == "__main__":
             dl_range[0]            # DL
             # REMOVED thetaCore, p, thetaWing bounds
         ])
-        
+
         upper_bounds = np.array([
             loge0_range[1],        # log10(E0)
             thetaobs_range[1],     # thetaObs
@@ -955,9 +955,9 @@ if __name__ == "__main__":
             nwalkers, ndim, log_probability, args=(nu, t, fnu, err), pool=pool,
             moves=[(mvs.StretchMove(a=1.1), 0.7), (mvs.WalkMove(10), 0.3)])
 
-    
+
         print('doing sampling')
-    
+
         state = sampler.run_mcmc(pos, niter, progress=True)
 
     gc.collect()
@@ -1023,13 +1023,13 @@ if __name__ == "__main__":
 
 
 def make_Log_Likelihood_plot(log_prob):
-    
+
     # Plot log-likelihood for each walker
     plt.figure(figsize=(10, 6))
     for i in range(nwalkers):
-        
+
         plt.plot(log_prob[:, i], alpha=0.3)
-    
+
     plt.xlabel("Steps")
     plt.ylabel("Log Likelihood")
     plt.title("Log Likelihood Progression " + plot_names + " walkers = " +str(nwalkers))
@@ -1039,7 +1039,7 @@ def make_Log_Likelihood_plot(log_prob):
     plt.savefig(save_folder + '/' + run_name + '_' + 'LogProb.png', bbox_inches = 'tight')
 
 def make_corner_plots(samples):
-    
+
     figure = corner.corner(
         #we've already applied burnin
         #samples[burnin * nwalkers:],
@@ -1047,12 +1047,12 @@ def make_corner_plots(samples):
         labels=params,
         show_titles=True,
         title_fmt=".2f",
-        quantiles=[0.05, 0.5, 0.95],  # 90% credible interval
+        quantiles=[0.025, 0.5, 0.975],  # 90% credible interval
         title_kwargs={"fontsize": 12},
         label_kwargs={"fontsize": 14},
         plot_datapoints=True,
         fill_contours=True,
-        levels=(0.50, 0.90,),  # 90% confidence contours
+        levels=(0.68, 0.90,),  # 90% confidence contours
         smooth=1.0,
         smooth1d=1.0,
         truths=true_values[0:ndim] if display_truths_on_corner else None
@@ -1067,7 +1067,7 @@ def make_posterior_hists(samples):
     print('median parameter values after burnin:')
     for i in range(ndim):
         print(f"{params[i]}: {medians[i]:.4f}")
-    
+
     # Create subplots - UPDATE SUBPLOT DIMENSIONS
     if ndim == 3:
         fig, axes = plt.subplots(1, 3, figsize=(16, 4))   # 1 row, 3 columns
@@ -1075,31 +1075,31 @@ def make_posterior_hists(samples):
         fig, axes = plt.subplots(2, 2, figsize=(12, 8))   # 2 rows, 2 columns
     elif ndim == 5:
         fig, axes = plt.subplots(2, 3, figsize=(16, 8))   # 2 rows, 3 columns (one empty)
-        
+
     axes = axes.flatten()
 
     # Loop over each dimension and create a histogram
     theta = []
-    
+
     for i in range(ndim):
         theta_component = np.asarray(samples[:, i])
         lower, upper = np.percentile(theta_component, [15.865, 84.135])
-    
+
         theta.append(theta_component)
         ax = axes[i]
         ax.hist(samples[:, i], bins=20, color="blue", alpha=0.7, label="Samples")
-    
-        
+
+
         # Plot mean value as a vertical line
         ax.axvline(medians[i], color="red", linestyle="--", label=f"Median: {medians[i]:.4f}")
         ax.axvline(lower, color="green", linestyle="--", label=f"lower limit: {lower:.4f}")
         ax.axvline(upper, color="green", linestyle="--", label=f"upper limit: {upper:.4f}")
-        
+
         ax.set_title(params[i])
         ax.set_xlabel("Value")
         ax.set_ylabel("Frequency")
         ax.legend(loc = 4)
-    
+
     plt.tight_layout()
     plt.savefig(save_folder + '/' + run_name + '_PosteriorHists.png', bbox_inches = 'tight')
 
@@ -1117,7 +1117,6 @@ if include_upper_limits_on_lc:
 
 else:
     plot_lc_noUL(data, theta)
-
 
 
 
