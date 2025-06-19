@@ -21,9 +21,10 @@ client_configs:
   mcmc_configs:
     nwalkers: 32
     niters: 2000
-    burnin: 200
+    burnin: 500
 
-    random_seed: 42
+    # random_seed: 12345
+    random_seed: 981721
     #If Z is known, set Z_known = True and give its value. It will not be included in the smapling proceedure.
     Z_known: True
     Z_range: [.001,8]
@@ -37,7 +38,10 @@ client_configs:
     DL_fixed: 40
 
     #thetaObs is observing angle in radians (0, pi/2)
-    thetaObs_range: [0,1.571] 
+    # thetaObs_range: [0,1.571] 
+
+    # thetaObs from Dingo
+    thetaObs_range: [0.227, 1.190] 
 
     #thetaCore is observing angle in radians (0, 10 deg) 
     thetaCore_range: [0,.1745]
@@ -93,18 +97,18 @@ client_configs:
 
 server_configs:
   aggregator_kwargs:
-    num_clients: 8
+    num_clients: 7
     # directory to store results after consensus/aggregation/sum of log-likelihood
-    save_folder: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/results/pf_8sites_distributed_day50/"
-    run_name: "pf_8sites_distributed_day50"
-    plot_names: "GW170817_pf_8sites_distributed_day50"
+    save_folder: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/results/pf_8sites_distributed_dayAll_run11/"
+    run_name: "pf_8sites_distributed_dayAll_run11"
+    plot_names: "GW170817_pf_8sites_distributed_dayAll_run11"
     
     # #whether or not to include the truth valueson the corner plots
     # display_truths_on_corner: "True"
     # true_values: [53, .54, 0.088, -1.699, -2, -3.699, 2.139, 0.6, 0.00897]
 
   logging_output_dirname: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/output"
-  logging_output_filename: "pf_8sites_distributed_day50"
+  logging_output_filename: "pf_8sites_distributed_dayAll_run11"
 
   # define server side kafka parameters here like consumer settings (offset policy)
   # Fedfit module listens to overlap analysis messages from MMA module as well topic and post it to another topic fedfit topic to interact with clients/sites
@@ -114,5 +118,5 @@ server_configs:
       #   topic: 'MMA_Module_Events'
       #   group_id: 'mma-RW-FedFit-server'
       # fedfit_topic:
-      topic: 'MMA_RW_FedFit_Events'
-      group_id: 'mma-RW-FedFit-server'
+      topic: 'MMA_RW_FedFit_Events_run11'
+      group_id: 'mma-RW-FedFit-server-run11'

@@ -2,18 +2,18 @@ client_id: '5'
 fitting_configs:
   logging_id: "FedFit_SiteRemsi"
   logging_output_dirname: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/output"
-  logging_output_filename: "pf_8sites_distributed_day50"
+  logging_output_filename: "pf_8sites_distributed_dayAll_run11"
 
   dataset_path: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/fitting_dataset/Remsi_data.csv"
   # Path to save local results
-  save_folder: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/results/pf_8sites_distributed_day50/Remsi/"
-  run_name: pf_8sites_distributed_day50
-  plot_names: GW170817_pf_8sites_distributed_day50
+  save_folder: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/results/pf_8sites_distributed_dayAll_run11/Remsi/"
+  run_name: pf_8sites_distributed_dayAll_run11
+  plot_names: GW170817_pf_8sites_distributed_dayAll_run11
   
 comm_configs:
   octopus_configs:
-      topic: 'MMA_RW_FedFit_Events'
-      group_id: 'mma-RW-FedFit-site5'
+      topic: 'MMA_RW_FedFit_Events_run11'
+      group_id: 'mma-RW-FedFit-site5-run11'
 
   proxystore_configs:
       enable_proxystore: True

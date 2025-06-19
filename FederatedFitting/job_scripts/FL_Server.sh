@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --mem=150g                              # required number of memory
+#SBATCH --mem=64g                              # required number of memory
 #SBATCH --nodes=1                               # nodes required for whole simulation
 
 #SBATCH --cpus-per-task=40                       # CPUs for each task
@@ -12,11 +12,11 @@
 ##SBATCH --gpu-bind=none        # Uncomment if using gpu
 
 
-#SBATCH --job-name=FedFit_Distributed_server_day50   # job name
-#SBATCH --time=03:10:00                         # dd-hh:mm:ss for the job
+#SBATCH --job-name=FedFit_Distributed_server_dayAll_run11   # job name
+#SBATCH --time=05:10:00                         # dd-hh:mm:ss for the job
 
-#SBATCH -e FedFit_Distributed_server_day50-err-%j.log
-#SBATCH -o FedFit_Distributed_server_day50-out-%j.log
+#SBATCH -e FedFit_Distributed_server_dayAll_run11-err-%j.log
+#SBATCH -o FedFit_Distributed_server_dayAll_run11-out-%j.log
 
 #SBATCH --constraint="scratch"
 
@@ -43,7 +43,7 @@ conda activate /u/parthpatel7173/.conda/envs/fedfit
 # Change directory to the cloned repo
 cd /u/parthpatel7173/MMA_RadioWave/FederatedFitting
 
-python ./examples/octopus/run_server.py --config ./examples/configs/FLserver.yaml --day "50"
+python ./examples/octopus/run_server.py --config ./examples/configs/FLserver.yaml --day "all"
 # apptainer exec --nv \
 #   MMA_GW_Inference_miniapp.sif \
 #   python /app/examples/octopus/run_server.py --config <absolute path to FL server config file>/FLserver.yaml
