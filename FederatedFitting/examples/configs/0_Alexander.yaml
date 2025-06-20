@@ -2,18 +2,18 @@ client_id: '0'
 fitting_configs:
   logging_id: "FedFit_SiteAlexander"
   logging_output_dirname: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/output"
-  logging_output_filename: "pf_8sites_distributed_dayAll_run11"
+  logging_output_filename: "pf_8sites_distributed_day50_run3"
 
   dataset_path: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/fitting_dataset/Alexander_Margutti_Hajela.csv"
   # Path to save local results
-  save_folder: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/results/pf_8sites_distributed_dayAll_run11/Alexander/"
-  run_name: pf_8sites_distributed_dayAll_run11
-  plot_names: GW170817_pf_8sites_distributed_dayAll_run11
+  save_folder: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/results/pf_8sites_distributed_day50_run3/Alexander/"
+  run_name: pf_8sites_distributed_day50_run3
+  plot_names: GW170817_pf_8sites_distributed_day50_run3
   
 comm_configs:
   octopus_configs:
-      topic: 'MMA_RW_FedFit_Events_run11'
-      group_id: 'mma-RW-FedFit-site0-run11'
+      topic: 'MMA_RW_FedFit_Events_run14'
+      group_id: 'mma-RW-FedFit-site0-run14'
 
   proxystore_configs:
       enable_proxystore: True
