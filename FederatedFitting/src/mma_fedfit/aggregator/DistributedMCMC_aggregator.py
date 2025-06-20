@@ -62,18 +62,30 @@ class DistributedMCMCAggregator():
         dl_known = self.processed_mcmc_config.DL_known
 
 
+        # if z_known == True and dl_known == True:
+        #     logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing = theta
+
+        # elif z_known == True and dl_known == False:
+        #     logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing, DL = theta
+
+        # elif z_known == False and dl_known == True:
+        #     logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing, z = theta
+            
+        # else:
+        #     logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing, z, DL = theta
+    
         if z_known == True and dl_known == True:
-            logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing = theta
+            logE0, thetaObs, logn0 = theta  # REMOVED thetaCore, p, thetaWing, logepsilon_e, logepsilon_B
 
         elif z_known == True and dl_known == False:
-            logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing, DL = theta
+            logE0, thetaObs, logn0, DL = theta  # REMOVED thetaCore, p, thetaWing, logepsilon_e, logepsilon_B
 
         elif z_known == False and dl_known == True:
-            logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing, z = theta
-            
+            logE0, thetaObs, logn0, z = theta  # REMOVED thetaCore, p, thetaWing, logepsilon_e, logepsilon_B
+
         else:
-            logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing, z, DL = theta
-    
+            logE0, thetaObs, logn0, z, DL = theta  # REMOVED thetaCore, p, thetaWing, logepsilon_e, logepsilon_B
+
 
 
         loge0_range = self.processed_mcmc_config.logE0_range
@@ -88,16 +100,72 @@ class DistributedMCMCAggregator():
         dl_range = self.processed_mcmc_config.DL_range
 
         
+        # if z_known == True and dl_known == True:
+        #     if (
+        #         loge0_range[0] <= logE0 <= loge0_range[1]
+        #         and thetaobs_range[0] <= thetaObs < thetaobs_range[1]
+        #         and thetawing_range[0] <= thetaWing < thetawing_range[1]
+        #         and thetacore_range[0] <= thetaCore < thetacore_range[1]
+        #         and p_range[0] < p < p_range[1]
+        #         and logepsilon_e_range[0] < logepsilon_e <= logepsilon_e_range[1]
+        #         and logepsilon_b_range[0] < logepsilon_B <= logepsilon_b_range[1]
+        #         and logn0_range[0] < logn0 < logn0_range[1]
+        #     ):
+        #         return 0.0
+        #     return -np.inf
+
+        # elif z_known == True and dl_known == False:
+        #     if (
+        #         loge0_range[0] <= logE0 <= loge0_range[1]
+        #         and thetaobs_range[0] <= thetaObs < thetaobs_range[1]
+        #         and thetawing_range[0] <= thetaWing < thetawing_range[1]
+        #         and thetacore_range[0] <= thetaCore < thetacore_range[1]
+        #         and p_range[0] < p < p_range[1]
+        #         and logepsilon_e_range[0] < logepsilon_e <= logepsilon_e_range[1]
+        #         and logepsilon_b_range[0] < logepsilon_B <= logepsilon_b_range[1]
+        #         and logn0_range[0] < logn0 < logn0_range[1]
+        #         and dl_range[0] < DL < dl_range[1]
+        #     ):
+        #         return 0.0
+        #     return -np.inf
+
+        # elif z_known == False and dl_known == True:
+        #     if (
+        #         loge0_range[0] <= logE0 <= loge0_range[1]
+        #         and thetaobs_range[0] <= thetaObs < thetaobs_range[1]
+        #         and thetawing_range[0] <= thetaWing < thetawing_range[1]
+        #         and thetacore_range[0] <= thetaCore < thetacore_range[1]
+        #         and p_range[0] < p < p_range[1]
+        #         and logepsilon_e_range[0] < logepsilon_e <= logepsilon_e_range[1]
+        #         and logepsilon_b_range[0] < logepsilon_B <= logepsilon_b_range[1]
+        #         and logn0_range[0] < logn0 < logn0_range[1]
+        #         and z_range[0] < z < z_range[1]
+        #     ):
+        #         return 0.0
+        #     return -np.inf
+
+        # else:
+        #     if (
+        #         loge0_range[0] <= logE0 <= loge0_range[1]
+        #         and thetaobs_range[0] <= thetaObs < thetaobs_range[1]
+        #         and thetawing_range[0] <= thetaWing < thetawing_range[1]
+        #         and thetacore_range[0] <= thetaCore < thetacore_range[1]
+        #         and p_range[0] < p < p_range[1]
+        #         and logepsilon_e_range[0] < logepsilon_e <= logepsilon_e_range[1]
+        #         and logepsilon_e_range[0] < logepsilon_B <= logepsilon_e_range[1]
+        #         and logn0_range[0] < logn0 < logn0_range[1]
+        #         and z_range[0] < z < z_range[1]
+        #         and dl_range[0] < DL < dl_range[1]
+        #     ):
+        #         return 0.0
+        #     return -np.inf
+
         if z_known == True and dl_known == True:
             if (
                 loge0_range[0] <= logE0 <= loge0_range[1]
                 and thetaobs_range[0] <= thetaObs < thetaobs_range[1]
-                and thetawing_range[0] <= thetaWing < thetawing_range[1]
-                and thetacore_range[0] <= thetaCore < thetacore_range[1]
-                and p_range[0] < p < p_range[1]
-                and logepsilon_e_range[0] < logepsilon_e <= logepsilon_e_range[1]
-                and logepsilon_b_range[0] < logepsilon_B <= logepsilon_b_range[1]
                 and logn0_range[0] < logn0 < logn0_range[1]
+                # REMOVED thetaCore, p, thetaWing, epsilon constraints
             ):
                 return 0.0
             return -np.inf
@@ -106,13 +174,9 @@ class DistributedMCMCAggregator():
             if (
                 loge0_range[0] <= logE0 <= loge0_range[1]
                 and thetaobs_range[0] <= thetaObs < thetaobs_range[1]
-                and thetawing_range[0] <= thetaWing < thetawing_range[1]
-                and thetacore_range[0] <= thetaCore < thetacore_range[1]
-                and p_range[0] < p < p_range[1]
-                and logepsilon_e_range[0] < logepsilon_e <= logepsilon_e_range[1]
-                and logepsilon_b_range[0] < logepsilon_B <= logepsilon_b_range[1]
                 and logn0_range[0] < logn0 < logn0_range[1]
                 and dl_range[0] < DL < dl_range[1]
+                # REMOVED thetaCore, p, thetaWing, epsilon constraints
             ):
                 return 0.0
             return -np.inf
@@ -121,13 +185,9 @@ class DistributedMCMCAggregator():
             if (
                 loge0_range[0] <= logE0 <= loge0_range[1]
                 and thetaobs_range[0] <= thetaObs < thetaobs_range[1]
-                and thetawing_range[0] <= thetaWing < thetawing_range[1]
-                and thetacore_range[0] <= thetaCore < thetacore_range[1]
-                and p_range[0] < p < p_range[1]
-                and logepsilon_e_range[0] < logepsilon_e <= logepsilon_e_range[1]
-                and logepsilon_b_range[0] < logepsilon_B <= logepsilon_b_range[1]
                 and logn0_range[0] < logn0 < logn0_range[1]
                 and z_range[0] < z < z_range[1]
+                # REMOVED thetaCore, p, thetaWing, epsilon constraints
             ):
                 return 0.0
             return -np.inf
@@ -136,14 +196,10 @@ class DistributedMCMCAggregator():
             if (
                 loge0_range[0] <= logE0 <= loge0_range[1]
                 and thetaobs_range[0] <= thetaObs < thetaobs_range[1]
-                and thetawing_range[0] <= thetaWing < thetawing_range[1]
-                and thetacore_range[0] <= thetaCore < thetacore_range[1]
-                and p_range[0] < p < p_range[1]
-                and logepsilon_e_range[0] < logepsilon_e <= logepsilon_e_range[1]
-                and logepsilon_e_range[0] < logepsilon_B <= logepsilon_e_range[1]
                 and logn0_range[0] < logn0 < logn0_range[1]
                 and z_range[0] < z < z_range[1]
                 and dl_range[0] < DL < dl_range[1]
+                # REMOVED thetaCore, p, thetaWing, epsilon constraints
             ):
                 return 0.0
             return -np.inf
@@ -223,112 +279,183 @@ class DistributedMCMCAggregator():
 
         
         # Define parameter bounds
+        # if z_known == True and dl_known == True:
+        #     ndim = 8
+        #     lower_bounds = np.array([
+        #         loge0_range[0],        # log10(E0)
+        #         thetaobs_range[0],       # thetaObs
+        #         thetacore_range[0],      # thetaCore
+        #         logn0_range[0],        # log10(n0)
+        #         logepsilon_e_range[0],        # log10(eps_e)
+        #         logepsilon_b_range[0],        # log10(eps_B)
+        #         p_range[0],       # p
+        #         thetawing_range[0]        # thetaWing
+        #     ])
+            
+        #     upper_bounds = np.array([
+        #         loge0_range[1],        # log10(E0)
+        #         thetaobs_range[1],       # thetaObs
+        #         thetacore_range[1],      # thetaCore
+        #         logn0_range[1],        # log10(n0)
+        #         logepsilon_e_range[1],        # log10(eps_e)
+        #         logepsilon_b_range[1],        # log10(eps_B)
+        #         p_range[1],       # p
+        #         thetawing_range[1]        # thetaWing
+        #     ])
+
+        # elif z_known == True and dl_known == False:
+        #     ndim = 9
+        #     lower_bounds = np.array([
+        #         loge0_range[0],        # log10(E0)
+        #         thetaobs_range[0],       # thetaObs
+        #         thetacore_range[0],      # thetaCore
+        #         logn0_range[0],        # log10(n0)
+        #         logepsilon_e_range[0],        # log10(eps_e)
+        #         logepsilon_b_range[0],        # log10(eps_B)
+        #         p_range[0],       # p
+        #         thetawing_range[0],        # thetaWing
+        #         dl_range[0]
+        #     ])
+            
+        #     upper_bounds = np.array([
+        #         loge0_range[1],        # log10(E0)
+        #         thetaobs_range[1],       # thetaObs
+        #         thetacore_range[1],      # thetaCore
+        #         logn0_range[1],        # log10(n0)
+        #         logepsilon_e_range[1],        # log10(eps_e)
+        #         logepsilon_b_range[1],        # log10(eps_B)
+        #         p_range[1],       # p
+        #         thetawing_range[1],        # thetaWing
+        #         dl_range[1]
+        #     ])
+
+        # elif z_known == False and dl_known == True:
+        #     ndim = 9
+        #     lower_bounds = np.array([
+        #         loge0_range[0],        # log10(E0)
+        #         thetaobs_range[0],       # thetaObs
+        #         thetacore_range[0],      # thetaCore
+        #         logn0_range[0],        # log10(n0)
+        #         logepsilon_e_range[0],        # log10(eps_e)
+        #         logepsilon_b_range[0],        # log10(eps_B)
+        #         p_range[0],       # p
+        #         thetawing_range[0],        # thetaWing
+        #         z_range[0]
+        #     ])
+            
+        #     upper_bounds = np.array([
+        #         loge0_range[1],        # log10(E0)
+        #         thetaobs_range[1],       # thetaObs
+        #         thetacore_range[1],      # thetaCore
+        #         logn0_range[1],        # log10(n0)
+        #         logepsilon_e_range[1],        # log10(eps_e)
+        #         logepsilon_b_range[1],        # log10(eps_B)
+        #         p_range[1],       # p
+        #         thetawing_range[1],        # thetaWing
+        #         z_range[1]
+        #     ])
+
+        # else:
+        #     ndim = 10
+        #     lower_bounds = np.array([
+        #         loge0_range[0],        # log10(E0)
+        #         thetaobs_range[0],       # thetaObs
+        #         thetacore_range[0],      # thetaCore
+        #         logn0_range[0],        # log10(n0)
+        #         logepsilon_e_range[0],        # log10(eps_e)
+        #         logepsilon_b_range[0],        # log10(eps_B)
+        #         p_range[0],       # p
+        #         thetawing_range[0],        # thetaWing
+        #         z_range[0],
+        #         dl_range[0]
+        #     ])
+            
+        #     upper_bounds = np.array([
+        #         loge0_range[1],        # log10(E0)
+        #         thetaobs_range[1],       # thetaObs
+        #         thetacore_range[1],      # thetaCore
+        #         logn0_range[1],        # log10(n0)
+        #         logepsilon_e_range[1],        # log10(eps_e)
+        #         logepsilon_b_range[1],        # log10(eps_B)
+        #         p_range[1],       # p
+        #         thetawing_range[1],        # thetaWing
+        #         z_range[1],
+        #         dl_range[1] 
+        #     ])
+
+
         if z_known == True and dl_known == True:
-            ndim = 8
+            ndim = 3  # REDUCED FROM 6 (only logE0, thetaObs, logn0)
             lower_bounds = np.array([
                 loge0_range[0],        # log10(E0)
-                thetaobs_range[0],       # thetaObs
-                thetacore_range[0],      # thetaCore
+                thetaobs_range[0],     # thetaObs
                 logn0_range[0],        # log10(n0)
-                logepsilon_e_range[0],        # log10(eps_e)
-                logepsilon_b_range[0],        # log10(eps_B)
-                p_range[0],       # p
-                thetawing_range[0]        # thetaWing
+                # REMOVED thetaCore, p, thetaWing bounds
             ])
-            
+
             upper_bounds = np.array([
                 loge0_range[1],        # log10(E0)
-                thetaobs_range[1],       # thetaObs
-                thetacore_range[1],      # thetaCore
+                thetaobs_range[1],     # thetaObs
                 logn0_range[1],        # log10(n0)
-                logepsilon_e_range[1],        # log10(eps_e)
-                logepsilon_b_range[1],        # log10(eps_B)
-                p_range[1],       # p
-                thetawing_range[1]        # thetaWing
+                # REMOVED thetaCore, p, thetaWing bounds
             ])
 
         elif z_known == True and dl_known == False:
-            ndim = 9
+            ndim = 4  # REDUCED FROM 7
             lower_bounds = np.array([
                 loge0_range[0],        # log10(E0)
-                thetaobs_range[0],       # thetaObs
-                thetacore_range[0],      # thetaCore
+                thetaobs_range[0],     # thetaObs
                 logn0_range[0],        # log10(n0)
-                logepsilon_e_range[0],        # log10(eps_e)
-                logepsilon_b_range[0],        # log10(eps_B)
-                p_range[0],       # p
-                thetawing_range[0],        # thetaWing
-                dl_range[0]
+                dl_range[0]            # DL
+                # REMOVED thetaCore, p, thetaWing bounds
             ])
-            
+
             upper_bounds = np.array([
                 loge0_range[1],        # log10(E0)
-                thetaobs_range[1],       # thetaObs
-                thetacore_range[1],      # thetaCore
+                thetaobs_range[1],     # thetaObs
                 logn0_range[1],        # log10(n0)
-                logepsilon_e_range[1],        # log10(eps_e)
-                logepsilon_b_range[1],        # log10(eps_B)
-                p_range[1],       # p
-                thetawing_range[1],        # thetaWing
-                dl_range[1]
+                dl_range[1]            # DL
+                # REMOVED thetaCore, p, thetaWing bounds
             ])
 
         elif z_known == False and dl_known == True:
-            ndim = 9
+            ndim = 4  # REDUCED FROM 7
             lower_bounds = np.array([
                 loge0_range[0],        # log10(E0)
-                thetaobs_range[0],       # thetaObs
-                thetacore_range[0],      # thetaCore
+                thetaobs_range[0],     # thetaObs
                 logn0_range[0],        # log10(n0)
-                logepsilon_e_range[0],        # log10(eps_e)
-                logepsilon_b_range[0],        # log10(eps_B)
-                p_range[0],       # p
-                thetawing_range[0],        # thetaWing
-                z_range[0]
+                z_range[0]             # z
+                # REMOVED thetaCore, p, thetaWing bounds
             ])
-            
+
             upper_bounds = np.array([
                 loge0_range[1],        # log10(E0)
-                thetaobs_range[1],       # thetaObs
-                thetacore_range[1],      # thetaCore
+                thetaobs_range[1],     # thetaObs
                 logn0_range[1],        # log10(n0)
-                logepsilon_e_range[1],        # log10(eps_e)
-                logepsilon_b_range[1],        # log10(eps_B)
-                p_range[1],       # p
-                thetawing_range[1],        # thetaWing
-                z_range[1]
+                z_range[1]             # z
+                # REMOVED thetaCore, p, thetaWing bounds
             ])
 
         else:
-            ndim = 10
+            ndim = 5  # REDUCED FROM 8
             lower_bounds = np.array([
                 loge0_range[0],        # log10(E0)
-                thetaobs_range[0],       # thetaObs
-                thetacore_range[0],      # thetaCore
+                thetaobs_range[0],     # thetaObs
                 logn0_range[0],        # log10(n0)
-                logepsilon_e_range[0],        # log10(eps_e)
-                logepsilon_b_range[0],        # log10(eps_B)
-                p_range[0],       # p
-                thetawing_range[0],        # thetaWing
-                z_range[0],
-                dl_range[0]
+                z_range[0],            # z
+                dl_range[0]            # DL
+                # REMOVED thetaCore, p, thetaWing bounds
             ])
-            
+
             upper_bounds = np.array([
                 loge0_range[1],        # log10(E0)
-                thetaobs_range[1],       # thetaObs
-                thetacore_range[1],      # thetaCore
+                thetaobs_range[1],     # thetaObs
                 logn0_range[1],        # log10(n0)
-                logepsilon_e_range[1],        # log10(eps_e)
-                logepsilon_b_range[1],        # log10(eps_B)
-                p_range[1],       # p
-                thetawing_range[1],        # thetaWing
-                z_range[1],
-                dl_range[1] 
+                z_range[1],            # z
+                dl_range[1]            # DL
+                # REMOVED thetaCore, p, thetaWing bounds
             ])
 
-
-        
 
         np.random.seed(self.processed_mcmc_config.random_seed)
 
@@ -376,6 +503,9 @@ class DistributedMCMCAggregator():
         run_name = self.server_agent_config.server_configs.aggregator_kwargs.run_name
         burnin = self.processed_mcmc_config.burnin
 
+        flat_samples_withoutBurnin = sampler.get_chain(discard=0, flat=True)
+        np.save(os.path.join(save_folder, f"{run_name}_distributed_flat_samples_withoutBurnin.npy"), flat_samples_withoutBurnin)
+        
         flat_samples = sampler.get_chain(discard=burnin, flat=True)
         np.save(os.path.join(save_folder, f"{run_name}_distributed_flat_samples.npy"), flat_samples)
         
@@ -395,17 +525,30 @@ class DistributedMCMCAggregator():
         z_known = self.processed_mcmc_config.Z_known
         dl_known = self.processed_mcmc_config.DL_known
 
+        # if z_known == True and dl_known == True:
+        #     params = ['log(E0)','thetaObs','thetaCore','log(n0)','log(eps_e)','log(eps_B)','p', 'thetaWing']
+
+        # elif z_known == False and dl_known == True:
+        #     params = ['log(E0)','thetaObs','thetaCore','log(n0)','log(eps_e)','log(eps_B)','p', 'thetaWing', 'z']
+
+        # elif z_known == True and dl_known == False:
+        #     params = ['log(E0)','thetaObs','thetaCore','log(n0)','log(eps_e)','log(eps_B)','p', 'thetaWing', 'DL']
+
+        # else:
+        #     params = ['log(E0)','thetaObs','thetaCore','log(n0)','log(eps_e)','log(eps_B)','p', 'thetaWing', 'z', 'DL']
+
+        # 6. UPDATE PARAMETER NAMES FOR RESULTS
         if z_known == True and dl_known == True:
-            params = ['log(E0)','thetaObs','thetaCore','log(n0)','log(eps_e)','log(eps_B)','p', 'thetaWing']
+            params = ['log(E0)','thetaObs','log(n0)']  # REMOVED thetaCore, p, thetaWing
 
         elif z_known == False and dl_known == True:
-            params = ['log(E0)','thetaObs','thetaCore','log(n0)','log(eps_e)','log(eps_B)','p', 'thetaWing', 'z']
+            params = ['log(E0)','thetaObs','log(n0)', 'z']  # REMOVED thetaCore, p, thetaWing
 
         elif z_known == True and dl_known == False:
-            params = ['log(E0)','thetaObs','thetaCore','log(n0)','log(eps_e)','log(eps_B)','p', 'thetaWing', 'DL']
+            params = ['log(E0)','thetaObs','log(n0)', 'DL']  # REMOVED thetaCore, p, thetaWing
 
         else:
-            params = ['log(E0)','thetaObs','thetaCore','log(n0)','log(eps_e)','log(eps_B)','p', 'thetaWing', 'z', 'DL']
+            params = ['log(E0)','thetaObs','log(n0)', 'z', 'DL']  # REMOVED thetaCore, p, thetaWing
 
         
         ndim = len(params)
@@ -449,8 +592,8 @@ class DistributedMCMCAggregator():
             #keep it in log space
             # theta.append(mcmc[1])
             q = np.diff(mcmc)
-            print(f'{params[i]} = {mcmc[1]:.4f} +{q[1]:.4f} -{q[0]:.4f}')
-            self.logger.info(f'{params[i]} = {mcmc[1]:.4f} +{q[1]:.4f} -{q[0]:.4f}')
+            print(f'{params[i]} = {mcmc[1]:.4f} +{q[1]:.4f} -{q[0]:.4f} (68% CI)')
+            self.logger.info(f'{params[i]} = {mcmc[1]:.4f} +{q[1]:.4f} -{q[0]:.4f} (68% CI)')
 
             results_dict[params[i]] = {}
             results_dict[params[i]]['median'] = mcmc[1]
@@ -487,12 +630,20 @@ class DistributedMCMCAggregator():
         #     print(f"{params[i]}: {medians[i]:.4f}")
 
         # Create subplots
-        if ndim == 8:
-            fig, axes = plt.subplots(2, 4, figsize=(16, 8))  # 2 rows, 4 columns
-        if ndim == 9:
-            fig, axes = plt.subplots(3, 3, figsize=(16, 10))  # 3 rows, 3 columns
-        if ndim == 10:
-            fig, axes = plt.subplots(2, 5, figsize=(16, 10))  # 3 rows, 3 columns
+        # if ndim == 8:
+        #     fig, axes = plt.subplots(2, 4, figsize=(16, 8))  # 2 rows, 4 columns
+        # if ndim == 9:
+        #     fig, axes = plt.subplots(3, 3, figsize=(16, 10))  # 3 rows, 3 columns
+        # if ndim == 10:
+        #     fig, axes = plt.subplots(2, 5, figsize=(16, 10))  # 3 rows, 3 columns
+
+        # Create subplots - UPDATE SUBPLOT DIMENSIONS
+        if ndim == 3:
+            fig, axes = plt.subplots(1, 3, figsize=(16, 4))   # 1 row, 3 columns
+        elif ndim == 4:
+            fig, axes = plt.subplots(2, 2, figsize=(12, 8))   # 2 rows, 2 columns
+        elif ndim == 5:
+            fig, axes = plt.subplots(2, 3, figsize=(16, 8))   # 2 rows, 3 columns (one empty)
 
         axes = axes.flatten()
 
@@ -501,7 +652,8 @@ class DistributedMCMCAggregator():
 
         for i in range(ndim):
             theta_component = np.asarray(samples[:, i])
-            lower, upper = np.percentile(theta_component, [15.865, 84.135])
+            # lower, upper = np.percentile(theta_component, [15.865, 84.135])
+            lower, upper = np.percentile(theta_component, [2.5, 97.5])
 
             theta.append(theta_component)
             ax = axes[i]
@@ -509,8 +661,8 @@ class DistributedMCMCAggregator():
 
             # Plot mean value as a vertical line
             ax.axvline(medians[i], color="red", linestyle="--", label=f"Median: {medians[i]:.4f}")
-            ax.axvline(lower, color="green", linestyle="--", label=f"lower limit: {lower:.4f}")
-            ax.axvline(upper, color="green", linestyle="--", label=f"upper limit: {upper:.4f}")
+            ax.axvline(lower, color="green", linestyle="--", label=f"lower limit 2.5th percentile: {lower:.4f}")
+            ax.axvline(upper, color="green", linestyle="--", label=f"upper limit 97.5th percentile: {upper:.4f}")
 
             ax.set_title(params[i])
             ax.set_xlabel("Value")
@@ -531,12 +683,13 @@ class DistributedMCMCAggregator():
             labels=params,
             show_titles=True,
             title_fmt=".2f",
-            quantiles=[0.05, 0.5, 0.95],  # 90% credible interval
+            # quantiles=[0.05, 0.5, 0.95],  # 90% credible interval
+            quantiles=[0.025, 0.5, 0.975],  # 95% credible interval
             title_kwargs={"fontsize": 12},
             label_kwargs={"fontsize": 14},
             plot_datapoints=True,
             fill_contours=True,
-            levels=(0.50, 0.90,),  # 90% confidence contours
+            levels=(0.68, 0.95,),  # 90% confidence contours
             smooth=1.0,
             smooth1d=1.0,
             truths=true_values[0:ndim] if display_truths_on_corner else None

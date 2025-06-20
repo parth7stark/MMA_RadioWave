@@ -63,20 +63,42 @@ class LocalGenerator():
         dl_known = self.processed_mcmc_configs.DL_known
         dl_fixed = self.processed_mcmc_configs.DL_fixed
 
+        epsilon_e_fixed = self.processed_mcmc_configs.epsilon_e_fixed  # loge = -2.0
+        epsilon_b_fixed = self.processed_mcmc_configs.epsilon_b_fixed #logb = -3.7
+        thetacore_fixed = self.processed_mcmc_configs.thetacore_fixed
+        thetawing_fixed = self.processed_mcmc_configs.thetawing_fixed
+        p_fixed = self.processed_mcmc_configs.p_fixed
+
+        # if z_known == True and dl_known == True:
+        #     logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing = theta
+        #     z = z_fixed
+        #     DL = dl_fixed 
+
+        # elif z_known == True and dl_known == False:
+        #     logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing, DL = theta
+        #     z = z_fixed
+
+        # elif z_known == False and dl_known == True:
+        #     logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing, z = theta
+        #     DL = dl_fixed
+        # else:
+        #     logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing, z, DL = theta
+
         if z_known == True and dl_known == True:
-            logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing = theta
+            logE0, thetaObs, logn0 = theta  # REMOVED thetaCore, p, thetaWing, logepsilon_e, logepsilon_B
             z = z_fixed
-            DL = dl_fixed 
+            DL = dl_fixed
 
         elif z_known == True and dl_known == False:
-            logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing, DL = theta
+            logE0, thetaObs, logn0, DL = theta  # REMOVED thetaCore, p, thetaWing, logepsilon_e, logepsilon_B
             z = z_fixed
 
         elif z_known == False and dl_known == True:
-            logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing, z = theta
+            logE0, thetaObs, logn0, z = theta  # REMOVED thetaCore, p, thetaWing, logepsilon_e, logepsilon_B
             DL = dl_fixed
+
         else:
-            logE0, thetaObs, thetaCore, logn0, logepsilon_e, logepsilon_B, p, thetaWing, z, DL = theta
+            logE0, thetaObs, logn0, z, DL = theta  # REMOVED thetaCore, p, thetaWing, logepsilon_e, logepsilon_B
 
         # DL = cosmo.luminosity_distance(z).to(u.cm)
         # DL = DL.value
@@ -87,8 +109,15 @@ class LocalGenerator():
 
         E0 = 10 ** logE0
         n0 = 10 ** logn0
-        epsilon_e = 10 ** logepsilon_e
-        epsilon_B = 10 ** logepsilon_B
+        # epsilon_e = 10 ** logepsilon_e
+        # epsilon_B = 10 ** logepsilon_B
+
+        # USE FIXED VALUES INSTEAD OF FITTING
+        epsilon_e = epsilon_e_fixed
+        epsilon_B = epsilon_b_fixed
+        thetaCore = thetacore_fixed  # NEW FIXED VALUE
+        p = p_fixed                  # NEW FIXED VALUE
+        thetaWing = thetawing_fixed  # NEW FIXED VALUE
 
 
         Z = {
@@ -107,6 +136,8 @@ class LocalGenerator():
         "d_L": DL,  # Luminosity distance in cm of 40Mpc
         "z": z, #40Mpc
         }
+
+        
         
         try:    
 
@@ -558,7 +589,7 @@ class LocalGenerator():
         # Process numeric values
         numeric_keys = [
             'nwalkers', 'niters', 'burnin', 'random_seed',
-            'Z_fixed', 'DL_fixed', 'arcseconds_uncertainty'
+            'Z_fixed', 'DL_fixed', 'arcseconds_uncertainty', 'epsilon_e_fixed', 'epsilon_b_fixed', 'thetacore_fixed', 'thetawing_fixed', 'p_fixed'
         ]
         
         for key in numeric_keys:

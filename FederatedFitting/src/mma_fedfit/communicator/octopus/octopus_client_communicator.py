@@ -206,7 +206,7 @@ class OctopusClientCommunicator:
                 theta_est.append(median)
 
                 # print(f"{param:>12s} = {median:.4f} +{err_plus:.4f} -{err_minus:.4f}")
-                self.logger.info(f"{param:>12s} = {median:.4f} +{err_plus:.4f} -{err_minus:.4f}")
+                self.logger.info(f"{param:>12s} = {median:.4f} +{err_plus:.4f} -{err_minus:.4f} (68% CI)")
                 
 
         return theta_est
