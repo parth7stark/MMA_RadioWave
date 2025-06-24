@@ -12,11 +12,11 @@
 ##SBATCH --gpu-bind=none        # Uncomment if using gpu
 
 
-#SBATCH --job-name=FedFit_Distributed_4sites_node2_day50_run3   # job name
-#SBATCH --time=02:45:00                         # dd-hh:mm:ss for the job
+#SBATCH --job-name=FedFit_Distributed_4sites_node2_day60_run1   # job name
+#SBATCH --time=04:15:00                         # dd-hh:mm:ss for the job
 
-#SBATCH -e FedFit_Distributed_4sites_node2_day50_run3-err-%j.log
-#SBATCH -o FedFit_Distributed_4sites_node2_day50_run3-out-%j.log
+#SBATCH -e FedFit_Distributed_4sites_node2_day60_run1-err-%j.log
+#SBATCH -o FedFit_Distributed_4sites_node2_day60_run1-out-%j.log
 
 #SBATCH --constraint="scratch"
 
@@ -52,9 +52,9 @@ cd /u/parthpatel7173/MMA_RadioWave/FederatedFitting
 # srun -n 1 --cpus-per-task 4 python ./examples/octopus/run_site.py --config ./examples/configs/6_Troja.yaml --day "all" > detector6.log 2>&1 &
 # srun -n 1 --cpus-per-task 4 python ./examples/octopus/run_site.py --config ./examples/configs/7_Makhatini.yaml --day "all" > detector7.log 2>&1 &
 
-python ./examples/octopus/run_site.py --config ./examples/configs/4_Kim.yaml --day "50"> 4_Kim_day50_run3.log 2>&1 &
-python ./examples/octopus/run_site.py --config ./examples/configs/5_Remsi.yaml --day "50" > 5_Remsi_day50_run3.log 2>&1 &
-python ./examples/octopus/run_site.py --config ./examples/configs/6_Troja.yaml --day "50" > 6_Troja_day50_run3.log 2>&1 &
-python ./examples/octopus/run_site.py --config ./examples/configs/7_Makhatini.yaml --day "50" > 7_Makhatini_day50_run3.log 2>&1 &
+python ./examples/octopus/run_site.py --config ./examples/configs/4_Kim.yaml --day "60"> 4_Kim_day60_run1.log 2>&1 &
+python ./examples/octopus/run_site.py --config ./examples/configs/5_Remsi.yaml --day "60" > 5_Remsi_day60_run1.log 2>&1 &
+python ./examples/octopus/run_site.py --config ./examples/configs/6_Troja.yaml --day "60" > 6_Troja_day60_run1.log 2>&1 &
+python ./examples/octopus/run_site.py --config ./examples/configs/7_Makhatini.yaml --day "60" > 7_Makhatini_day60_run1.log 2>&1 &
 
 wait

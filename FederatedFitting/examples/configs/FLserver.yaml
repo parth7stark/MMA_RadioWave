@@ -117,16 +117,16 @@ server_configs:
   aggregator_kwargs:
     num_clients: 8
     # directory to store results after consensus/aggregation/sum of log-likelihood
-    save_folder: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/results/pf_8sites_distributed_day50_run3/"
-    run_name: "pf_8sites_distributed_day50_run3"
-    plot_names: "GW170817_pf_8sites_distributed_day50_run3"
+    save_folder: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/results/pf_8sites_distributed_day60_run1/"
+    run_name: "pf_8sites_distributed_day60_run1"
+    plot_names: "GW170817_pf_8sites_distributed_day60_run1"
     
     # #whether or not to include the truth valueson the corner plots
     # display_truths_on_corner: "True"
     # true_values: [53, .54, 0.088, -1.699, -2, -3.699, 2.139, 0.6, 0.00897]
 
   logging_output_dirname: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/output"
-  logging_output_filename: "pf_8sites_distributed_day50_run3"
+  logging_output_filename: "pf_8sites_distributed_day60_run1"
 
   # define server side kafka parameters here like consumer settings (offset policy)
   # Fedfit module listens to overlap analysis messages from MMA module as well topic and post it to another topic fedfit topic to interact with clients/sites
@@ -136,5 +136,5 @@ server_configs:
       #   topic: 'MMA_Module_Events'
       #   group_id: 'mma-RW-FedFit-server'
       # fedfit_topic:
-      topic: 'MMA_RW_FedFit_Events_run14'
-      group_id: 'mma-RW-FedFit-server-run14'
+      topic: 'MMA_RW_FedFit_Events_run13'
+      group_id: 'mma-RW-FedFit-server-run13'
