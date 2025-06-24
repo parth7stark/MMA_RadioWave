@@ -12,11 +12,11 @@
 ##SBATCH --gpu-bind=none        # Uncomment if using gpu
 
 
-#SBATCH --job-name=FedFit_Distributed_4sites_node1_dayAll_run7   # job name
-#SBATCH --time=04:20:00                         # dd-hh:mm:ss for the job
+#SBATCH --job-name=FedFit_Distributed_4sites_node1_dayAll_resilientrun1   # job name
+#SBATCH --time=05:20:00                         # dd-hh:mm:ss for the job
 
-#SBATCH -e FedFit_Distributed_4sites_node1_dayAll_run7-err-%j.log
-#SBATCH -o FedFit_Distributed_4sites_node1_dayAll_run7-out-%j.log
+#SBATCH -e FedFit_Distributed_4sites_node1_dayAll_resilientrun1-err-%j.log
+#SBATCH -o FedFit_Distributed_4sites_node1_dayAll_resilientrun1-out-%j.log
 
 #SBATCH --constraint="scratch"
 
@@ -52,15 +52,15 @@ cd /u/parthpatel7173/MMA_RadioWave/FederatedFitting
 # srun -n 1 --cpus-per-task 4 python ./examples/octopus/run_site.py --config ./examples/configs/2_Ghirlanda.yaml --day "all" > detector2.log 2>&1 &
 # srun -n 1 --cpus-per-task 4 python ./examples/octopus/run_site.py --config ./examples/configs/3_Hallinan.yaml --day "all" > detector3.log 2>&1 &
 
-python ./examples/octopus/run_site.py --config ./examples/configs/0_Alexander.yaml --day "all" > 0_Alexander_dayAll_run7.log 2>&1 &
-# python ./examples/octopus/run_site.py --config ./examples/configs/1_Broderick.yaml --day "all" > 1_Broderick_dayAll_run7.log 2>&1 &
-# python ./examples/octopus/run_site.py --config ./examples/configs/2_Ghirlanda.yaml --day "all" > 2_Ghirlanda_dayAll_run7.log 2>&1 &
-python ./examples/octopus/run_site.py --config ./examples/configs/3_Hallinan.yaml --day "all" > 3_Hallinan_dayAll_run7.log 2>&1 &
+python ./examples/octopus/run_site.py --config ./examples/configs/0_Alexander.yaml --day "all" > 0_Alexander_dayAll_resilientrun1.log 2>&1 &
+# python ./examples/octopus/run_site.py --config ./examples/configs/1_Broderick.yaml --day "all" > 1_Broderick_dayAll_resilientrun1.log 2>&1 &
+# python ./examples/octopus/run_site.py --config ./examples/configs/2_Ghirlanda.yaml --day "all" > 2_Ghirlanda_dayAll_resilientrun1.log 2>&1 &
+python ./examples/octopus/run_site.py --config ./examples/configs/3_Hallinan.yaml --day "all" > 3_Hallinan_dayAll_resilientrun1.log 2>&1 &
 
-# python ./examples/octopus/run_site.py --config ./examples/configs/4_Kim.yaml --day "all"> 4_Kim_dayAll_run7.log 2>&1 &
-python ./examples/octopus/run_site.py --config ./examples/configs/5_Remsi.yaml --day "all" > 5_Remsi_dayAll_run7.log 2>&1 &
-# python ./examples/octopus/run_site.py --config ./examples/configs/6_Troja.yaml --day "all" > 6_Troja_dayAll_run7.log 2>&1 &
-python ./examples/octopus/run_site.py --config ./examples/configs/7_Makhatini.yaml --day "all" > 7_Makhatini_dayAll_run7.log 2>&1 &
+# python ./examples/octopus/run_site.py --config ./examples/configs/4_Kim.yaml --day "all"> 4_Kim_dayAll_resilientrun1.log 2>&1 &
+python ./examples/octopus/run_site.py --config ./examples/configs/5_Remsi.yaml --day "all" > 5_Remsi_dayAll_resilientrun1.log 2>&1 &
+# python ./examples/octopus/run_site.py --config ./examples/configs/6_Troja.yaml --day "all" > 6_Troja_dayAll_resilientrun1.log 2>&1 &
+python ./examples/octopus/run_site.py --config ./examples/configs/7_Makhatini.yaml --day "all" > 7_Makhatini_dayAll_resilientrun1.log 2>&1 &
 
 
 wait

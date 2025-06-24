@@ -12,11 +12,11 @@
 ##SBATCH --gpu-bind=none        # Uncomment if using gpu
 
 
-#SBATCH --job-name=FedFit_Distributed_server_day60_run1   # job name
-#SBATCH --time=04:10:00                         # dd-hh:mm:ss for the job
+#SBATCH --job-name=FedFit_Distributed_server_dayAll_resilientrun3   # job name
+#SBATCH --time=05:20:00                         # dd-hh:mm:ss for the job
 
-#SBATCH -e FedFit_Distributed_server_day60_run1-err-%j.log
-#SBATCH -o FedFit_Distributed_server_day60_run1-out-%j.log
+#SBATCH -e FedFit_Distributed_server_dayAll_resilientrun3-err-%j.log
+#SBATCH -o FedFit_Distributed_server_dayAll_resilientrun3-out-%j.log
 
 #SBATCH --constraint="scratch"
 
@@ -43,7 +43,7 @@ conda activate /u/parthpatel7173/.conda/envs/fedfit
 # Change directory to the cloned repo
 cd /u/parthpatel7173/MMA_RadioWave/FederatedFitting
 
-python ./examples/octopus/run_server.py --config ./examples/configs/FLserver.yaml --day "60"
+python ./examples/octopus/run_server.py --config ./examples/configs/FLserver.yaml --day "all"
 # apptainer exec --nv \
 #   MMA_GW_Inference_miniapp.sif \
 #   python /app/examples/octopus/run_server.py --config <absolute path to FL server config file>/FLserver.yaml

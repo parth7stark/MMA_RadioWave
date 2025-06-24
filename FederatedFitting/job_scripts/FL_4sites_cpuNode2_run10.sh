@@ -12,11 +12,11 @@
 ##SBATCH --gpu-bind=none        # Uncomment if using gpu
 
 
-#SBATCH --job-name=FedFit_Distributed_2sites_node2_dayAll_run11   # job name
+#SBATCH --job-name=FedFit_Distributed_2sites_node2_dayAll_resilientrun3   # job name
 #SBATCH --time=05:20:00                         # dd-hh:mm:ss for the job
 
-#SBATCH -e FedFit_Distributed_2sites_node2_dayAll_run11-err-%j.log
-#SBATCH -o FedFit_Distributed_2sites_node2_dayAll_run11-out-%j.log
+#SBATCH -e FedFit_Distributed_2sites_node2_dayAll_resilientrun3-err-%j.log
+#SBATCH -o FedFit_Distributed_2sites_node2_dayAll_resilientrun3-out-%j.log
 
 #SBATCH --constraint="scratch"
 
@@ -53,10 +53,10 @@ cd /u/parthpatel7173/MMA_RadioWave/FederatedFitting
 # srun -n 1 --cpus-per-task 4 python ./examples/octopus/run_site.py --config ./examples/configs/3_Hallinan.yaml --day "all" > detector3.log 2>&1 &
 
 
-python ./examples/octopus/run_site.py --config ./examples/configs/4_Kim.yaml --day "all"> 4_Kim_dayAll_run11.log 2>&1 &
-python ./examples/octopus/run_site.py --config ./examples/configs/5_Remsi.yaml --day "all" > 5_Remsi_dayAll_run11.log 2>&1 &
-python ./examples/octopus/run_site.py --config ./examples/configs/6_Troja.yaml --day "all" > 6_Troja_dayAll_run11.log 2>&1 &
-python ./examples/octopus/run_site.py --config ./examples/configs/7_Makhatini.yaml --day "all" > 7_Makhatini_dayAll_run11.log 2>&1 &
+python ./examples/octopus/run_site.py --config ./examples/configs/4_Kim.yaml --day "all"> 4_Kim_dayAll_resilientrun3.log 2>&1 &
+python ./examples/octopus/run_site.py --config ./examples/configs/5_Remsi.yaml --day "all" > 5_Remsi_dayAll_resilientrun3.log 2>&1 &
+python ./examples/octopus/run_site.py --config ./examples/configs/6_Troja.yaml --day "all" > 6_Troja_dayAll_resilientrun3.log 2>&1 &
+python ./examples/octopus/run_site.py --config ./examples/configs/7_Makhatini.yaml --day "all" > 7_Makhatini_dayAll_resilientrun3.log 2>&1 &
 
 
 wait
