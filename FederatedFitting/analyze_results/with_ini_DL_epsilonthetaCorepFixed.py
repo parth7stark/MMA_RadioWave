@@ -742,17 +742,17 @@ def plot_lc_wUL(data, data_UL, theta):
 
     # Add vertical line for day threshold (if set and not "all")
     if day_threshold is not None and isinstance(day_threshold, (int, float)):
-        # ax.axvline(x=day_threshold, color='gray', linestyle='--', linewidth=1)
+        ax.axvline(x=day_threshold, color='gray', linestyle='--', linewidth=1)
 
-        ax.axvline(x=60, color='gray', linestyle='--', linewidth=1)
-        ax.text(60 * 1.05, ax.get_ylim()[1] * 0.8, f"Day {60}", rotation=90, color='gray')
+        # ax.axvline(x=60, color='gray', linestyle='--', linewidth=1)
+        # ax.text(60 * 1.05, ax.get_ylim()[1] * 0.8, f"Day {60}", rotation=90, color='gray')
         
-        ax.axvline(x=200, color='gray', linestyle='--', linewidth=1)
-        ax.text(200 * 1.05, ax.get_ylim()[1] * 0.8, f"Day {200}", rotation=90, color='gray')
+        # ax.axvline(x=200, color='gray', linestyle='--', linewidth=1)
+        # ax.text(200 * 1.05, ax.get_ylim()[1] * 0.8, f"Day {200}", rotation=90, color='gray')
 
 
-        ax.axvline(x=300, color='gray', linestyle='--', linewidth=1)
-        ax.text(300 * 1.05, ax.get_ylim()[1] * 0.8, f"Day {300}", rotation=90, color='gray')
+        # ax.axvline(x=300, color='gray', linestyle='--', linewidth=1)
+        # ax.text(300 * 1.05, ax.get_ylim()[1] * 0.8, f"Day {300}", rotation=90, color='gray')
 
         # ax.text(day_threshold * 1.05, ax.get_ylim()[1] * 0.8, f"Day {day_threshold}", rotation=90, color='gray')
 
@@ -995,7 +995,7 @@ if __name__ == "__main__":
     """
 
     # pf_samples_filepath = './pf_8sites_distributed_dayAll_run7/pf_8sites_distributed_dayAll_run7_distributed_flat_samples.npy'
-    pf_samples_filepath = './results/pf_8sites_distributed_day150_run3/pf_8sites_distributed_day150_run3_distributed_flat_samples.npy'
+    pf_samples_filepath = './results/pf_8sites_distributed_dayAll_resilientrun4/pf_8sites_distributed_dayAll_resilientrun4_distributed_flat_samples.npy'
     
     flat_samples = np.load(pf_samples_filepath)  # Update this path
 
@@ -1006,7 +1006,7 @@ if __name__ == "__main__":
 
     # # Apply additional burn-in
     # flat_samples = flat_samples[burning:]
-    log_prob_filepath = './results/pf_8sites_distributed_day150_run3/pf_8sites_distributed_day150_run3_distributed_log_prob.npy'
+    log_prob_filepath = './results/pf_8sites_distributed_dayAll_resilientrun4/pf_8sites_distributed_dayAll_resilientrun4_distributed_log_prob.npy'
 
     # log_prob_filepath = './pf_8sites_distributed_dayAll_run7/pf_8sites_distributed_dayAll_run7_distributed_log_prob.npy'
     log_prob = np.load(log_prob_filepath)  # Update this path
