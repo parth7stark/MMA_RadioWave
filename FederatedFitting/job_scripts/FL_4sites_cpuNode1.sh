@@ -12,11 +12,11 @@
 ##SBATCH --gpu-bind=none        # Uncomment if using gpu
 
 
-#SBATCH --job-name=FedFit_Distributed_4sites_node1_day60_run1   # job name
-#SBATCH --time=04:15:00                         # dd-hh:mm:ss for the job
+#SBATCH --job-name=FedFit_Distributed_4sites_node1_dayAll_resilientrun4   # job name
+#SBATCH --time=05:15:00                         # dd-hh:mm:ss for the job
 
-#SBATCH -e FedFit_Distributed_4sites_node1_day60_run1-err-%j.log
-#SBATCH -o FedFit_Distributed_4sites_node1_day60_run1-out-%j.log
+#SBATCH -e FedFit_Distributed_4sites_node1_dayAll_resilientrun4-err-%j.log
+#SBATCH -o FedFit_Distributed_4sites_node1_dayAll_resilientrun4-out-%j.log
 
 #SBATCH --constraint="scratch"
 
@@ -52,9 +52,9 @@ cd /u/parthpatel7173/MMA_RadioWave/FederatedFitting
 # srun -n 1 --cpus-per-task 4 python ./examples/octopus/run_site.py --config ./examples/configs/2_Ghirlanda.yaml --day "all" > detector2.log 2>&1 &
 # srun -n 1 --cpus-per-task 4 python ./examples/octopus/run_site.py --config ./examples/configs/3_Hallinan.yaml --day "all" > detector3.log 2>&1 &
 
-python ./examples/octopus/run_site.py --config ./examples/configs/0_Alexander.yaml --day "60" > 0_Alexander_day60_run1.log 2>&1 &
-python ./examples/octopus/run_site.py --config ./examples/configs/1_Broderick.yaml --day "60" > 1_Broderick_day60_run1.log 2>&1 &
-python ./examples/octopus/run_site.py --config ./examples/configs/2_Ghirlanda.yaml --day "60" > 2_Ghirlanda_day60_run1.log 2>&1 &
-python ./examples/octopus/run_site.py --config ./examples/configs/3_Hallinan.yaml --day "60" > 3_Hallinan_day60_run1.log 2>&1 &
+python ./examples/octopus/run_site.py --config ./examples/configs/0_Alexander.yaml --day "all" > 0_Alexander_dayAll_resilientrun4.log 2>&1 &
+python ./examples/octopus/run_site.py --config ./examples/configs/1_Broderick.yaml --day "all" > 1_Broderick_dayAll_resilientrun4.log 2>&1 &
+python ./examples/octopus/run_site.py --config ./examples/configs/2_Ghirlanda.yaml --day "all" > 2_Ghirlanda_dayAll_resilientrun4.log 2>&1 &
+python ./examples/octopus/run_site.py --config ./examples/configs/3_Hallinan.yaml --day "all" > 3_Hallinan_dayAll_resilientrun4.log 2>&1 &
 
 wait

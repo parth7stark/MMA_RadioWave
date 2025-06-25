@@ -98,6 +98,20 @@ if client_agent.client_agent_config.fitting_configs.use_approach=="2":
     preprocessed_local_data_UL = interpret_ULs(local_data, client_agent.client_agent_config)
 
     # Publish Site ready event with metadata
+    # Apply day threshold filter for resilience testing
+    resilience_test_flag = client_agent.client_agent_config.fitting_configs.resilience_testing
+    if resilience_test_flag == True:
+        print("resilience_testing flag is True", flush=True)
+        # Convert thresholds to seconds
+        lower_limit_sec = 60 * 86400
+        upper_limit_sec = 200 * 86400
+
+        # Keep only points before 60 days or after 200 days
+        preprocessed_local_data = preprocessed_local_data[
+            (preprocessed_local_data["t"] < lower_limit_sec) |
+            (preprocessed_local_data["t"] > upper_limit_sec)
+        ]
+
     # load & slice local CSV ──
     if day_threshold != "all":
         #  interpret() removes the days column and only keeps t in seconds

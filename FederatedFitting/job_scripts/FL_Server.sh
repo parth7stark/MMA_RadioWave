@@ -12,11 +12,11 @@
 ##SBATCH --gpu-bind=none        # Uncomment if using gpu
 
 
-#SBATCH --job-name=FedFit_Distributed_server_dayAll_resilientrun3   # job name
-#SBATCH --time=05:20:00                         # dd-hh:mm:ss for the job
+#SBATCH --job-name=FedFit_Distributed_server_dayAll_resilientrun4   # job name
+#SBATCH --time=05:10:00                         # dd-hh:mm:ss for the job
 
-#SBATCH -e FedFit_Distributed_server_dayAll_resilientrun3-err-%j.log
-#SBATCH -o FedFit_Distributed_server_dayAll_resilientrun3-out-%j.log
+#SBATCH -e FedFit_Distributed_server_dayAll_resilientrun4-err-%j.log
+#SBATCH -o FedFit_Distributed_server_dayAll_resilientrun4-out-%j.log
 
 #SBATCH --constraint="scratch"
 
