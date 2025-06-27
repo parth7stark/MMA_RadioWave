@@ -995,7 +995,7 @@ if __name__ == "__main__":
     """
 
     # pf_samples_filepath = './pf_8sites_distributed_dayAll_run7/pf_8sites_distributed_dayAll_run7_distributed_flat_samples.npy'
-    pf_samples_filepath = './results/pf_8sites_distributed_dayAll_resilientrun4/pf_8sites_distributed_dayAll_resilientrun4_distributed_flat_samples.npy'
+    pf_samples_filepath = './results/pf_8sites_distributed_dayAll_run13/pf_8sites_distributed_dayAll_run13_distributed_flat_samples.npy'
     
     flat_samples = np.load(pf_samples_filepath)  # Update this path
 
@@ -1006,7 +1006,7 @@ if __name__ == "__main__":
 
     # # Apply additional burn-in
     # flat_samples = flat_samples[burning:]
-    log_prob_filepath = './results/pf_8sites_distributed_dayAll_resilientrun4/pf_8sites_distributed_dayAll_resilientrun4_distributed_log_prob.npy'
+    log_prob_filepath = './results/pf_8sites_distributed_dayAll_run13/pf_8sites_distributed_dayAll_run13_distributed_log_prob.npy'
 
     # log_prob_filepath = './pf_8sites_distributed_dayAll_run7/pf_8sites_distributed_dayAll_run7_distributed_log_prob.npy'
     log_prob = np.load(log_prob_filepath)  # Update this path
