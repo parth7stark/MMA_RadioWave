@@ -1,4 +1,0 @@
-[2025-04-24 04:20:36,001 INFO server]: Logging to /lus/eagle/projects/RAPINS/parth/MMA_RadioWave/ParameterEstimation/examples/output/estimatorlog_Server_2025-04-24-04:20:36.txt
-[2025-04-24 04:20:37,001 INFO server]: Published Parameter Estimator started event.
-[2025-04-24 04:20:37,001 INFO server]: [Parameter Estimator] Started Parameter Estimation Process...
-[2025-04-24 04:20:37,001 INFO server]: Skipping download, file already exists: /lus/eagle/projects/RAPINS/parth/MMA_RadioWave/ParameterEstimation/examples/inference_data/GW170817_data/dingo-bns-model_GW170817.pt

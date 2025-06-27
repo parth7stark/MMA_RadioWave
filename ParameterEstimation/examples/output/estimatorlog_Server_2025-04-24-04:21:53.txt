@@ -1,3 +1,0 @@
-[2025-04-24 04:21:53,925 INFO server]: Logging to /lus/eagle/projects/RAPINS/parth/MMA_RadioWave/ParameterEstimation/examples/output/estimatorlog_Server_2025-04-24-04:21:53.txt
-[2025-04-24 04:21:54,507 INFO server]: Published Parameter Estimator started event.
-[2025-04-24 04:21:54,507 INFO server]: [Parameter Estimator] Started Parameter Estimation Process...

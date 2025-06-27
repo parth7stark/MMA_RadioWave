@@ -1,1 +1,0 @@
-[2025-04-24 04:06:13,684 INFO server]: Logging to /lus/eagle/projects/RAPINS/parth/MMA_RadioWave/ParameterEstimation/examples/output/estimatorlog_Server_2025-04-24-04:06:13.txt
