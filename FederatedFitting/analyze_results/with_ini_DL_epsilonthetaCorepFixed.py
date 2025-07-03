@@ -688,6 +688,182 @@ def plot_lc_noUL(data, theta):
     plt.savefig(save_folder + '/' + run_name + '_' + 'lightcurve.png', bbox_inches = 'tight')
 
 
+# def plot_lc_wUL(data, data_UL, theta):
+
+#     data = data.sort_values(by=["frequency"], ascending=False)
+#     data_UL = data_UL.sort_values(by=["frequency"], ascending=False)
+
+#     if z_known == True and dl_known == True:
+#         logE0, thetaObs, logn0 = theta  # REMOVED thetaCore, p, thetaWing, logepsilon_e, logepsilon_B
+#         z = z_fixed
+#         DL = dl_fixed
+
+#     elif z_known == True and dl_known == False:
+#         logE0, thetaObs, logn0, DL = theta  # REMOVED thetaCore, p, thetaWing, logepsilon_e, logepsilon_B
+#         z = z_fixed
+
+#     elif z_known == False and dl_known == True:
+#         logE0, thetaObs, logn0, z = theta  # REMOVED thetaCore, p, thetaWing, logepsilon_e, logepsilon_B
+#         DL = dl_fixed
+
+#     else:
+#         logE0, thetaObs, logn0, z, DL = theta  # REMOVED thetaCore, p, thetaWing, logepsilon_e, logepsilon_B
+
+#     DL = (DL * u.Mpc).to(u.cm).value
+#     E0 = 10 **logE0
+#     n0 = 10 ** logn0
+
+#     # USE FIXED VALUES
+#     epsilon_e = epsilon_e_fixed
+#     epsilon_B = epsilon_b_fixed
+#     thetaCore = thetacore_fixed  # NEW FIXED VALUE
+#     p = p_fixed                  # NEW FIXED VALUE
+#     thetaWing = thetawing_fixed  # NEW FIXED VALUE
+
+#     Z = {
+#         "jetType": grb.jet.Gaussian,
+#         "specType": 0,
+#         "thetaObs": thetaObs,
+#         "E0": E0,
+#         "thetaCore": thetaCore,      # FIXED VALUE
+#         "thetaWing": thetaWing,      # FIXED VALUE
+#         "n0": n0,
+#         "p": p,                      # FIXED VALUE
+#         "epsilon_e": epsilon_e,      # FIXED VALUE
+#         "epsilon_B": epsilon_B,      # FIXED VALUE
+#         "xi_N": 1.0,
+#         "d_L": DL,
+#         "z": z,
+#     }
+
+#     times = np.geomspace(min(data["t"]), max(data["t"]), 100)
+#     # fig, ax = plt.subplots()
+#     fig, ax = plt.subplots(figsize=(10, 8))
+
+#     # Add vertical line for day threshold (if set and not "all")
+#     if day_threshold is not None and isinstance(day_threshold, (int, float)):
+#         # ax.axvline(x=day_threshold, color='gray', linestyle='--', linewidth=1)
+
+#         ax.axvline(x=60, color='gray', linestyle='--', linewidth=1)
+#         # ax.text(60 * 1.05, ax.get_ylim()[1] * 0.8, f"Day {60}", rotation=90, color='gray')
+        
+#         ax.axvline(x=200, color='gray', linestyle='--', linewidth=1)
+#         # ax.text(200 * 1.05, ax.get_ylim()[1] * 0.8, f"Day {200}", rotation=90, color='gray')
+
+
+#         # ax.axvline(x=300, color='gray', linestyle='--', linewidth=1)
+#         # ax.text(300 * 1.05, ax.get_ylim()[1] * 0.8, f"Day {300}", rotation=90, color='gray')
+
+#         # ax.text(day_threshold * 1.05, ax.get_ylim()[1] * 0.8, f"Day {day_threshold}", rotation=90, color='gray')
+
+#     # Extract and convert time to days
+#     t = np.array(data["t"]) / (24 * 60.0 * 60)
+#     nu = np.array(data["frequency"])
+#     fnu = np.array(data["flux"])
+#     err = np.array(data["err"])
+
+#     band_colors_list = ['black', 'red', 'blue', 'green', 'magenta']
+#     legend_handles = []
+
+#     for i, (band, (fmin, fmax, fcen, marker)) in enumerate(radio_bands.items()):
+#         band_data = data[(data["frequency"] >= fmin) & (data["frequency"] < fmax)]
+#         if not band_data.empty:
+#             color = band_colors_list[i % len(band_colors_list)]
+
+#             # Plot model curve
+#             model = grb.fluxDensity(times, np.full(times.shape, fcen), **Z)
+#             ax.plot(times / (24 * 60.0 * 60), model, color=color, linewidth=1.2)
+
+#             # Plot error bars
+#             band_t = np.array(band_data["t"]) / (24 * 60.0 * 60)
+#             band_fnu = np.array(band_data["flux"])
+#             band_err = np.array(band_data["err"])
+
+#             ax.errorbar(
+#                 band_t,
+#                 band_fnu,
+#                 yerr=band_err,
+#                 fmt='none',
+#                 ecolor=color,
+#                 elinewidth=0.6,
+#                 capsize=2,
+#                 alpha=0.8
+#             )
+
+#             # Overlay scatter points
+#             ax.scatter(
+#                 band_t,
+#                 band_fnu,
+#                 marker=marker,
+#                 color=color,
+#                 edgecolor='black',
+#                 linewidth=0.5,
+#                 s=40,
+#                 alpha=0.9
+#             )
+
+#             # Create custom legend handle (symbol + freq)
+#             legend_label = f"{band} ({fcen/1e9:.1f} GHz)"
+#             legend_handles.append(Line2D(
+#                 [0], [0],
+#                 marker=marker,
+#                 color=color,
+#                 linestyle='-',  # for model
+#                 markerfacecolor=color,
+#                 markeredgecolor='black',
+#                 linewidth=1.2,
+#                 markersize=7,
+#                 label=legend_label
+#             ))
+
+#     #plot the upper limits as triangles:
+#     for i, (band, (fmin, fmax, fcen, marker)) in enumerate(radio_bands.items()):
+#         band_data = data_UL[(data_UL["frequency"] >= fmin) & (data_UL["frequency"] < fmax)]
+#         if not band_data.empty:
+#             color = band_colors_list[i % len(band_colors_list)]
+
+#             # Plot error bars
+#             band_t = np.array(band_data["t"]) / (24 * 60.0 * 60)
+#             band_fnu = np.array(band_data["flux"])
+
+#             # Overlay scatter points
+#             ax.scatter(
+#                 band_t,
+#                 band_fnu,
+#                 marker='v',
+#                 facecolors='none',
+#                 edgecolors=color,
+#                 linewidth=0.5,
+#                 s=40,
+#                 alpha=0.9
+#             )
+
+#     # Create custom legend handle (symbol + freq)
+#     legend_label = "upper limit"
+#     legend_handles.append(Line2D(
+#         [0], [0],
+#         marker='v',
+#         color='black',
+#         markerfacecolor='none',
+#         markeredgecolor='black',
+#         linewidth=1.2,
+#         linestyle='None',
+#         markersize=7,
+#         label=legend_label
+#     ))
+
+#     ax.set(
+#         xlabel="Time since detection (days)",
+#         ylabel="Flux density (mJy)",
+#         xscale="log",
+#         yscale="log"
+#         # title=plot_names
+#     )
+
+#     ax.legend(handles=legend_handles, loc="upper center", bbox_to_anchor=(0.5, -0.15), ncol=3, frameon=False)
+#     plt.tight_layout()
+#     plt.savefig(save_folder + '/' + run_name + '_' + 'lightcurve.png', bbox_inches = 'tight')
+
 def plot_lc_wUL(data, data_UL, theta):
 
     data = data.sort_values(by=["frequency"], ascending=False)
@@ -737,24 +913,28 @@ def plot_lc_wUL(data, data_UL, theta):
     }
 
     times = np.geomspace(min(data["t"]), max(data["t"]), 100)
-    # fig, ax = plt.subplots()
+    
+    # Set consistent font properties matching Figure 4
+    # plt.rcParams.update({
+    #     'font.size': 14,
+    #     'font.family': 'serif',
+    #     'axes.labelsize': 16,
+    #     'xtick.labelsize': 14,
+    #     'ytick.labelsize': 14,
+    #     'legend.fontsize': 12,
+    #     'axes.linewidth': 1.2,
+    #     'xtick.major.width': 1.2,
+    #     'ytick.major.width': 1.2,
+    #     'xtick.minor.width': 0.8,
+    #     'ytick.minor.width': 0.8
+    # })
+    
     fig, ax = plt.subplots(figsize=(10, 8))
 
     # Add vertical line for day threshold (if set and not "all")
     if day_threshold is not None and isinstance(day_threshold, (int, float)):
-        ax.axvline(x=day_threshold, color='gray', linestyle='--', linewidth=1)
-
-        # ax.axvline(x=60, color='gray', linestyle='--', linewidth=1)
-        # ax.text(60 * 1.05, ax.get_ylim()[1] * 0.8, f"Day {60}", rotation=90, color='gray')
-        
-        # ax.axvline(x=200, color='gray', linestyle='--', linewidth=1)
-        # ax.text(200 * 1.05, ax.get_ylim()[1] * 0.8, f"Day {200}", rotation=90, color='gray')
-
-
-        # ax.axvline(x=300, color='gray', linestyle='--', linewidth=1)
-        # ax.text(300 * 1.05, ax.get_ylim()[1] * 0.8, f"Day {300}", rotation=90, color='gray')
-
-        # ax.text(day_threshold * 1.05, ax.get_ylim()[1] * 0.8, f"Day {day_threshold}", rotation=90, color='gray')
+        ax.axvline(x=60, color='gray', linestyle='--', linewidth=1.5, alpha=0.7)
+        ax.axvline(x=200, color='gray', linestyle='--', linewidth=1.5, alpha=0.7)
 
     # Extract and convert time to days
     t = np.array(data["t"]) / (24 * 60.0 * 60)
@@ -770,11 +950,11 @@ def plot_lc_wUL(data, data_UL, theta):
         if not band_data.empty:
             color = band_colors_list[i % len(band_colors_list)]
 
-            # Plot model curve
+            # Plot model curve with increased linewidth
             model = grb.fluxDensity(times, np.full(times.shape, fcen), **Z)
-            ax.plot(times / (24 * 60.0 * 60), model, color=color, linewidth=1.2)
+            ax.plot(times / (24 * 60.0 * 60), model, color=color, linewidth=2.0)
 
-            # Plot error bars
+            # Plot error bars with better visibility
             band_t = np.array(band_data["t"]) / (24 * 60.0 * 60)
             band_fnu = np.array(band_data["flux"])
             band_err = np.array(band_data["err"])
@@ -785,21 +965,22 @@ def plot_lc_wUL(data, data_UL, theta):
                 yerr=band_err,
                 fmt='none',
                 ecolor=color,
-                elinewidth=0.6,
-                capsize=2,
+                elinewidth=1.0,
+                capsize=3,
                 alpha=0.8
             )
 
-            # Overlay scatter points
+            # Overlay scatter points with larger size
             ax.scatter(
                 band_t,
                 band_fnu,
                 marker=marker,
                 color=color,
                 edgecolor='black',
-                linewidth=0.5,
-                s=40,
-                alpha=0.9
+                linewidth=0.8,
+                s=60,  # Increased size
+                alpha=0.9,
+                zorder=5
             )
 
             # Create custom legend handle (symbol + freq)
@@ -811,34 +992,35 @@ def plot_lc_wUL(data, data_UL, theta):
                 linestyle='-',  # for model
                 markerfacecolor=color,
                 markeredgecolor='black',
-                linewidth=1.2,
-                markersize=7,
+                linewidth=2.0,
+                markersize=8,
                 label=legend_label
             ))
 
-    #plot the upper limits as triangles:
+    # Plot the upper limits as triangles with enhanced visibility
     for i, (band, (fmin, fmax, fcen, marker)) in enumerate(radio_bands.items()):
         band_data = data_UL[(data_UL["frequency"] >= fmin) & (data_UL["frequency"] < fmax)]
         if not band_data.empty:
             color = band_colors_list[i % len(band_colors_list)]
 
-            # Plot error bars
+            # Plot upper limits
             band_t = np.array(band_data["t"]) / (24 * 60.0 * 60)
             band_fnu = np.array(band_data["flux"])
 
-            # Overlay scatter points
+            # Enhanced upper limit markers - bigger and thicker
             ax.scatter(
                 band_t,
                 band_fnu,
                 marker='v',
                 facecolors='none',
                 edgecolors=color,
-                linewidth=0.5,
-                s=40,
-                alpha=0.9
+                linewidth=2.0,  # Thicker edges
+                s=80,  # Larger size
+                alpha=0.9,
+                zorder=5
             )
 
-    # Create custom legend handle (symbol + freq)
+    # Create custom legend handle for upper limits
     legend_label = "upper limit"
     legend_handles.append(Line2D(
         [0], [0],
@@ -846,24 +1028,31 @@ def plot_lc_wUL(data, data_UL, theta):
         color='black',
         markerfacecolor='none',
         markeredgecolor='black',
-        linewidth=1.2,
+        linewidth=2.0,
         linestyle='None',
-        markersize=7,
+        markersize=8,
         label=legend_label
     ))
 
-    ax.set(
-        xlabel="Time since detection (days)",
-        ylabel="Flux density (mJy)",
-        xscale="log",
-        yscale="log",
-        title=plot_names
-    )
+    # Set axis labels and scales with consistent font styling
+    ax.set_xlabel("Time since merger (days)", fontsize=20, fontweight='normal')
+    ax.set_ylabel("Flux density (mJy)", fontsize=20, fontweight='normal')
+    ax.set_xscale("log")
+    ax.set_yscale("log")
 
-    ax.legend(handles=legend_handles, loc="upper center", bbox_to_anchor=(0.5, -0.15), ncol=3, frameon=False)
+    # Position legend at bottom within figure area
+    ax.legend(handles=legend_handles, loc="lower center", bbox_to_anchor=(0.5, 0.02), 
+              ncol=3, frameon=True, fancybox=True, shadow=False, 
+              fontsize=14, columnspacing=1.5)
+
+    # Adjust layout to accommodate legend
     plt.tight_layout()
-    plt.savefig(save_folder + '/' + run_name + '_' + 'lightcurve.png', bbox_inches = 'tight')
-
+    plt.subplots_adjust(bottom=0.15)
+    
+    # Save figure
+    plt.savefig(save_folder + '/' + run_name + '_' + 'lightcurve.png', 
+                bbox_inches='tight', dpi=300, facecolor='white')
+    
 
 
 if __name__ == "__main__":
