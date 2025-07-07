@@ -1,0 +1,39 @@
+overlap_analysis_configs:
+
+  llm_parameters:
+    # Run in simulation mode (read all GCN and process them to create a CSV file)
+    simulate_events: "yes"
+
+    # Dont push api key on github -- hackers can exploit it
+    gpt_api_key: <chatgpt api key>
+    run_name: test
+    optical_counterpart_name: SSS17a
+    gw: GW170817
+    host_galaxy: ngc4993
+    Gw170817_GCN_data_path: "<absolute path to repo>/examples/simulation/GW170817_GCN"
+    default_uncertainty: 0.1
+
+    #GW170817 time
+    yyyy: 2017
+    mm: 08
+    dd: 17 
+    hh: 12
+    minute: 41
+    sec: 04
+
+  logging_output_dirname: "<absolute path to repo>/examples/output"
+  logging_output_filename: "AI_Parser"
+  
+  # Path to csv
+  result_dir: "<absolute path to repo>/examples/result"
+
+  # define Octopus kafka parameters here like consumer settings (offset policy)
+  # Overlap analysis module listens for posterior samples from paramter estimator and posterior samples from afterglowpy federated fitting afterglow sent to overlap analysis topic
+  comm_configs:
+    octopus_configs:
+      # gcn_listener_topic:
+      #   topic: 'MMA_RW_Listener_Events'
+      #   group_id: 'mma-AI-Parser'
+      ai_parser_topic:
+        topic: 'MMA_AIParser_Module_Events'
+        group_id: 'mma-AI-Parser'
