@@ -1,0 +1,9 @@
+[2025-07-06 20:57:07,789 INFO server]: Logging to /u/parthpatel7173/MMA_RadioWave/AI_Parser/examples/output/AI_Parser_Server_2025-07-06-20:57:07.txt
+[2025-07-06 20:57:08,218 INFO server]: Published AI Parser started event.
+[2025-07-06 20:57:08,218 INFO server]: [AI Parser] Started AI Parser...
+[2025-07-06 20:57:08,218 INFO server]: [Simulation Mode] Reading and loading GCNs from a folder...
+[2025-07-06 20:57:08,318 INFO server]: Found 2 .txt files in /u/parthpatel7173/MMA_RadioWave/AI_Parser/examples/simulation/GW170817_GCN
+[2025-07-06 20:57:08,319 INFO server]: Copied 0 files containing 'Jy' to /u/parthpatel7173/MMA_RadioWave/AI_Parser/examples/resulttest_radiofiles
+[2025-07-06 20:57:08,319 INFO server]: radio filenames: []
+[2025-07-06 20:57:08,322 INFO server]: cleaned data: []
+[2025-07-06 20:57:08,330 INFO server]: Saved table to /u/parthpatel7173/MMA_RadioWave/AI_Parser/examples/resulttest_for_fitting.csv

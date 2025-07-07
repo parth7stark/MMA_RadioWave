@@ -1,7 +1,7 @@
 import argparse
 from omegaconf import OmegaConf
-from mma_ai_parser.agent import OverlapAnalyzerAgent
-from mma_ai_parser.communicator.octopus import OctopusOverlapCommunicator
+from mma_ai_parser.agent import AIParserAgent
+from mma_ai_parser.communicator.octopus import OctopusAIParserCommunicator
 from openai import OpenAI
 from pathlib import Path
 import pickle
@@ -23,10 +23,10 @@ args = argparser.parse_args()
 ai_parser_config = OmegaConf.load(args.config)
 
 # Initialize ai_parser-side modules
-ai_parser_agent = OverlapAnalyzerAgent(ai_parser_config=ai_parser_config)
+ai_parser_agent = AIParserAgent(ai_parser_config=ai_parser_config)
 
 # Create Octopus communicator for publishing events to Radio topic - 
-octopuscommunicator = OctopusOverlapCommunicator(
+octopuscommunicator = OctopusAIParserCommunicator(
     ai_parser_agent,
     logger=ai_parser_agent.logger,
 )

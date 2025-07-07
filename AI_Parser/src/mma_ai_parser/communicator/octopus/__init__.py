@@ -1,2 +1,1 @@
 from .octopus_aiparser_communicator import OctopusAIParserCommunicator
-from .utils import serialize_tensor_to_base64, deserialize_tensor_from_base64

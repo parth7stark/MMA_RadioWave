@@ -1,8 +1,8 @@
 import logging
 from typing import Optional
 from omegaconf import OmegaConf
-from mma_overlap_analysis.agent import AIParserAgent
-from mma_overlap_analysis.logger import ServerAgentFileLogger
+from mma_ai_parser.agent import AIParserAgent
+from mma_ai_parser.logger import ServerAgentFileLogger
 from diaspora_event_sdk import KafkaProducer, KafkaConsumer
 
 class OctopusAIParserCommunicator:
@@ -21,15 +21,15 @@ class OctopusAIParserCommunicator:
         self.logger = logger if logger is not None else self._default_logger()
         
         # MMA topic: topic where Estimator publishes posterior samples for overllaped analysis
-        self.ai_parser_topic = self.ai_parser_agent.ai_parser_config.overlap_analysis_configs.comm_configs.octopus_configs.ai_parser_topic.topic
+        self.ai_parser_topic = self.ai_parser_agent.ai_parser_config.ai_parser_configs.comm_configs.octopus_configs.ai_parser_topic.topic
 
 
         # Kafka producer for control messages and sending Embeddings
         self.producer = KafkaProducer()
 
 
-        ai_parser_group_id = self.ai_parser_agent.ai_parser_config.overlap_analysis_configs.comm_configs.octopus_configs.ai_parser_topic.group_id
-        # estimator_ai_parser_group_id = self.ai_parser_agent.ai_parser_config.overlap_analysis_configs.comm_configs.octopus_configs.afterglow_topic.group_id
+        ai_parser_group_id = self.ai_parser_agent.ai_parser_config.ai_parser_configs.comm_configs.octopus_configs.ai_parser_topic.group_id
+        # estimator_ai_parser_group_id = self.ai_parser_agent.ai_parser_config.ai_parser_configs.comm_configs.octopus_configs.afterglow_topic.group_id
         
         self.consumer = KafkaConsumer(
             self.ai_parser_topic,
