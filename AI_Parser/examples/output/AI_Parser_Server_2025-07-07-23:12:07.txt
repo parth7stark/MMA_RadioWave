@@ -1,0 +1,46 @@
+[2025-07-07 23:12:07,194 INFO server]: Logging to /u/parthpatel7173/MMA_RadioWave/AI_Parser/examples/output/AI_Parser_Server_2025-07-07-23:12:07.txt
+[2025-07-07 23:12:08,250 INFO server]: Published AI Parser started event.
+[2025-07-07 23:12:08,250 INFO server]: [AI Parser] Started AI Parser...
+[2025-07-07 23:12:08,250 INFO server]: [Simulation Mode] Reading and loading GCNs from a folder...
+[2025-07-07 23:12:11,169 INFO server]: Found 229 .txt files in /u/parthpatel7173/MMA_RadioWave/AI_Parser/examples/simulation/GW170817_GCN
+[2025-07-07 23:12:11,226 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:11,263 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:11,298 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:11,325 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:11,364 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:11,403 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:11,431 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:11,469 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:11,502 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:11,533 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:11,562 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:11,589 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:11,616 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:11,644 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:11,681 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:11,708 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:11,737 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:11,763 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:11,791 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:11,818 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:11,852 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:11,879 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:11,909 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:11,936 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:11,963 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:11,992 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:12,023 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:12,050 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:12,077 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:12,103 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:12,131 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:12,159 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:12,186 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:12,213 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:12,239 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:12,288 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:12,315 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:12,345 INFO server]: Published NewRadioGCN detected event.
+[2025-07-07 23:12:12,345 INFO server]: Copied 38 files containing 'Jy' to /u/parthpatel7173/MMA_RadioWave/AI_Parser/examples/resulttest_radiofiles
+[2025-07-07 23:12:12,347 INFO server]: radio filenames: ['GCN_21545.txt', 'GCN_21559.txt', 'GCN_21571.txt', 'GCN_21574.txt', 'GCN_21589.txt', 'GCN_21613.txt', 'GCN_21614.txt', 'GCN_21628.txt', 'GCN_21636.txt', 'GCN_21645.txt', 'GCN_21650.txt', 'GCN_21664.txt', 'GCN_21670.txt', 'GCN_21671.txt', 'GCN_21708.txt', 'GCN_21740.txt', 'GCN_21750.txt', 'GCN_21760.txt', 'GCN_21763.txt', 'GCN_21768.txt', 'GCN_21803.txt', 'GCN_21804.txt', 'GCN_21848.txt', 'GCN_21850.txt', 'GCN_21882.txt', 'GCN_21891.txt', 'GCN_21900.txt', 'GCN_21914.txt', 'GCN_21920.txt', 'GCN_21927.txt', 'GCN_21929.txt', 'GCN_21933.txt', 'GCN_21939.txt', 'GCN_21940.txt', 'GCN_21975.txt', 'GCN_29053.txt', 'GCN_29263.txt', 'GCN_32094.txt']
+[2025-07-07 23:12:12,347 INFO server]: ====Starting to process /u/parthpatel7173/MMA_RadioWave/AI_Parser/examples/resulttest_radiofiles/GCN_21545.txt====

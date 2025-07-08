@@ -256,6 +256,10 @@ class GCNParser():
         # print(f"GPS seconds: {gps_seconds}")
         # print(f"Time string: {time_string}")
         
+        optical_counterpart_name =  self.ai_parser_config.ai_parser_configs.llm_parameters.optical_counterpart_name
+        gw =  self.ai_parser_config.ai_parser_configs.llm_parameters.gw
+        host_galaxy =  self.ai_parser_config.ai_parser_configs.llm_parameters.host_galaxy
+
         prompt1 = """Return ONLY one of the following two JSON objects, with no extra text or explanation.
 
             {"optical_transient": "true"}
@@ -310,9 +314,6 @@ class GCNParser():
         )[0]
         print(response2)
         
-        optical_counterpart_name =  self.ai_parser_config.ai_parser_configs.llm_parameters.optical_counterpart_name
-        gw =  self.ai_parser_config.ai_parser_configs.llm_parameters.gw
-        host_galaxy =  self.ai_parser_config.ai_parser_configs.llm_parameters.host_galaxy
 
         if response1["optical_transient"].lower() == "true":
             

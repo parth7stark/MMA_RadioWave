@@ -1,3 +1,4 @@
+////
 TITLE:   GCN CIRCULAR
 NUMBER:  31231
 SUBJECT: Chandra observation of GW170817 at ~1575 days since merger (all epochs)
@@ -17,7 +18,7 @@ acquired for a total exposure time of ~ 98ks.
 
 We merged all four observations after reprocessing and correcting for the
 absolute astrometry (as described in Hajela et al. 2021), and found 5 total
-photons in 0.5-8 keV energy range in an 1��� region at the position of
+photons in 0.5-8 keV energy range in an 1â region at the position of
 GW170817. This corresponds to a net 0.5-8 keV count-rate of ~4.3e-5 c/s,
 which translates to a detection of X-ray emission at the location of
 GW170817 with a statistical significance of  ~3.2 sigma (Gaussian

@@ -95,8 +95,8 @@ class OctopusAIParserCommunicator:
         self.producer.send(self.ai_parser_topic, ready_msg)
         self.producer.flush()
 
-        print("Published NewRadioGCN detected event.", flush=True)
-        self.logger.info("Published NewRadioGCN detected event.")
+        print("Published NewFluxTimeDataAdded event.", flush=True)
+        self.logger.info("Published NewFluxTimeDataAdded event.")
 
     
     def _default_logger(self):
