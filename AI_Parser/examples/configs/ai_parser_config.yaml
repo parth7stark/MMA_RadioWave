@@ -1,4 +1,4 @@
-overlap_analysis_configs:
+ai_parser_configs:
 
   llm_parameters:
     # Run in simulation mode (read all GCN and process them to create a CSV file)
@@ -21,11 +21,13 @@ overlap_analysis_configs:
     minute: 41
     sec: 04
 
+    # Path to csv
+    result_dir: "<absolute path to repo>/examples/result"
+
+
   logging_output_dirname: "<absolute path to repo>/examples/output"
   logging_output_filename: "AI_Parser"
   
-  # Path to csv
-  result_dir: "<absolute path to repo>/examples/result"
 
   # define Octopus kafka parameters here like consumer settings (offset policy)
   # Overlap analysis module listens for posterior samples from paramter estimator and posterior samples from afterglowpy federated fitting afterglow sent to overlap analysis topic
