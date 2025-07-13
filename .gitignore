@@ -46,7 +46,7 @@ env/
 # Large datasets
 *.h5
 *.hdf5
-*.csv
+#*.csv
 *.tsv
 *.npz
 
