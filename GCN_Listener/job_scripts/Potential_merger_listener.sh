@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --mem=100g                              # required number of memory
+#SBATCH --mem=32g                              # required number of memory
 #SBATCH --nodes=1                               # nodes required for whole simulation
 
-#SBATCH --cpus-per-task=32                       # CPUs for each task
+#SBATCH --cpus-per-task=16                      # CPUs for each task
 ## SBATCH --gpus-per-task=1                      # Uncomment if using gpu
 ##SBATCH --ntasks-per-node=1                     # Uncomment if using gpu 
 
@@ -12,11 +12,11 @@
 ##SBATCH --gpu-bind=none        # Uncomment if using gpu
 
 
-#SBATCH --job-name=MMA_GW_TestContainer_VFL_detector1   # job name
-#SBATCH --time=01:00:00                         # dd-hh:mm:ss for the job
+#SBATCH --job-name=MMA_RW_GCNListener_PotentialMergerListener   # job name
+#SBATCH --time=00:20:00                         # dd-hh:mm:ss for the job
 
-#SBATCH -e MMA_GW_TestContainer_VFL_detector1-err-%j.log
-#SBATCH -o MMA_GW_TestContainer_VFL_detector1-out-%j.log
+#SBATCH -e MMA_RW_GCNListener_PotentialMergerListener-err-%j.log
+#SBATCH -o MMA_RW_GCNListener_PotentialMergerListener-out-%j.log
 
 #SBATCH --constraint="scratch"
 
@@ -39,6 +39,6 @@ module list
 cd <path to cloned repo>
 
 apptainer exec --nv \
-  MMA_GW_Inference_miniapp.sif \
-  python /app/examples/octopus/run_detector.py --config <absolute path to FL detector0 config file>/detector1.yaml
+  MMA_GCN_Listener_miniapp.sif \
+  python /app/examples/octopus/run_potential_merger_listener.py --config <absolute path to gcn listener config file>/gcn_listener_config_filled.yaml
 

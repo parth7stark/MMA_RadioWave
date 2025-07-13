@@ -4,10 +4,10 @@ gcn_listener_configs:
   simulation_datadir: "/simulation/"
   # Have separate logging file for GCN listener and Merger event listener
   merger_logging_output_dirname: "<absolute path to repo>/examples/output"
-  merger_logging_output_filename: "result"
+  merger_logging_output_filename: "PMresult"
 
   gcn_logging_output_dirname: "<absolute path to repo>/examples/output"
-  gcn_logging_output_filename: "result"
+  gcn_logging_output_filename: "GCNresult"
   
   # define Octopus kafka parameters here like consumer settings (offset policy)
   # GCN listens to potential merger events topic and post it to another topic radiowave topic
@@ -29,6 +29,7 @@ gcn_listener_configs:
   parser_configs:
     # GCN and event filtering
     bns_probability_threshold: 0.5
+    time_tolerance_minutes: 5
 
   # Directory for saving files of interest (using superevent or grace_id)
   # Storage configuration
