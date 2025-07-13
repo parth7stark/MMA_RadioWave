@@ -2,13 +2,13 @@ client_id: '3'
 fitting_configs:
   logging_id: "FedFit_SiteHallinan"
   logging_output_dirname: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/output"
-  logging_output_filename: "pf_8sites_distributed_dayAll_resilientrun4"
+  logging_output_filename: "pf_8sites_distributed_dayAll_apptainer"
 
   dataset_path: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/fitting_dataset/Hallinan_Mooley_Dobie.csv"
   # Path to save local results
-  save_folder: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/results/pf_8sites_distributed_dayAll_resilientrun4/Hallinan/"
-  run_name: pf_8sites_distributed_dayAll_resilientrun4
-  plot_names: GW170817_pf_8sites_distributed_dayAll_resilientrun4
+  save_folder: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/results/pf_8sites_distributed_dayAll_apptainer/Hallinan/"
+  run_name: pf_8sites_distributed_dayAll_apptainer
+  plot_names: GW170817_pf_8sites_distributed_dayAll_apptainer
   
 comm_configs:
   octopus_configs:
@@ -24,4 +24,4 @@ comm_configs:
         
       connector_type: "FileConnector"
       connector_configs:
-        store_dir: "/scratch/bcbw/parthpatel7173/proxystore"
+        store_dir: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/proxystore"

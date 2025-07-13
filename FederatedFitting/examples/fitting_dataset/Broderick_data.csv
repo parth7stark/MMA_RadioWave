@@ -1,0 +1,3 @@
+days	microJy	GHz	upperlimit	Instrument	time_flag	RA_Dec_flag	name_flag	RA	Dec	user
+134	>6300.0	0.114	3	LOFAR	0	0	0	09:48.1	-23:22:53.343	Broderick
+372	>18600.0	0.114	3	LOFAR	0	0	0	09:48.1	-23:22:53.343	Broderick

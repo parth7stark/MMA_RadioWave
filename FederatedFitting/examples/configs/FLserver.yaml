@@ -21,8 +21,8 @@ client_configs:
 
   mcmc_configs:
     nwalkers: 32
-    niters: 2000
-    burnin: 500
+    niters: 20
+    burnin: 5
 
     # random_seed: 12345
     random_seed: 981721
@@ -116,18 +116,18 @@ client_configs:
 
 server_configs:
   aggregator_kwargs:
-    num_clients: 8
+    num_clients: 2
     # directory to store results after consensus/aggregation/sum of log-likelihood
-    save_folder: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/results/pf_8sites_distributed_dayAll_resilientrun4/"
-    run_name: "pf_8sites_distributed_dayAll_resilientrun4"
-    plot_names: "GW170817_pf_8sites_distributed_dayAll_resilientrun4"
+    save_folder: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/results/pf_8sites_distributed_dayAll_apptainer/"
+    run_name: "pf_8sites_distributed_dayAll_apptainer"
+    plot_names: "GW170817_pf_8sites_distributed_dayAll_apptainer"
     
     # #whether or not to include the truth valueson the corner plots
     # display_truths_on_corner: "True"
     # true_values: [53, .54, 0.088, -1.699, -2, -3.699, 2.139, 0.6, 0.00897]
 
   logging_output_dirname: "/u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/output"
-  logging_output_filename: "pf_8sites_distributed_dayAll_resilientrun4"
+  logging_output_filename: "pf_8sites_distributed_dayAll_apptainer"
 
   # define server side kafka parameters here like consumer settings (offset policy)
   # Fedfit module listens to overlap analysis messages from MMA module as well topic and post it to another topic fedfit topic to interact with clients/sites

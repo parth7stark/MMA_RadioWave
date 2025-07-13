@@ -1,0 +1,3 @@
+days	microJy	GHz	upperlimit	Instrument	time_flag	RA_Dec_flag	name_flag	RA	Dec	user
+207	4.200e+01+-1.200e+01	5	0	gVLBA	0	0	0	09:48.1	-23:22:53.343	Ghirlanda
+210	>60.0	5.2	3	eMERLIN	0	0	0	09:48.1	-23:22:53.343	Ghirlanda

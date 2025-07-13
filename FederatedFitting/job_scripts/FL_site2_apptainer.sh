@@ -12,11 +12,11 @@
 ##SBATCH --gpu-bind=none        # Uncomment if using gpu
 
 
-#SBATCH --job-name=FedFit_Distributed_likelihood_site0   # job name
-#SBATCH --time=03:40:00                         # dd-hh:mm:ss for the job
+#SBATCH --job-name=FedFit_Distributed_site2_apptainer   # job name
+#SBATCH --time=00:15:00                         # dd-hh:mm:ss for the job
 
-#SBATCH -e FedFit_Distributed_likelihood_site0-err-%j.log
-#SBATCH -o FedFit_Distributed_likelihood_site0-out-%j.log
+#SBATCH -e FedFit_Distributed_site2_apptainer-err-%j.log
+#SBATCH -o FedFit_Distributed_site2_apptainer-out-%j.log
 
 #SBATCH --constraint="scratch"
 
@@ -26,22 +26,22 @@
 
 
 # Load necessary modules
-source /sw/external/python/anaconda3_gpu/etc/profile.d/conda.sh
-conda deactivate
-conda deactivate  # just making sure
-module purge
-module reset  # load the default Delta modules
+# source /sw/external/python/anaconda3_gpu/etc/profile.d/conda.sh
+# conda deactivate
+# conda deactivate  # just making sure
+# module purge
+# module reset  # load the default Delta modules
 
-module load anaconda3_gpu
-module list
+# module load anaconda3_gpu
+# module list
 
-source /sw/external/python/anaconda3_gpu/etc/profile.d/conda.sh
-conda activate /u/parthpatel7173/.conda/envs/fedfit
+# source /sw/external/python/anaconda3_gpu/etc/profile.d/conda.sh
+# # conda activate /u/parthpatel7173/.conda/envs/fedfit
 
-# Change directory to the cloned repo
+# # Change directory to the cloned repo
 cd /u/parthpatel7173/MMA_RadioWave/FederatedFitting
 
-python ./examples/octopus/run_site.py --config ./examples/configs/detector0.yaml
-# apptainer exec --nv \
-#   MMA_GW_Inference_miniapp.sif \
-#   python /app/examples/octopus/run_detector.py --config <absolute path to FL detector0 config file>/detector0.yaml
+# python ./examples/octopus/run_site.py --config ./examples/configs/detector1.yaml
+apptainer exec --nv \
+  MMA_FederatedFitting_miniapp.sif \
+  python /app/examples/octopus/run_site.py --config /u/parthpatel7173/MMA_RadioWave/FederatedFitting/examples/configs/3_Hallinan.yaml --day "all"
