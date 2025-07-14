@@ -1,7 +1,7 @@
 client_configs:
   fitting_configs:
     use_approach: "2"
-    resilience_testing: True  # if true skip data points between day 60 and day 200 and use remaining days of data to fit light curve
+    resilience_testing: False  # if true skip data points between day 60 and day 200 and use remaining days of data to fit light curve
   
   # initial_guess:
   #   # Troja 2020
