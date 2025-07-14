@@ -3,7 +3,7 @@
 ## Overview
 This repository is part of a **Multimessenger App** designed to analyze data from different astronomical sources. In multimessenger astronomy, signals from various messengers—such as gravitational waves, radio waves, and electromagnetic waves—are combined to gain a more comprehensive understanding of astrophysical phenomena.
 
-This repo specifically contains files and code related to **gravitational wave data** analysis, forming one of the core components of the overall multimessenger workflow. The app integrates these data streams with other repositories handling gravitational wave analysis to create a unified event detection and analysis framework.
+This repo specifically contains files and code related to **GCN Lisneter** module, forming one of the core components of the overall multimessenger workflow. The app integrates these data streams with other repositories handling gravitational wave analysis to create a unified event detection and analysis framework.
 
 ## Installation and running your first inference
 
@@ -14,27 +14,17 @@ Please follow these steps:
 1.  Clone this repository and `cd` into it.
 
     ```bash
-    git clone https://github.com/parth7stark/MMA_GravitationalWave.git
-    cd ./MMA_GravitationalWave
+    git clone https://github.com/parth7stark/MMA_RadioWave/tree/main
+    cd ./MMA_RadioWave/GCN_Listener
     ```
 
-2.  Download inference dataset and model parameters:
-
-    *   Please use the below link to download and set
-        up full database. 
+2. Build the Apptainer image:
 
     ```bash
-    https://drive.google.com/file/d/1zuNzPzHGlk0e5cUCDDPkZjZ5v81J-rhS/view?usp=drive_link
-    Unzip the file in <REPO_DIR>
+    apptainer build MMA_GCN_Listener_miniapp.sif apptainer/MMA_GCN_Listener_miniapp.def
     ```
 
-3. Build the Apptainer image:
-
-    ```bash
-    apptainer build MMA_GW_Inference_miniapp.sif apptainer/MMA_GW_Inference_miniapp.def
-    ```
-
-4. Setup Octopus Connection
+3. Setup Octopus Connection
 
     To allow the server and detectors to connect to the Octopus event fabric, you need to export the username (user's OpenID) and password (AWS secret key) in the .bashrc file for all sites where the components will run.
 
@@ -57,24 +47,56 @@ Please follow these steps:
     source ~/.bashrc
     ```
 
-5. Start Server for Inference
+4. Start GCN Listener
 
+    The GCN Listener module consists of two continuously running Python processes:
+
+    ### 1. `examples/ocotpus/run_potential_merger_listener.py`
+    This script listens for **"PotentialMerger"** events published by the GW module via **Octopus**.
+
+    - When a new gravitational wave merger event is detected, the event metadata is saved to a local JSON file (`GWPotentialMergers.json`).
+    - This file acts as a local database of candidate GW events, used later to match with incoming GCN alerts.
+
+    ### 2. `examples/ocotpus/run_gcn_listener.py`
+
+    This script listens for alerts from the GCN Kafka stream, including:
+
+    - LVK Notices: Initial, Update, Retraction, Counterpart
+    - GCN Circulars from partner observatories
+
+    When a GCN Initial Notice with BNS probability > 0.5 arrives:
+
+    - The script checks the `GWPotentialMergers.json` file for a matching GW event based on timestamp.
+
+    - If a match is found, the alert is flagged as a super-event of interest.
+
+    The script also:
+
+    - Publishes a "New GCN Circular Added" message to the Octopus event fabric.
+    - Triggers downstream pipelines (e.g., GCN circular classification or radio data AI parsing).
 
    * Update the config file:
 
-        Open the `examples/configs/FLserver.yaml` configuration file and update the following paths with the appropriate ones for your system:
+        Open the `examples/configs/gcn_listener_config.yaml` configuration file and update the credentials and  following paths with the appropriate ones for your system:
 
-        - **Checkpoint Path:** Specify the location of the downloaded model checkpoint file.
+        - **GCN credential:** To stream GCN notices and circulars, you'll need your own Kafka credentials.  
+        Follow the official [Start Streaming GCN Notices](https://gcn.nasa.gov/quickstart) quick start guide to create a client ID and secret.
 
-        - **Logging Output Path:** Define where the inference logs should be saved.
+        - **Simulation Data Path:** Specify the location of the dummy events for simulation
+
+        - **Result Path:** Define where the GCN Listener wil save notices and circulars for events of interest.
+
+        - **Logging Output Path:** Define where the logs should be saved.
 
 
    * Update the Job script:
       
-       The sample job script can be located in the repository under the name `job_scripts/FL_Server.sh`
+       The sample job script can be located in the repository under the name `job_scripts/GCN_listener.sh` and `job_scripts/Potential_merger_listener.sh`
 
         ```bash
-        job_scripts/FL_Server.sh
+        job_scripts/GCN_listener.sh
+        job_scripts/Potential_merger_listener.sh
+
     
         - Modify the SLURM parameters in the script to suit your computing environment (e.g., partition, time, and resources).
         ```
@@ -84,52 +106,21 @@ Please follow these steps:
         Use the following command to submit the job script:
     
         ```bash
-        sbatch job_scripts/FL_Server.sh
+        sbatch job_scripts/Potential_merger_listener.sh
+        sbatch job_scripts/GCN_listener.sh
         ```
 
-    Submitting the job script will automatically start the Server.
-
-6. Start Detectors for Inference
-
-   Once Server has started running, start both detectors.
-
-   * Update the config file
-
-        Open the `examples/configs/detector0.yaml` and  `examples/configs/detector1.yaml`configuration file and update the following paths with the appropriate ones for your system:
-
-        - **Checkpoint Path**: Specify the location of the downloaded model checkpoint file.
-        - **Inference Dataset Path**: Provide the path to the downloaded inference dataset file.
-        - **Logging Output Path**: Define where the inference logs should be saved.
-    
-
-   * Update the Job script 
-   
-       The sample job script can be located in the repository under the name `job_scripts/FL_DetectorX.sh`
-    
-        ```bash
-        job_scripts/FL_DetectorX.sh
-    
-        - Modify the SLURM parameters in the script to suit your computing environment (e.g., partition, time, and resources).
-        ```
-
-   * Submit the Job Script
-        Use the following command to submit the job script:
-    
-        ```bash
-        sbatch job_scripts/FL_DetectorX.sh
-        ```
-
-    Submitting the job script will automatically start the Detectors.
+    Submitting the job script will automatically start the Potential Merger Listener and GCN notices and circular listener.
 
 
-7.  Once the run begins, two output files will be generated for each client and server in your working directory: 
+5.  Once the run begins, two output files will be generated for each potential merger listener and gcn listener in your working directory: 
 `<job-name>-err-<job_id>.log` (error logs) and `<job-name>-out-<job_id>.log` (output logs). Additionally, the job's output files will be saved in the log output directory specified in your configuration file.
 
 ## Usage on Delta AI
 
 Since Delta AI is an **ARM64 architecture machine**, so the Apptainer definition file must be updated to use a base image and install libraries compatible with the ARM64 architecture.
 
-Just use the `MMA_GW_Inference_miniapp_arm64.def` for building the image.
+Just use the `MMA_GCN_Listener_miniapp_arm64.def` for building the image.
 The remaining steps are the same as those for Delta or Linux x86 architecture.
 
 
@@ -159,6 +150,13 @@ To build the Apptainer images, you need to be on the Polaris compute nodes. Foll
    export HTTPS_PROXY=http://proxy.alcf.anl.gov:3128
    export http_proxy=http://proxy.alcf.anl.gov:3128
    export https_proxy=http://proxy.alcf.anl.gov:3128
+
+   export BASE_SCRATCH_DIR=/local/scratch/ # For Polaris
+   export APPTAINER_TMPDIR=$BASE_SCRATCH_DIR/apptainer-tmpdir
+   mkdir -p $APPTAINER_TMPDIR
+
+   export APPTAINER_CACHEDIR=$BASE_SCRATCH_DIR/ apptainer-cachedir
+   mkdir -p $APPTAINER_CACHEDIR
    ```
 
 3. **Load Apptainer Module:**
@@ -173,42 +171,34 @@ To build the Apptainer images, you need to be on the Polaris compute nodes. Foll
 4. **Build Apptainer Images:**
    
     ```bash
-    apptainer build --fakeroot MMA_GW_Inference_miniapp.sif apptainer/MMA_GW_Inference_miniapp.def
+    apptainer build --fakeroot MMA_GCN_Listener_miniapp.sif apptainer/MMA_GCN_Listener_miniapp.def
     ```
 
 
 **Step 4:** Update configurations
 
-Update the configurations for the server and detectors as described in the previous steps. Ensure the paths in the config files point to the appropriate locations on your system.
+Update the configurations for the potential merger and gcn listener as described in the previous steps. Ensure the paths in the config files point to the appropriate locations on your system.
 
 **Step 5:** Start container on login node
 
 To start the server or detectors, execute the following commands from the login node.
 
-    * To start server, run:
+    * To start potential merger listener, run:
 
     ```bash
     apptainer exec --nv \
-    MMA_GW_Inference_miniapp.sif \
-    python /app/examples/octopus/run_server.py --config <absolute path to FL server config file>/FLserver.yaml
+    MMA_GCN_Listener_miniapp.sif \
+    python /app/examples/octopus/run_potential_merger_listener.py --config <absolute path to gcn listener config file>/gcn_listener_config.yaml
     ```
 
-    * To start Detector X, run:
+    * To start GCN Notices and Circular Listener, run:
 
     ```bash
     apptainer exec --nv \
-    MMA_GW_Inference_miniapp.sif \
-    python /app/examples/octopus/run_detector.py --config <absolute path to FL detectorX config file>/detectorX.yaml
+    MMA_GCN_Listener_miniapp.sif \
+    python /app/examples/octopus/run_gcn_listener.py --config <absolute path to FL gcn listener config file>/gcn_listener_config.yaml
     ```
     
 
-## Todo List and Project Plan
-Please refer to our Box folder for the latest project tasks and roadmap: [Link](https://www.overleaf.com/project/66bce960bfb79d8b86fcfdf3)
-
 ## Related Projects
-This repo focuses on radio wave data. For gravitational wave analysis, please visit [Radio Wave Analysis Repo](https://github.com/parth7stark/MMA_RadioWave/tree/main). Together, these repositories work within the multimessenger framework to capture and analyze various cosmic events.
-
-## Future Plans
-- Integration of additional messenger types (e.g., neutrinos, gamma rays)
-- Real-time data streaming and event detection
-- Cross-correlation between different datasets for enhanced analysis
+This repo focuses on radio wave data. For gravitational wave and joint analysis, please visit [Gravitational Wave Analysis Repo](https://github.com/parth7stark/MMA_GravitationalWave/tree/main) and [GW-RW Joint Analysis Repo](https://github.com/parth7stark/MMA_MultimessengerAnalysis/tree/main). Together, these repositories work within the multimessenger framework to capture and analyze various cosmic events.

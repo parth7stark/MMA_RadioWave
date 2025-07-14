@@ -1,7 +1,7 @@
 gcn_listener_configs:
 
   simulate_events: "yes"
-  simulation_datadir: "/simulation/"
+  simulation_datadir: "<absolute path to repo>/examples/simulation/"
   # Have separate logging file for GCN listener and Merger event listener
   merger_logging_output_dirname: "<absolute path to repo>/examples/output"
   merger_logging_output_filename: "PMresult"
