@@ -673,9 +673,7 @@ class GCNParser():
                     mJy_entry = f"{flux:.2E}±{unc:.2E}"
                     d['unc_flag'] = 0
                 else:
-                    default_uncertainty =  self.ai_parser_config.ai_parser_configs.llm_parameters.default_uncertainty
-                    unc = float(default_uncertainty)
-                    mJy_entry = f"{flux:.2E}±{unc:.2E}"
+                    mJy_entry = f"{flux:.2E}"
                     d['unc_flag'] = 1
             else:
                 mJy_entry = ""
