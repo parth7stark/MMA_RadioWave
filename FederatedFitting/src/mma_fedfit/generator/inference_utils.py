@@ -4,7 +4,7 @@ import afterglowpy as grb
 from astropy.coordinates import SkyCoord
 import astropy.units as u
 import corner
-
+import sys
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
@@ -106,6 +106,8 @@ def process_flags(data, client_agent_config):
     exclude_time_flag = client_agent_config.mcmc_configs.exclude_time_flag
     exclude_ra_dec_flag = client_agent_config.mcmc_configs.exclude_ra_dec_flag
     exclude_name_flag = client_agent_config.mcmc_configs.exclude_name_flag
+    exclude_uncertainty_flag = client_agent_config.mcmc_configs.exclude_uncertainty_flag
+
     if "time_flag" in data.columns and exclude_time_flag == True:
         use_time_flag = True
     else:
@@ -120,6 +122,11 @@ def process_flags(data, client_agent_config):
         use_name_flag = True
     else:
         use_name_flag = False
+
+    if "uncertainty_flag" in data.columns and exclude_uncertainty_flag == True:
+        use_uncertainty_flag = True
+    else:
+        use_uncertainty_flag = False
         
     for i in range(data.shape[0]):
         flags = []
@@ -129,14 +136,30 @@ def process_flags(data, client_agent_config):
         if use_RA_Dec_flag:
             RA_Dec_flag = data.iloc[i]["RA_Dec_flag"]
             flags.append(RA_Dec_flag)
+        if use_uncertainty_flag:
+            unc_flag = data.iloc[i]["uncertainty_flag"]
+            flags.append(unc_flag)
         if use_name_flag:
             name_flag = data.iloc[i]["name_flag"]
+            target = data.iloc[i]["target"]
+            target_name = client_agent_config.mcmc_configs.target_name
+
+            if not target in target_name:
+                name_flag = 1 #This is the same as throwing the name_flag -- rejects the data point.
+                
             flags.append(name_flag)
             
         flags = np.asarray(flags)
 
-        #This means it contains a nonzero flag and we exclude it
-        if np.sum(flags) > 0:
+        #The total number of flags in this data point (6 possible)
+        total_flags = data.iloc[i]["time_flag"] + data.iloc[i]["freq_flag"] + data.iloc[i]["name_flag"] + data.iloc[i]["uncertainty_flag"] + data.iloc[i]["RA_Dec_flag"] + data.iloc[i]["FD_flag"]
+
+
+        #This means it contains a nonzero flag, which the user has set to exclude
+        #Or the total number of flags is worryingly high to the user
+        max_acceptable_flagnum = client_agent_config.mcmc_configs.max_acceptable_flagnum
+        
+        if np.sum(flags) > 0 or total_flags > max_acceptable_flagnum:
             indices_not_flagged_for_exclusion.append(False)
         else:
             indices_not_flagged_for_exclusion.append(True)
@@ -151,15 +174,15 @@ def interpret(data, client_agent_config):
         data["t"] = data["days"] * 86400
     elif "seconds" in data.columns:
         data["t"] = data["seconds"]
-    elif "t_delta" in data.columns:
-        data["t"] = data["t_delta"]
-    
-    if "Filter" in data.columns:
-        data["filter"] = data["Filter"]
-    elif "Band" in data.columns:
-        data["filter"] = data["Band"]
-    elif "band" in data.columns:
-        data["filter"] = data["band"]
+    else:
+        sys.exit("Error: no time column in data. Need either seconds or days.")
+     
+    # if "Filter" in data.columns:
+    #     data["filter"] = data["Filter"]
+    # elif "Band" in data.columns:
+    #     data["filter"] = data["Band"]
+    # elif "band" in data.columns:
+    #     data["filter"] = data["band"]
     
     if "GHz" in data.columns:
         data["frequency"] = data["GHz"]
@@ -167,6 +190,8 @@ def interpret(data, client_agent_config):
     if "Hz" in data.columns:
         data["frequency"] = data["Hz"]
         freq_correct = 1
+    else:
+        sys.exit("Error: no frequency column in data. Need either Hz or GHz.")
     
     if "microJy" in data.columns:
         data["flux"] = data["microJy"]
@@ -177,9 +202,8 @@ def interpret(data, client_agent_config):
     elif "mJy" in data.columns:
         data["flux"] = data["mJy"]
         flux_correct = 1
-    elif "mag" in data.columns:
-        data["flux"] = data["mag"]
-        flux_correct = "mag"
+    else:
+        sys.exit("Error: no flux density column in data. Need mJy, microJy, or Jy.")
 
     #use the RA and Dec radius:
     indices_not_flagged_for_exclusion_RA_Dec = process_RA_Dec_constraints(data, client_agent_config)
@@ -196,65 +220,69 @@ def interpret(data, client_agent_config):
             except:
                 continue  # skip this row entirely if frequency can't be parsed
     
-            if "err" in data.columns:
-                flux = data.iloc[i]["flux"]
-                error = float(data.iloc[i]["err"])
-                if "<" in flux:
-                    print('skipping UL')
-                    #new_flux.append("UL")
-                    #err.append(0)
-                elif ">" in flux:
-                    print('skipping UL')
-                    #new_flux.append("UL")
-                    #err.append(0)
-                else:
-                    flux = float(flux)
-                    new_flux.append(flux)
-                    err.append(float(error))
-                    freq.append(this_freq)
-                    tvals.append(data.iloc[i]["t"])
+            # if "err" in data.columns:
+            #     flux = data.iloc[i]["flux"]
+            #     error = float(data.iloc[i]["err"])
+            #     if "<" in flux:
+            #         print('skipping UL')
+            #         #new_flux.append("UL")
+            #         #err.append(0)
+            #     elif ">" in flux:
+            #         print('skipping UL')
+            #         #new_flux.append("UL")
+            #         #err.append(0)
+            #     else:
+            #         flux = float(flux)
+            #         new_flux.append(flux)
+            #         err.append(float(error))
+            #         freq.append(this_freq)
+            #         tvals.append(data.iloc[i]["t"])
+            # else:
+            flux = data.iloc[i]["flux"]
+
+            if "<" in flux:
+                continue
+                #new_flux.append("UL")
+                #err.append(0)
+            elif ">" in flux:
+                continue
+                #new_flux.append("UL")
+                #err.append(0)
+            
+            if "±" in flux:
+                splt = flux.split("±")
+                new_flux.append(float(splt[0]))
+                err.append(float(splt[1]))
+                freq.append(this_freq)
+                tvals.append(data.iloc[i]["t"])
+            elif "+-" in flux:
+                splt = flux.split("+-")
+                new_flux.append(float(splt[0]))
+                err.append(float(splt[1]))
+                tvals.append(data.iloc[i]["t"])
+                freq.append(this_freq)
+            # elif "+" in flux and "-" in flux:
+            #     splt = flux.split("+")
+            #     new_flux.append(float(splt[0]))
+            #     err_splt = splt[1].split("-")
+            #     err.append(max([float(splt[0]), float(err_splt[1])]))
+            #     freq.append(this_freq)
+            #     tvals.append(data.iloc[i]["t"])
+            # else:
+            #     new_flux.append(float(flux))
+            #     err.append(0)
+            #     freq.append(this_freq)
+            #     tvals.append(data.iloc[i]["t"])
             else:
-                flux = data.iloc[i]["flux"]
-    
-                if "<" in flux:
-                    continue
-                    #new_flux.append("UL")
-                    #err.append(0)
-                elif ">" in flux:
-                    continue
-                    #new_flux.append("UL")
-                    #err.append(0)
-                
-                if "±" in flux:
-                    splt = flux.split("±")
-                    new_flux.append(float(splt[0]))
-                    err.append(float(splt[1]))
-                    freq.append(this_freq)
-                    tvals.append(data.iloc[i]["t"])
-                elif "+-" in flux:
-                    splt = flux.split("+-")
-                    new_flux.append(float(splt[0]))
-                    err.append(float(splt[1]))
-                    tvals.append(data.iloc[i]["t"])
-                    freq.append(this_freq)
-                elif "+" in flux and "-" in flux:
-                    splt = flux.split("+")
-                    new_flux.append(float(splt[0]))
-                    err_splt = splt[1].split("-")
-                    err.append(max([float(splt[0]), float(err_splt[1])]))
-                    freq.append(this_freq)
-                    tvals.append(data.iloc[i]["t"])
-                else:
-                    new_flux.append(float(flux))
-                    err.append(0)
-                    freq.append(this_freq)
-                    tvals.append(data.iloc[i]["t"])
-    
+                #If it does not have a defined uncertainty, it cannot be included in the fit.
+                print('A detection is indicated but does not have an associated uncertainty. Please manually enter one')
+                continue
+
     for i in range(len(new_flux)):
         if new_flux[i] != "UL":
-            if flux_correct != "mag":
-                new_flux[i] = new_flux[i] * flux_correct
-                err[i] = err[i] * flux_correct
+            # if flux_correct != "mag":
+            new_flux[i] = new_flux[i] * flux_correct
+            err[i] = err[i] * flux_correct
 
     # Build a clean DataFrame only from valid, parsed values
 
@@ -269,6 +297,8 @@ def interpret(data, client_agent_config):
     "flux": new_flux,
     "err": err})
     
+    print(f'number of detections to fit after Flags:{len(tvals)}')
+
     # Return just the columns we want, fully cleaned
     valid_data = valid_data[["t", "frequency", "flux", "err"]].astype(np.float64)
     return valid_data
@@ -284,22 +314,27 @@ def interpret_ULs(data, client_agent_config):
         data["t"] = data["days"] * 86400
     elif "seconds" in data.columns:
         data["t"] = data["seconds"]
-    elif "t_delta" in data.columns:
-        data["t"] = data["t_delta"]
+    # elif "t_delta" in data.columns:
+    #     data["t"] = data["t_delta"]
+    else:
+        sys.exit("Error: no time column in data. Need either seconds or days.")
     
-    if "Filter" in data.columns:
-        data["filter"] = data["Filter"]
-    elif "Band" in data.columns:
-        data["filter"] = data["Band"]
-    elif "band" in data.columns:
-        data["filter"] = data["band"]
+    
+    # if "Filter" in data.columns:
+    #     data["filter"] = data["Filter"]
+    # elif "Band" in data.columns:
+    #     data["filter"] = data["Band"]
+    # elif "band" in data.columns:
+    #     data["filter"] = data["band"]
     
     if "GHz" in data.columns:
         data["frequency"] = data["GHz"]
         freq_correct = 1e9
-    if "Hz" in data.columns:
+    elif "Hz" in data.columns:
         data["frequency"] = data["Hz"]
         freq_correct = 1
+    else:
+        sys.exit("Error: no frequency column in data. Need either Hz or GHz.")
     
     if "microJy" in data.columns:
         data["flux"] = data["microJy"]
@@ -310,9 +345,12 @@ def interpret_ULs(data, client_agent_config):
     elif "mJy" in data.columns:
         data["flux"] = data["mJy"]
         flux_correct = 1
-    elif "mag" in data.columns:
-        data["flux"] = data["mag"]
-        flux_correct = "mag"
+    # elif "mag" in data.columns:
+    #     data["flux"] = data["mag"]
+    #     flux_correct = "mag"
+    else:
+        sys.exit("Error: no flux density column in data. Need mJy, microJy, or Jy.")
+
 
     #use the RA and Dec radius:
     indices_not_flagged_for_exclusion_RA_Dec = process_RA_Dec_constraints(data, client_agent_config)
@@ -329,46 +367,46 @@ def interpret_ULs(data, client_agent_config):
             except:
                 continue  # skip this row entirely if frequency can't be parsed
     
-            if "err" in data.columns:
-                flux = data.iloc[i]["flux"]
-                error = float(data.iloc[i]["err"])
-                if "<" in flux:
-                    flux_str = flux.split('<')
-                    flux = flux_str[1]
-                    flux = float(flux)
-                    new_flux.append(flux)
-                    freq.append(this_freq)
-                    tvals.append(data.iloc[i]["t"])
-                elif ">" in flux:
-                    flux_str = flux.split('>')
-                    flux = flux_str[1]
-                    flux = float(flux)
-                    new_flux.append(flux)
-                    freq.append(this_freq)
-                    tvals.append(data.iloc[i]["t"])
+            # if "err" in data.columns:
+            #     flux = data.iloc[i]["flux"]
+            #     error = float(data.iloc[i]["err"])
+            #     if "<" in flux:
+            #         flux_str = flux.split('<')
+            #         flux = flux_str[1]
+            #         flux = float(flux)
+            #         new_flux.append(flux)
+            #         freq.append(this_freq)
+            #         tvals.append(data.iloc[i]["t"])
+            #     elif ">" in flux:
+            #         flux_str = flux.split('>')
+            #         flux = flux_str[1]
+            #         flux = float(flux)
+            #         new_flux.append(flux)
+            #         freq.append(this_freq)
+            #         tvals.append(data.iloc[i]["t"])
     
-            else:
-                flux = data.iloc[i]["flux"]
-    
-                if "<" in flux:
-                    flux_str = flux.split('<')
-                    flux = flux_str[1]
-                    flux = float(flux)
-                    new_flux.append(flux)
-                    freq.append(this_freq)
-                    tvals.append(data.iloc[i]["t"])
-                elif ">" in flux:
-                    flux_str = flux.split('>')
-                    flux = flux_str[1]
-                    flux = float(flux)
-                    new_flux.append(flux)
-                    freq.append(this_freq)
-                    tvals.append(data.iloc[i]["t"])
-    
+            # else:
+            flux = data.iloc[i]["flux"]
+
+            if "<" in flux:
+                flux_str = flux.split('<')
+                flux = flux_str[1]
+                flux = float(flux)
+                new_flux.append(flux)
+                freq.append(this_freq)
+                tvals.append(data.iloc[i]["t"])
+            elif ">" in flux:
+                flux_str = flux.split('>')
+                flux = flux_str[1]
+                flux = float(flux)
+                new_flux.append(flux)
+                freq.append(this_freq)
+                tvals.append(data.iloc[i]["t"])
+
     for i in range(len(new_flux)):
         if new_flux[i] != "UL":
-            if flux_correct != "mag":
-                new_flux[i] = new_flux[i] * flux_correct
+            # if flux_correct != "mag":
+            new_flux[i] = new_flux[i] * flux_correct
                 #err[i] = err[i] * flux_correct
 
     print(len(tvals))
@@ -380,6 +418,8 @@ def interpret_ULs(data, client_agent_config):
     "frequency": freq,
     "flux": new_flux})
     
+    print(f'number of ULs after Flags:{len(tvals)}')
+
     # Return just the columns we want, fully cleaned
     valid_data = valid_data[["t", "frequency", "flux"]].astype(np.float64)
     return valid_data
@@ -495,7 +535,9 @@ def make_corner_plots(samples, burnin, nwalkers, ndim, params, true_values, disp
     Modified to take parameters as arguments
     """
     figure = corner.corner(
-        samples[burnin * nwalkers:],
+        #we've already applied burnin
+        #samples[burnin * nwalkers:],
+        samples,
         labels=params,
         show_titles=True,
         title_fmt=".2f",
@@ -536,12 +578,14 @@ def make_posterior_hists(samples, burnin, nwalkers, ndim, params, save_path):
     theta = []
     
     for i in range(ndim):
-        theta_component = np.asarray(samples[burnin * nwalkers:, i])
+        # theta_component = np.asarray(samples[burnin * nwalkers:, i])
+        theta_component = np.asarray(samples[:, i])
         lower, upper = np.percentile(theta_component, [15.865, 84.135])
     
         theta.append(theta_component)
         ax = axes[i]
-        ax.hist(samples[burnin * nwalkers:, i], bins=20, color="blue", alpha=0.7, label="Samples")
+        # ax.hist(samples[burnin * nwalkers:, i], bins=20, color="blue", alpha=0.7, label="Samples")
+        ax.hist(samples[:, i], bins=20, color="blue", alpha=0.7, label="Samples")
     
         # Plot mean value as a vertical line
         ax.axvline(medians[i], color="red", linestyle="--", label=f"Median: {medians[i]:.4f}")
